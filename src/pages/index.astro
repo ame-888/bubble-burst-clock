@@ -125,13 +125,10 @@ const latestClaimDate = latestClaim.date;
         .link { color: #60A5FA; text-decoration: none; }
         .link:hover { text-decoration: underline; }
         .badge { display: inline-flex; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; white-space: nowrap; }
-        .status-ongoing { background-color: #065F46; color: #D1FAE5; }
-        .status-pending { background-color: #92400E; color: #FEF3C7; }
-        .status-expired { background-color: #991B1B; color: #FEE2E2; }
-        .status-expired-unproven { background-color: #991B1B; color: #FEE2E2; }
-
-        .type-title { background-color: #1E40AF; color: #DBEAFE; }
-        .type-video { background-color: #5B21B6; color: #EDE9FE; }
+        td.status-ongoing, .badge.status-ongoing { background-color: #065F46; color: #D1FAE5; }
+        td.status-pending, .badge.status-pending { background-color: #92400E; color: #FEF3C7; }
+        td.status-expired, .badge.status-expired { background-color: #991B1B; color: #FEE2E2; }
+        td.status-expired-unproven, .badge.status-expired-unproven { background-color: #991B1B; color: #FEE2E2; }
 
         /* Style for the new legend section */
         .legend-section {
@@ -216,7 +213,7 @@ const latestClaimDate = latestClaim.date;
     </main>
     <script define:vars={{ latestClaimDate, CLAIMS_DATA, lang, t, translations }}>
         const clockElement = document.getElementById('clock');
-        const startDate = new Date(latestClaimDate);
+        const startDate = new Date(latestClaimDate  + 'T00:00:00Z');
 
         const statusFilter = document.getElementById('status-filter');
         const dateSort = document.getElementById('date-sort');
@@ -240,12 +237,6 @@ const latestClaimDate = latestClaim.date;
             return `${baseClasses} status-default`;
         };
 
-        const getClaimTypeBadgeClasses = (claimType) => {
-            const baseClasses = "badge";
-            if (claimType === 'title_only') return `${baseClasses} type-title`;
-            if (claimType === 'in_video_claim') return `${baseClasses} type-video`;
-            return `${baseClasses} type-default`;
-        };
 
         function updateStaticTranslations() {
             document.title = currentTranslations.title;
@@ -299,8 +290,8 @@ const latestClaimDate = latestClaim.date;
                     <td><img src="${claim.thumbnailUrl}" alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" /></td>
                     <td>${claimText}</td>
                     <td><a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="link">${currentTranslations.watch}</a></td>
-                    <td><span class="${getStatusBadgeClasses(claim.status)}">${statusText}</span></td>
-                    <td><span class="${getClaimTypeBadgeClasses(claim.claimType)}">${claimTypeText}</span></td>
+                    <td class="${getStatusBadgeClasses(claim.status)}">${statusText}</td>
+                    <td>${claimTypeText}</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -355,7 +346,7 @@ const latestClaimDate = latestClaim.date;
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
             clockElement.textContent =
-                `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+                `${days}days ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
 
             // Change color based on elapsed time
             if (days < 30) {
