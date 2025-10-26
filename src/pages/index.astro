@@ -227,14 +227,13 @@ const latestClaimDate = latestClaim.date;
             return translations[langCode] || translations['en'];
         }
 
-        // Helper functions to style the badges
-        const getStatusBadgeClasses = (status) => {
-            const baseClasses = "badge";
-            if (status.toLowerCase().startsWith('ongoing')) return `${baseClasses} status-ongoing`;
-            if (status.toLowerCase().startsWith('pending')) return `${baseClasses} status-pending`;
-            if (status === 'expired_unproven') return `${baseClasses} status-expired-unproven`;
-            if (status.toLowerCase().startsWith('expired')) return `${baseClasses} status-expired`;
-            return `${baseClasses} status-default`;
+        // Helper functions to style the status cells
+        const getStatusClass = (status) => {
+            if (status.toLowerCase().startsWith('ongoing')) return 'status-ongoing';
+            if (status.toLowerCase().startsWith('pending')) return 'status-pending';
+            if (status === 'expired_unproven') return 'status-expired-unproven';
+            if (status.toLowerCase().startsWith('expired')) return 'status-expired';
+            return 'status-default';
         };
 
 
@@ -290,7 +289,7 @@ const latestClaimDate = latestClaim.date;
                     <td><img src="${claim.thumbnailUrl}" alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" /></td>
                     <td>${claimText}</td>
                     <td><a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="link">${currentTranslations.watch}</a></td>
-                    <td class="${getStatusBadgeClasses(claim.status)}">${statusText}</td>
+                    <td class="${getStatusClass(claim.status)}">${statusText}</td>
                     <td>${claimTypeText}</td>
                 `;
                 tableBody.appendChild(row);
@@ -352,7 +351,7 @@ const latestClaimDate = latestClaim.date;
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
             clockElement.textContent =
-                `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+                `${days.toString().padStart(2, '0')}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
 
             // Change color based on elapsed time
             if (days < 30) {
