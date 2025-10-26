@@ -17,7 +17,7 @@ if (typeof Astro.cookies !== 'undefined') {
 const currentLang = languages.find(l => l.code === currentLangCode) || languages[0];
 ---
 
-<div class="language-switcher">
+<div class="language-switcher" id="language-switcher-container" data-languages={JSON.stringify(languages)}>
     <button id="language-switcher-button">
         <img src={currentLang.flag} alt={currentLang.name} class="flag-icon" />
         <span class="lang-name">{currentLang.nativeName}</span>
@@ -117,26 +117,32 @@ const currentLang = languages.find(l => l.code === currentLangCode) || languages
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const button = document.getElementById('language-switcher-button');
-        const options = document.getElementById('language-options');
-        const chevron = button.querySelector('.chevron-down');
+    function initializeLanguageSwitcher() {
+        const container = document.getElementById('language-switcher-container');
+        // If the container is not found, it means the component is not on the page.
+        if (!container) return;
 
-        const languages = [
-            { code: 'en', name: 'English', nativeName: 'English', flag: 'https://flagpedia.net/data/flags/w580/us.png' },
-            { code: 'pt-BR', name: 'Brazilian Portuguese', nativeName: 'Português Brasileiro', flag: 'https://flagpedia.net/data/flags/w580/br.png' },
-            { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: 'https://flagpedia.net/data/flags/w580/jp.png' },
-            { code: 'es', name: 'Spanish', nativeName: 'Español', flag: 'https://flagpedia.net/data/flags/w580/es.png' },
-            { code: 'zh', name: 'Chinese', nativeName: '中文', flag: 'https://flagpedia.net/data/flags/w580/cn.png' },
-        ];
+        // Check if the event listeners are already attached to avoid duplication.
+        if (container.hasAttribute('data-initialized')) {
+            return;
+        }
 
-        button.addEventListener('click', () => {
+        const button = container.querySelector('#language-switcher-button');
+        const options = container.querySelector('#language-options');
+
+        // If these elements are missing, we can't proceed.
+        if (!button || !options) return;
+
+        const languages = JSON.parse(container.dataset.languages);
+
+        button.addEventListener('click', (e) => {
+            e.stopPropagation();
             options.classList.toggle('show');
             button.classList.toggle('open');
         });
 
         document.addEventListener('click', (event) => {
-            if (!button.contains(event.target) && !options.contains(event.target)) {
+            if (!container.contains(event.target)) {
                 options.classList.remove('show');
                 button.classList.remove('open');
             }
@@ -164,5 +170,14 @@ const currentLang = languages.find(l => l.code === currentLangCode) || languages
                 buttonSpan.textContent = currentLang.nativeName;
             }
         }
-    });
+
+        // Mark as initialized
+        container.setAttribute('data-initialized', 'true');
+    }
+
+    // Run the initialization
+    initializeLanguageSwitcher();
+
+    // Also run it after Astro's View Transitions
+    document.addEventListener('astro:after-swap', initializeLanguageSwitcher);
 </script>
