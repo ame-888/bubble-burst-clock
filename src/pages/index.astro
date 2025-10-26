@@ -1,8 +1,8 @@
 ---
-// --- O CÉREBRO DA PÁGINA ---
+// --- PAGE BRAIN ---
 import { CLAIMS_DATA } from '../CLAIMS_DATA';
 
-// As funções de ajuda para estilizar os "badges"
+// Helper functions to style the badges
 const getStatusBadgeClasses = (status: string): string => {
     const baseClasses = "badge";
     if (status.toLowerCase().startsWith('ongoing')) return `${baseClasses} status-ongoing`;
@@ -19,7 +19,7 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
 };
 ---
 
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -46,7 +46,7 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         .type-title { background-color: #1E40AF; color: #DBEAFE; }
         .type-video { background-color: #5B21B6; color: #EDE9FE; }
 
-        /* Estilo para a nova seção de legenda */
+        /* Style for the new legend section */
         .legend-section {
           margin-top: 3rem;
           padding: 1.5rem;
@@ -68,7 +68,7 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
 <body>
     <main>
         <h1>The AI Bubble Burst Clock</h1>
-        <h2>Uma linha do tempo de previsões que nunca se concretizam.</h2>
+        <h2>A timeline of predictions that never come true.</h2>
 
         <div class="table-container">
             <table>
@@ -90,7 +90,7 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
                             <td>{claim.claimer}</td>
                             <td><img src={claim.thumbnailUrl} alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" /></td>
                             <td>{claim.claim}</td>
-                            <td><a href={claim.link} target="_blank" rel="noopener noreferrer" class="link">Assistir</a></td>
+                            <td><a href={claim.link} target="_blank" rel="noopener noreferrer" class="link">Watch</a></td>
                             <td><span class={getStatusBadgeClasses(claim.status)}>{claim.status}</span></td>
                             <td><span class={getClaimTypeBadgeClasses(claim.claimType)}>{claim.claimType}</span></td>
                         </tr>
@@ -99,12 +99,12 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
             </table>
         </div>
 
-        <!-- Nova seção de legenda adicionada aqui -->
+        <!-- New legend section added here -->
         <div class="legend-section">
-          <h3>Legenda dos Status</h3>
-          <p><strong>Ongoing:</strong> Impossível de verificar.</p>
-          <p><strong>Pending:</strong> Aguardando a data para verificação.</p>
-          <p><strong>Expired:</strong> A previsão falhou.</p>
+          <h3>Status Legend</h3>
+          <p><strong>Ongoing:</strong> Impossible to verify.</p>
+          <p><strong>Pending:</strong> Awaiting the date for verification.</p>
+          <p><strong>Expired:</strong> The prediction failed.</p>
         </div>
 
     </main>
