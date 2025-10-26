@@ -30,5 +30,7 @@
   "ongoing": "進行中",
   "pending": "保留中",
   "title_only": "タイトルのみ",
-  "in_video_claim": "動画内の主張"
+  "in_video_claim": "動画内の主張",
+  "submit_prediction": "予測を知っていますか？こちらから送信してください",
+  "time_limit_note": "すべての予測は、真実であることを証明するために3ヶ月の期限があります。"
 }

@@ -30,5 +30,7 @@
   "ongoing": "Em andamento",
   "pending": "Pendente",
   "title_only": "Apenas no título",
-  "in_video_claim": "Alegação no vídeo"
+  "in_video_claim": "Alegação no vídeo",
+  "submit_prediction": "Sabe de uma Previsão? Envie Aqui",
+  "time_limit_note": "Todas as previsões têm um prazo de 3 meses para se provarem verdadeiras."
 }

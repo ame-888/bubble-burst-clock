@@ -56,6 +56,29 @@ const latestClaimDate = latestClaim.date;
         body { background-color: #111827; color: white; font-family: sans-serif; padding: 2rem; }
         main { max-width: 80rem; margin: auto; }
         h1 { font-size: 2.25rem; font-weight: bold; text-align: center; margin-bottom: 0.5rem; }
+        .submission-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .submit-button {
+            display: inline-block;
+            background-color: #4F46E5;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .submit-button:hover {
+            background-color: #4338CA;
+        }
+        .time-limit-note {
+            text-align: center;
+            margin-top: 1rem;
+            color: #9CA3AF;
+            font-size: 0.875rem;
+        }
         h2 { font-size: 1.25rem; color: #9CA3AF; text-align: center; margin-bottom: 3rem; }
 
         .clock-container {
@@ -129,6 +152,25 @@ const latestClaimDate = latestClaim.date;
         td.status-pending, .badge.status-pending { background-color: #92400E; color: #FEF3C7; }
         td.status-expired, .badge.status-expired { background-color: #991B1B; color: #FEE2E2; }
         td.status-expired-unproven, .badge.status-expired-unproven { background-color: #991B1B; color: #FEE2E2; }
+        .watch-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            background-color: #DC2626;
+            color: white;
+            text-decoration: none;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .watch-button:hover {
+            background-color: #B91C1C;
+        }
+        .watch-button svg {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.375rem;
+        }
 
         /* Style for the new legend section */
         .legend-section {
@@ -155,6 +197,10 @@ const latestClaimDate = latestClaim.date;
         <h1 id="main-title">{t.title}</h1>
         <h2 id="subtitle">{t.subtitle}</h2>
 
+        <div class="submission-container">
+            <a href="mailto:aiburstdotcom@gmail.com" class="submit-button" id="submit-prediction-button">{t.submit_prediction}</a>
+        </div>
+
         <div class="clock-container">
             <div class="last-claim">
                 <p id="time-elapsed">{t.time_elapsed}</p>
@@ -164,6 +210,7 @@ const latestClaimDate = latestClaim.date;
             </div>
             <div id="last-burst-bubble" class="clock-title">{t.last_burst_bubble}</div>
             <div id="clock" class="clock" data-start-date={latestClaimDate}></div>
+            <p class="time-limit-note" id="time-limit-note">{t.time_limit_note}</p>
         </div>
 
         <div class="table-controls">
@@ -262,6 +309,8 @@ const latestClaimDate = latestClaim.date;
             document.getElementById('legend-ongoing').textContent = currentTranslations.status_ongoing_desc;
             document.getElementById('legend-pending').textContent = currentTranslations.status_pending_desc;
             document.getElementById('legend-expired-unproven').innerHTML = currentTranslations.status_expired_unproven_desc;
+            document.getElementById('submit-prediction-button').textContent = currentTranslations.submit_prediction;
+            document.getElementById('time-limit-note').textContent = currentTranslations.time_limit_note;
 
             // Update last claim section
             const latestClaim = CLAIMS_DATA.find(c => c.date === latestClaimDate);
@@ -288,7 +337,12 @@ const latestClaimDate = latestClaim.date;
                     <td>${claim.claimer}</td>
                     <td><img src="${claim.thumbnailUrl}" alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" /></td>
                     <td>${claimText}</td>
-                    <td><a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="link">${currentTranslations.watch}</a></td>
+                    <td>
+                        <a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="watch-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10,16.5V7.5L16,12M20,4.4C19.4,4.2 15.7,4 12,4C8.3,4 4.6,4.19 4,4.38C2.44,4.9 2,8.4 2,12C2,15.59 2.44,19.1 4,19.61C4.6,19.81 8.3,20 12,20C15.7,20 19.4,19.81 20,19.61C21.56,19.1 22,15.59 22,12C22,8.4 21.56,4.9 20,4.4Z"></path></svg>
+                            ${currentTranslations.watch}
+                        </a>
+                    </td>
                     <td class="${getStatusClass(claim.status)}">${statusText}</td>
                     <td>${claimTypeText}</td>
                 `;
