@@ -1,10 +1,10 @@
 ---
 const languages = [
-    { code: 'en', name: 'English', flag: 'https://flagpedia.net/data/flags/w580/us.png' },
-    { code: 'pt-BR', name: 'Brazilian Portuguese', flag: 'https://flagpedia.net/data/flags/w580/br.png' },
-    { code: 'ja', name: 'Japanese', flag: 'https://flagpedia.net/data/flags/w580/jp.png' },
-    { code: 'es', name: 'Spanish', flag: 'https://flagpedia.net/data/flags/w580/es.png' },
-    { code: 'zh', name: 'Chinese', flag: 'https://flagpedia.net/data/flags/w580/cn.png' },
+    { code: 'en', name: 'English', nativeName: 'English', flag: 'https://flagpedia.net/data/flags/w580/us.png' },
+    { code: 'pt-BR', name: 'Brazilian Portuguese', nativeName: 'Português Brasileiro', flag: 'https://flagpedia.net/data/flags/w580/br.png' },
+    { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: 'https://flagpedia.net/data/flags/w580/jp.png' },
+    { code: 'es', name: 'Spanish', nativeName: 'Español', flag: 'https://flagpedia.net/data/flags/w580/es.png' },
+    { code: 'zh', name: 'Chinese', nativeName: '中文', flag: 'https://flagpedia.net/data/flags/w580/cn.png' },
 ];
 
 let currentLangCode = 'en';
@@ -20,7 +20,7 @@ const currentLang = languages.find(l => l.code === currentLangCode) || languages
 <div class="language-switcher">
     <button id="language-switcher-button">
         <img src={currentLang.flag} alt={currentLang.name} class="flag-icon" />
-        <span>{currentLang.name}</span>
+        <span class="lang-name">{currentLang.nativeName}</span>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="chevron-down">
             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
         </svg>
@@ -29,18 +29,19 @@ const currentLang = languages.find(l => l.code === currentLangCode) || languages
         {languages.map(lang => (
             <a href="#" class="language-option" data-lang={lang.code}>
                 <img src={lang.flag} alt={lang.name} class="flag-icon" />
-                <span>{lang.name}</span>
+                <span class="lang-name">{lang.nativeName}</span>
             </a>
         ))}
     </div>
 </div>
 
-<style>
+<style is:global>
     .language-switcher {
         position: absolute;
         top: 1rem;
         right: 1rem;
         z-index: 10;
+        font-family: inherit;
     }
     #language-switcher-button {
         display: flex;
@@ -48,21 +49,35 @@ const currentLang = languages.find(l => l.code === currentLangCode) || languages
         background-color: #374151;
         color: white;
         border: 1px solid #4B5563;
-        border-radius: 0.25rem;
+        border-radius: 0.375rem;
         padding: 0.5rem 0.75rem;
         cursor: pointer;
-        font-family: inherit;
+        transition: background-color 0.2s;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+    }
+    #language-switcher-button:hover {
+        background-color: #4B5563;
     }
     .flag-icon {
         width: 1.5rem;
         height: 1rem;
-        margin-right: 0.5rem;
+        margin-right: 0.75rem;
         border-radius: 0.125rem;
+        object-fit: cover;
+    }
+    .lang-name {
+        flex-grow: 1;
+        text-align: left;
     }
     .chevron-down {
         width: 1.25rem;
         height: 1.25rem;
-        margin-left: 0.5rem;
+        margin-left: 0.75rem;
+        transition: transform 0.2s;
+    }
+    #language-switcher-button.open .chevron-down {
+        transform: rotate(180deg);
     }
     .language-options {
         display: none;
@@ -71,19 +86,30 @@ const currentLang = languages.find(l => l.code === currentLangCode) || languages
         right: 0;
         background-color: #374151;
         border: 1px solid #4B5563;
-        border-radius: 0.25rem;
-        padding: 0.5rem 0;
+        border-radius: 0.375rem;
+        padding: 0.5rem;
         margin-top: 0.25rem;
+        min-width: 12rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.2s, transform 0.2s;
     }
     .language-options.show {
         display: block;
+        opacity: 1;
+        transform: translateY(0);
     }
     .language-option {
         display: flex;
         align-items: center;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 0.75rem;
         color: white;
         text-decoration: none;
+        border-radius: 0.25rem;
+        transition: background-color 0.2s;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
     }
     .language-option:hover {
         background-color: #4B5563;
@@ -94,14 +120,25 @@ const currentLang = languages.find(l => l.code === currentLangCode) || languages
     document.addEventListener('DOMContentLoaded', () => {
         const button = document.getElementById('language-switcher-button');
         const options = document.getElementById('language-options');
+        const chevron = button.querySelector('.chevron-down');
+
+        const languages = [
+            { code: 'en', name: 'English', nativeName: 'English', flag: 'https://flagpedia.net/data/flags/w580/us.png' },
+            { code: 'pt-BR', name: 'Brazilian Portuguese', nativeName: 'Português Brasileiro', flag: 'https://flagpedia.net/data/flags/w580/br.png' },
+            { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: 'https://flagpedia.net/data/flags/w580/jp.png' },
+            { code: 'es', name: 'Spanish', nativeName: 'Español', flag: 'https://flagpedia.net/data/flags/w580/es.png' },
+            { code: 'zh', name: 'Chinese', nativeName: '中文', flag: 'https://flagpedia.net/data/flags/w580/cn.png' },
+        ];
 
         button.addEventListener('click', () => {
             options.classList.toggle('show');
+            button.classList.toggle('open');
         });
 
         document.addEventListener('click', (event) => {
             if (!button.contains(event.target) && !options.contains(event.target)) {
                 options.classList.remove('show');
+                button.classList.remove('open');
             }
         });
 
@@ -118,19 +155,13 @@ const currentLang = languages.find(l => l.code === currentLangCode) || languages
 
         const savedLanguage = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1];
         if (savedLanguage) {
-            const currentLang = {
-                'en': { name: 'English', flag: 'https://flagpedia.net/data/flags/w580/us.png' },
-                'pt-BR': { name: 'Brazilian Portuguese', flag: 'https://flagpedia.net/data/flags/w580/br.png' },
-                'ja': { name: 'Japanese', flag: 'https://flagpedia.net/data/flags/w580/jp.png' },
-                'es': { name: 'Spanish', flag: 'https://flagpedia.net/data/flags/w580/es.png' },
-                'zh': { name: 'Chinese', flag: 'https://flagpedia.net/data/flags/w580/cn.png' },
-            }[savedLanguage];
+            const currentLang = languages.find(l => l.code === savedLanguage);
             if (currentLang) {
                 const buttonImg = button.querySelector('.flag-icon');
-                const buttonSpan = button.querySelector('span');
+                const buttonSpan = button.querySelector('.lang-name');
                 buttonImg.src = currentLang.flag;
                 buttonImg.alt = currentLang.name;
-                buttonSpan.textContent = currentLang.name;
+                buttonSpan.textContent = currentLang.nativeName;
             }
         }
     });
