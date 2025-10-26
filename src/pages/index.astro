@@ -2,11 +2,20 @@
 // --- PAGE BRAIN ---
 import { CLAIMS_DATA } from '../CLAIMS_DATA';
 
+// Get the most recent claim date
+const latestClaim = CLAIMS_DATA.reduce((latest, current) => {
+    const latestDate = new Date(latest.date);
+    const currentDate = new Date(current.date);
+    return currentDate > latestDate ? current : latest;
+});
+const latestClaimDate = latestClaim.date;
+
 // Helper functions to style the badges
 const getStatusBadgeClasses = (status: string): string => {
     const baseClasses = "badge";
     if (status.toLowerCase().startsWith('ongoing')) return `${baseClasses} status-ongoing`;
     if (status.toLowerCase().startsWith('pending')) return `${baseClasses} status-pending`;
+    if (status === 'Expired - Unproven') return `${baseClasses} status-expired-unproven`;
     if (status.toLowerCase().startsWith('expired')) return `${baseClasses} status-expired`;
     return `${baseClasses} status-default`;
 };
@@ -30,6 +39,25 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         main { max-width: 80rem; margin: auto; }
         h1 { font-size: 2.25rem; font-weight: bold; text-align: center; margin-bottom: 0.5rem; }
         h2 { font-size: 1.25rem; color: #9CA3AF; text-align: center; margin-bottom: 3rem; }
+
+        .clock-container {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .clock-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #9CA3AF;
+        }
+
+        .clock {
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            letter-spacing: 0.1em;
+        }
+
         table { width: 100%; border-collapse: collapse; }
         thead { background-color: #374151; }
         th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #374151; }
@@ -43,6 +71,8 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         .status-ongoing { background-color: #065F46; color: #D1FAE5; }
         .status-pending { background-color: #92400E; color: #FEF3C7; }
         .status-expired { background-color: #991B1B; color: #FEE2E2; }
+        .status-expired-unproven { background-color: #991B1B; color: #FEE2E2; }
+
         .type-title { background-color: #1E40AF; color: #DBEAFE; }
         .type-video { background-color: #5B21B6; color: #EDE9FE; }
 
@@ -69,6 +99,11 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
     <main>
         <h1>The AI Bubble Burst Clock</h1>
         <h2>A timeline of predictions that never come true.</h2>
+
+        <div class="clock-container">
+            <div class="clock-title">LAST BURST BUBBLE</div>
+            <div id="clock" class="clock"></div>
+        </div>
 
         <div class="table-container">
             <table>
@@ -102,11 +137,31 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         <!-- New legend section added here -->
         <div class="legend-section">
           <h3>Status Legend</h3>
-          <p><strong>Ongoing:</strong> Impossible to verify.</p>
-          <p><strong>Pending:</strong> Awaiting the date for verification.</p>
-          <p><strong>Expired:</strong> The prediction failed.</p>
+          <p><span class="badge status-ongoing">Ongoing</span> Impossible to verify.</p>
+          <p><span class="badge status-pending">Pending</span> Awaiting the date for verification.</p>
+          <p><span class="badge status-expired-unproven">Expired - Unproven</span> The prediction failed to be proven within the allocated time-frame. Any video with a claim the AI bubble is "about to burst" or "already bursting" has a <strong>3 month time limit</strong> to prove itself correct, else it's marked with this status.</p>
         </div>
 
     </main>
+    <script define:vars={{ latestClaimDate }}>
+        const clockElement = document.getElementById('clock');
+        const startDate = new Date(latestClaimDate);
+
+        function updateClock() {
+            const now = new Date();
+            const diff = now - startDate;
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            clockElement.textContent =
+                `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial call
+    </script>
 </body>
 </html>

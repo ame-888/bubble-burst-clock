@@ -28,7 +28,7 @@ export const CLAIMS_DATA: Claim[] = [
         thumbnailUrl: "https://i.ytimg.com/vi/T8ByoAt5gCA/mqdefault.jpg",
         claim: '"The A.I. Bubble is Bursting with Ed Zitron"',
         link: "https://www.youtube.com/watch?v=T8ByoAt5gCA",
-        status: "Ongoing",
+        status: "Expired - Unproven",
         claimType: "Title Only",
         notes: "Collaboration with Ed Zitron, a prominent critic of the AI industry."
     },
