@@ -30,5 +30,9 @@
   "ongoing": "Ongoing",
   "pending": "Pending",
   "title_only": "Title Only",
-  "in_video_claim": "In-Video Claim"
+  "in_video_claim": "In-video claim",
+  "days": "d",
+  "hours": "h",
+  "minutes": "m",
+  "seconds": "s"
 }

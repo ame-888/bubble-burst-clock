@@ -30,5 +30,9 @@
   "ongoing": "En curso",
   "pending": "Pendiente",
   "title_only": "Solo en el título",
-  "in_video_claim": "Afirmación en el video"
+  "in_video_claim": "Afirmación en el video",
+  "days": "d",
+  "hours": "h",
+  "minutes": "m",
+  "seconds": "s"
 }
