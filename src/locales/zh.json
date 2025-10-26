@@ -30,9 +30,5 @@
   "ongoing": "进行中",
   "pending": "待定",
   "title_only": "仅标题",
-  "in_video_claim": "视频内主张",
-  "days": "天",
-  "hours": "小时",
-  "minutes": "分钟",
-  "seconds": "秒"
+  "in_video_claim": "视频内主张"
 }

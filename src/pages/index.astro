@@ -346,7 +346,7 @@ const latestClaimDate = latestClaim.date;
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
             clockElement.textContent =
-                `${days}${currentTranslations.days} ${hours.toString().padStart(2, '0')}${currentTranslations.hours} ${minutes.toString().padStart(2, '0')}${currentTranslations.minutes} ${seconds.toString().padStart(2, '0')}${currentTranslations.seconds}`;
+                `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
 
             // Change color based on elapsed time
             if (days < 30) {
