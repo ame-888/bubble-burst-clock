@@ -7,6 +7,6 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://bubble-burst-clock.vercel.app',
+  site: 'https://bubble-burst-clock.vercel.app/',
   integrations: [react(), sitemap()]
 });
