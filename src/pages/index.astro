@@ -44,28 +44,11 @@ const latestClaim = CLAIMS_DATA.reduce((latest, current) => {
     return currentDate > latestDate ? current : latest;
 });
 const latestClaimDate = latestClaim.date;
-
-// Helper functions to style the badges
-const getStatusBadgeClasses = (status: string): string => {
-    const baseClasses = "badge";
-    if (status.toLowerCase().startsWith('ongoing')) return `${baseClasses} status-ongoing`;
-    if (status.toLowerCase().startsWith('pending')) return `${baseClasses} status-pending`;
-    if (status === 'expired_unproven') return `${baseClasses} status-expired-unproven`;
-    if (status.toLowerCase().startsWith('expired')) return `${baseClasses} status-expired`;
-    return `${baseClasses} status-default`;
-};
-
-const getClaimTypeBadgeClasses = (claimType: string): string => {
-    const baseClasses = "badge";
-    if (claimType === 'title_only') return `${baseClasses} type-title`;
-    if (claimType === 'in_video_claim') return `${baseClasses} type-video`;
-    return `${baseClasses} type-default`;
-};
 ---
 
 <html lang={lang}>
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-t" />
     <meta name="viewport" content="width=device-width" />
     <title>{t.title}</title>
     <meta name="google-site-verification" content="gi2pzxwjvX7zQtdowKjXbAw1wGHfjs8Cdf2w5ThdNcM" />
@@ -231,7 +214,7 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         </div>
 
     </main>
-    <script define:vars={{ latestClaimDate, CLAIMS_DATA, lang, t, translations, getStatusBadgeClasses, getClaimTypeBadgeClasses }}>
+    <script define:vars={{ latestClaimDate, CLAIMS_DATA, lang, t, translations }}>
         const clockElement = document.getElementById('clock');
         const startDate = new Date(latestClaimDate);
 
@@ -246,6 +229,23 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         function getTranslations(langCode) {
             return translations[langCode] || translations['en'];
         }
+
+        // Helper functions to style the badges
+        const getStatusBadgeClasses = (status) => {
+            const baseClasses = "badge";
+            if (status.toLowerCase().startsWith('ongoing')) return `${baseClasses} status-ongoing`;
+            if (status.toLowerCase().startsWith('pending')) return `${baseClasses} status-pending`;
+            if (status === 'expired_unproven') return `${baseClasses} status-expired-unproven`;
+            if (status.toLowerCase().startsWith('expired')) return `${baseClasses} status-expired`;
+            return `${baseClasses} status-default`;
+        };
+
+        const getClaimTypeBadgeClasses = (claimType) => {
+            const baseClasses = "badge";
+            if (claimType === 'title_only') return `${baseClasses} type-title`;
+            if (claimType === 'in_video_claim') return `${baseClasses} type-video`;
+            return `${baseClasses} type-default`;
+        };
 
         let claims = [...CLAIMS_DATA];
 
