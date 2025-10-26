@@ -1,6 +1,41 @@
 ---
 // --- PAGE BRAIN ---
 import { CLAIMS_DATA } from '../CLAIMS_DATA';
+import LanguageSwitcher from '../components/LanguageSwitcher.astro';
+import en from '../locales/en.json';
+import ptBR from '../locales/pt-BR.json';
+import ja from '../locales/ja.json';
+import es from '../locales/es.json';
+import zh from '../locales/zh.json';
+
+const translations = {
+    'en': en,
+    'pt-BR': ptBR,
+    'ja': ja,
+    'es': es,
+    'zh': zh,
+};
+
+// --- Language Detection ---
+let lang = 'en'; // Default language
+const supportedLanguages = Object.keys(translations);
+
+// 1. Check for language cookie
+const langCookie = Astro.cookies.get('language');
+if (langCookie && supportedLanguages.includes(langCookie.value)) {
+    lang = langCookie.value;
+}
+// 2. Check for accept-language header
+else {
+    const acceptLanguage = Astro.request.headers.get('accept-language');
+    const browserLang = acceptLanguage?.split(',')[0].split(';')[0];
+    if (browserLang && supportedLanguages.includes(browserLang)) {
+        lang = browserLang;
+    }
+}
+
+
+const t = translations[lang] || en;
 
 // Get the most recent claim date
 const latestClaim = CLAIMS_DATA.reduce((latest, current) => {
@@ -15,24 +50,24 @@ const getStatusBadgeClasses = (status: string): string => {
     const baseClasses = "badge";
     if (status.toLowerCase().startsWith('ongoing')) return `${baseClasses} status-ongoing`;
     if (status.toLowerCase().startsWith('pending')) return `${baseClasses} status-pending`;
-    if (status === 'Expired - Unproven') return `${baseClasses} status-expired-unproven`;
+    if (status === 'expired_unproven') return `${baseClasses} status-expired-unproven`;
     if (status.toLowerCase().startsWith('expired')) return `${baseClasses} status-expired`;
     return `${baseClasses} status-default`;
 };
 
 const getClaimTypeBadgeClasses = (claimType: string): string => {
     const baseClasses = "badge";
-    if (claimType === 'Title Only') return `${baseClasses} type-title`;
-    if (claimType === 'In-Video Claim') return `${baseClasses} type-video`;
+    if (claimType === 'title_only') return `${baseClasses} type-title`;
+    if (claimType === 'in_video_claim') return `${baseClasses} type-video`;
     return `${baseClasses} type-default`;
 };
 ---
 
-<html lang="en">
+<html lang={lang}>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>The AI Bubble Burst Clock</title>
+    <title>{t.title}</title>
     <meta name="google-site-verification" content="gi2pzxwjvX7zQtdowKjXbAw1wGHfjs8Cdf2w5ThdNcM" />
     <style>
         body { background-color: #111827; color: white; font-family: sans-serif; padding: 2rem; }
@@ -135,36 +170,37 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
     </style>
 </head>
 <body>
+    <LanguageSwitcher />
     <main>
-        <h1>The AI Bubble Burst Clock</h1>
-        <h2>A timeline of predictions that never come true.</h2>
+        <h1>{t.title}</h1>
+        <h2>{t.subtitle}</h2>
 
         <div class="clock-container">
             <div class="last-claim">
-                <p>Time elapsed since the last significant prediction...</p>
-                <p><strong>Claim:</strong> "{latestClaim.claim}"</p>
-                <p><strong>Claimer:</strong> {latestClaim.claimer}</p>
-                <p><strong>Date:</strong> {latestClaim.date}</p>
+                <p>{t.time_elapsed}</p>
+                <p><strong>{t.claim_colon}</strong> "{latestClaim.claim[lang] || latestClaim.claim['en']}"</p>
+                <p><strong>{t.claimer_colon}</strong> {latestClaim.claimer}</p>
+                <p><strong>{t.date_colon}</strong> {latestClaim.date}</p>
             </div>
-            <div class="clock-title">LAST BURST BUBBLE</div>
+            <div class="clock-title">{t.last_burst_bubble}</div>
             <div id="clock" class="clock"></div>
         </div>
 
         <div class="table-controls">
             <div class="filter-container">
-                <label for="status-filter">Filter by Status:</label>
+                <label for="status-filter">{t.filter_by_status}</label>
                 <select id="status-filter">
-                    <option value="all">All</option>
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Expired - Unproven">Expired - Unproven</option>
+                    <option value="all">{t.all}</option>
+                    <option value="ongoing">{t.ongoing}</option>
+                    <option value="pending">{t.pending}</option>
+                    <option value="expired_unproven">{t.expired_unproven}</option>
                 </select>
             </div>
             <div class="sort-container">
-                <label for="date-sort">Sort by Date:</label>
+                <label for="date-sort">{t.sort_by_date}</label>
                 <select id="date-sort">
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
+                    <option value="newest">{t.newest_first}</option>
+                    <option value="oldest">{t.oldest_first}</option>
                 </select>
             </div>
         </div>
@@ -172,13 +208,13 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
             <table>
                 <thead>
                     <tr>
-                        <th>DATE</th>
-                        <th>CLAIMER</th>
-                        <th>THUMBNAIL</th>
-                        <th>CLAIM</th>
-                        <th>LINK</th>
-                        <th>STATUS</th>
-                        <th>CLAIM TYPE</th>
+                        <th>{t.date}</th>
+                        <th>{t.claimer}</th>
+                        <th>{t.thumbnail}</th>
+                        <th>{t.claim}</th>
+                        <th>{t.link}</th>
+                        <th>{t.status}</th>
+                        <th>{t.claim_type}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -188,14 +224,14 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
 
         <!-- New legend section added here -->
         <div class="legend-section">
-          <h3>Status Legend</h3>
-          <p><span class="badge status-ongoing">Ongoing</span> Impossible to verify.</p>
-          <p><span class="badge status-pending">Pending</span> Awaiting the date for verification.</p>
-          <p><span class="badge status-expired-unproven">Expired - Unproven</span> The prediction failed to be proven within the allocated time-frame. Any video with a claim the AI bubble is "about to burst" or "already bursting" has a <strong>3 month time limit</strong> to prove itself correct, else it's marked with this status.</p>
+          <h3>{t.status_legend}</h3>
+          <p><span class="badge status-ongoing">{t.ongoing}</span> {t.status_ongoing_desc}</p>
+          <p><span class="badge status-pending">{t.pending}</span> {t.status_pending_desc}</p>
+          <p><span class="badge status-expired-unproven">{t.expired_unproven}</span> <span set:html={t.status_expired_unproven_desc} /></p>
         </div>
 
     </main>
-    <script define:vars={{ latestClaimDate, CLAIMS_DATA }}>
+    <script define:vars={{ latestClaimDate, CLAIMS_DATA, lang, t, translations, getStatusBadgeClasses, getClaimTypeBadgeClasses }}>
         const clockElement = document.getElementById('clock');
         const startDate = new Date(latestClaimDate);
 
@@ -203,39 +239,35 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         const dateSort = document.getElementById('date-sort');
         const tableBody = document.querySelector('table tbody');
 
+        let currentLang = lang;
+        let currentTranslations = t;
+
+        // Function to get translations
+        function getTranslations(langCode) {
+            return translations[langCode] || translations['en'];
+        }
+
         let claims = [...CLAIMS_DATA];
 
         function renderTable() {
             tableBody.innerHTML = '';
             claims.forEach(claim => {
                 const row = document.createElement('tr');
+                const claimText = claim.claim[currentLang] || claim.claim['en'];
+                const statusText = currentTranslations[claim.status] || claim.status;
+                const claimTypeText = currentTranslations[claim.claimType] || claim.claimType;
+
                 row.innerHTML = `
                     <td>${claim.date}</td>
                     <td>${claim.claimer}</td>
                     <td><img src="${claim.thumbnailUrl}" alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" /></td>
-                    <td>${claim.claim}</td>
-                    <td><a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="link">Watch</a></td>
-                    <td><span class="${getStatusBadgeClasses(claim.status)}">${claim.status}</span></td>
-                    <td><span class="${getClaimTypeBadgeClasses(claim.claimType)}">${claim.claimType}</span></td>
+                    <td>${claimText}</td>
+                    <td><a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="link">${currentTranslations.watch}</a></td>
+                    <td><span class="${getStatusBadgeClasses(claim.status)}">${statusText}</span></td>
+                    <td><span class="${getClaimTypeBadgeClasses(claim.claimType)}">${claimTypeText}</span></td>
                 `;
                 tableBody.appendChild(row);
             });
-        }
-
-        function getStatusBadgeClasses(status) {
-            const baseClasses = "badge";
-            if (status.toLowerCase().startsWith('ongoing')) return `${baseClasses} status-ongoing`;
-            if (status.toLowerCase().startsWith('pending')) return `${baseClasses} status-pending`;
-            if (status === 'Expired - Unproven') return `${baseClasses} status-expired-unproven`;
-            if (status.toLowerCase().startsWith('expired')) return `${baseClasses} status-expired`;
-            return `${baseClasses} status-default`;
-        }
-
-        function getClaimTypeBadgeClasses(claimType) {
-            const baseClasses = "badge";
-            if (claimType === 'Title Only') return `${baseClasses} type-title`;
-            if (claimType === 'In-Video Claim') return `${baseClasses} type-video`;
-            return `${baseClasses} type-default`;
         }
 
         function updateData() {
@@ -266,8 +298,15 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         statusFilter.addEventListener('change', updateData);
         dateSort.addEventListener('change', updateData);
 
-        // Initial table render
-        updateData();
+        // Language handling on the client
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLanguage = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+            if (savedLanguage !== currentLang) {
+                currentLang = savedLanguage;
+                currentTranslations = getTranslations(currentLang);
+            }
+            updateData();
+        });
 
         function updateClock() {
             const now = new Date();
