@@ -1,11 +1,112 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+// --- O CÉREBRO DA PÁGINA ---
+import { CLAIMS_DATA } from '../CLAIMS_DATA';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// As funções de ajuda para estilizar os "badges"
+const getStatusBadgeClasses = (status: string): string => {
+    const baseClasses = "badge";
+    if (status.toLowerCase().startsWith('ongoing')) return `${baseClasses} status-ongoing`;
+    if (status.toLowerCase().startsWith('pending')) return `${baseClasses} status-pending`;
+    if (status.toLowerCase().startsWith('expired')) return `${baseClasses} status-expired`;
+    return `${baseClasses} status-default`;
+};
+
+const getClaimTypeBadgeClasses = (claimType: string): string => {
+    const baseClasses = "badge";
+    if (claimType === 'Title Only') return `${baseClasses} type-title`;
+    if (claimType === 'In-Video Claim') return `${baseClasses} type-video`;
+    return `${baseClasses} type-default`;
+};
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>The AI Bubble Burst Clock</title>
+    
+    <style>
+        body { background-color: #111827; color: white; font-family: sans-serif; padding: 2rem; }
+        main { max-width: 80rem; margin: auto; }
+        h1 { font-size: 2.25rem; font-weight: bold; text-align: center; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.25rem; color: #9CA3AF; text-align: center; margin-bottom: 3rem; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background-color: #374151; }
+        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #374151; }
+        th { font-size: 0.875rem; font-weight: 600; }
+        td { font-size: 0.875rem; color: #D1D5DB; vertical-align: middle; }
+        .table-container { overflow-x: auto; border-radius: 0.5rem; background-color: #1F2937; }
+        .thumbnail { width: 8rem; border-radius: 0.375rem; }
+        .link { color: #60A5FA; text-decoration: none; }
+        .link:hover { text-decoration: underline; }
+        .badge { display: inline-flex; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; white-space: nowrap; }
+        .status-ongoing { background-color: #065F46; color: #D1FAE5; }
+        .status-pending { background-color: #92400E; color: #FEF3C7; }
+        .status-expired { background-color: #991B1B; color: #FEE2E2; }
+        .type-title { background-color: #1E40AF; color: #DBEAFE; }
+        .type-video { background-color: #5B21B6; color: #EDE9FE; }
+
+        /* Estilo para a nova seção de legenda */
+        .legend-section {
+          margin-top: 3rem;
+          padding: 1.5rem;
+          background-color: #1F2937;
+          border-radius: 0.5rem;
+          color: #D1D5DB;
+        }
+        .legend-section h3 {
+          margin-top: 0;
+          margin-bottom: 1rem;
+          font-size: 1.25rem;
+          color: white;
+        }
+        .legend-section strong {
+          color: #9CA3AF;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>The AI Bubble Burst Clock</h1>
+        <h2>Uma linha do tempo de previsões que nunca se concretizam.</h2>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>DATE</th>
+                        <th>CLAIMER</th>
+                        <th>THUMBNAIL</th>
+                        <th>CLAIM</th>
+                        <th>LINK</th>
+                        <th>STATUS</th>
+                        <th>CLAIM TYPE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {CLAIMS_DATA.map(claim => (
+                        <tr>
+                            <td>{claim.date}</td>
+                            <td>{claim.claimer}</td>
+                            <td><img src={claim.thumbnailUrl} alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" /></td>
+                            <td>{claim.claim}</td>
+                            <td><a href={claim.link} target="_blank" rel="noopener noreferrer" class="link">Assistir</a></td>
+                            <td><span class={getStatusBadgeClasses(claim.status)}>{claim.status}</span></td>
+                            <td><span class={getClaimTypeBadgeClasses(claim.claimType)}>{claim.claimType}</span></td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Nova seção de legenda adicionada aqui -->
+        <div class="legend-section">
+          <h3>Legenda dos Status</h3>
+          <p><strong>Ongoing:</strong> Impossível de verificar.</p>
+          <p><strong>Pending:</strong> Aguardando a data para verificação.</p>
+          <p><strong>Expired:</strong> A previsão falhou.</p>
+        </div>
+
+    </main>
+</body>
+</html>
