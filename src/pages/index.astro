@@ -45,7 +45,7 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         .status-ongoing { background-color: #065F46; color: #D1FAE5; }
         .status-pending { background-color: #92400E; color: #FEF3C7; }
         .status-expired { background-color: #991B1B; color: #FEE2E2; }
-        .status-expired-unproven { background-color: #854d0e; color: #FEF3C7; }
+        .status-expired-unproven { background-color: #991B1B; color: #FEE2E2; }
         .status-expired-disproven { background-color: #991B1B; color: #FEE2E2; }
 
         .type-title { background-color: #1E40AF; color: #DBEAFE; }
@@ -107,10 +107,10 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         <!-- New legend section added here -->
         <div class="legend-section">
           <h3>Status Legend</h3>
-          <p><strong>Ongoing:</strong> Impossible to verify.</p>
-          <p><strong>Pending:</strong> Awaiting the date for verification.</p>
-          <p><strong>Expired - Unproven:</strong> The prediction failed to be proven within the allocated time-frame.</p>
-          <p><strong>Expired - Disproven:</strong> The prediction was disproven.</p>
+          <p><span class="badge status-ongoing">Ongoing</span> Impossible to verify.</p>
+          <p><span class="badge status-pending">Pending</span> Awaiting the date for verification.</p>
+          <p><span class="badge status-expired-unproven">Expired - Unproven</span> The prediction failed to be proven within the allocated time-frame.</p>
+          <p><span class="badge status-expired-disproven">Expired - Disproven</span> The prediction was disproven.</p>
 
           <br />
 
