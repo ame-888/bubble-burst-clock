@@ -8,7 +8,6 @@ const getStatusBadgeClasses = (status: string): string => {
     if (status.toLowerCase().startsWith('ongoing')) return `${baseClasses} status-ongoing`;
     if (status.toLowerCase().startsWith('pending')) return `${baseClasses} status-pending`;
     if (status === 'Expired - Unproven') return `${baseClasses} status-expired-unproven`;
-    if (status === 'Expired - Disproven') return `${baseClasses} status-expired-disproven`;
     if (status.toLowerCase().startsWith('expired')) return `${baseClasses} status-expired`;
     return `${baseClasses} status-default`;
 };
@@ -46,7 +45,6 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         .status-pending { background-color: #92400E; color: #FEF3C7; }
         .status-expired { background-color: #991B1B; color: #FEE2E2; }
         .status-expired-unproven { background-color: #991B1B; color: #FEE2E2; }
-        .status-expired-disproven { background-color: #991B1B; color: #FEE2E2; }
 
         .type-title { background-color: #1E40AF; color: #DBEAFE; }
         .type-video { background-color: #5B21B6; color: #EDE9FE; }
@@ -109,13 +107,7 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
           <h3>Status Legend</h3>
           <p><span class="badge status-ongoing">Ongoing</span> Impossible to verify.</p>
           <p><span class="badge status-pending">Pending</span> Awaiting the date for verification.</p>
-          <p><span class="badge status-expired-unproven">Expired - Unproven</span> The prediction failed to be proven within the allocated time-frame.</p>
-          <p><span class="badge status-expired-disproven">Expired - Disproven</span> The prediction was disproven.</p>
-
-          <br />
-
-          <h3>Rules</h3>
-          <p>Any video with a claim the AI bubble is "about to burst" or "already bursting" has a <strong>3 month time limit</strong> to prove itself correct, else it's "Expired - Unproven".</p>
+          <p><span class="badge status-expired-unproven">Expired - Unproven</span> The prediction failed to be proven within the allocated time-frame. Any video with a claim the AI bubble is "about to burst" or "already bursting" has a <strong>3 month time limit</strong> to prove itself correct, else it's marked with this status.</p>
         </div>
 
     </main>
