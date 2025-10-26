@@ -163,7 +163,7 @@ const latestClaimDate = latestClaim.date;
                 <p><strong id="last-claim-date-label">{t.date_colon}</strong> {latestClaim.date}</p>
             </div>
             <div id="last-burst-bubble" class="clock-title">{t.last_burst_bubble}</div>
-            <div id="clock" class="clock"></div>
+            <div id="clock" class="clock" data-start-date={latestClaimDate}></div>
         </div>
 
         <div class="table-controls">
@@ -336,7 +336,13 @@ const latestClaimDate = latestClaim.date;
             updateData();
         });
 
+    </script>
+    <script>
         function updateClock() {
+            const clockElement = document.getElementById('clock');
+            if (!clockElement) return;
+
+            const startDate = new Date(clockElement.dataset.startDate);
             const now = new Date();
             const diff = now - startDate;
 
@@ -359,7 +365,7 @@ const latestClaimDate = latestClaim.date;
         }
 
         setInterval(updateClock, 1000);
-        updateClock(); // Initial call
+        document.addEventListener('DOMContentLoaded', updateClock);
     </script>
 </body>
 </html>
