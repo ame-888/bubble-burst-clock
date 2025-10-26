@@ -30,5 +30,7 @@
   "ongoing": "En curso",
   "pending": "Pendiente",
   "title_only": "Solo en el título",
-  "in_video_claim": "Afirmación en el video"
+  "in_video_claim": "Afirmación en el video",
+  "submit_prediction": "¿Conoces alguna predicción? Envíala aquí",
+  "time_limit_note": "Todas las predicciones tienen un límite de tiempo de 3 meses para demostrar su veracidad."
 }

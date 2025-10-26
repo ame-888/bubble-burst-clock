@@ -30,5 +30,7 @@
   "ongoing": "进行中",
   "pending": "待定",
   "title_only": "仅标题",
-  "in_video_claim": "视频内主张"
+  "in_video_claim": "视频内主张",
+  "submit_prediction": "知道有预测吗？在这里提交",
+  "time_limit_note": "所有预测都有3个月的时间限制来证明其真实性。"
 }
