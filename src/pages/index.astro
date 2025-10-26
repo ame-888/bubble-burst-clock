@@ -52,10 +52,49 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         }
 
         .clock {
-            font-size: 3rem;
-            font-weight: bold;
+            font-size: 4rem;
+            font-weight: 900;
             color: white;
             letter-spacing: 0.1em;
+            transition: color 0.5s ease;
+        }
+
+        .last-claim {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background-color: #1F2937;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+
+        .last-claim p {
+            margin: 0.5rem 0;
+        }
+
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .filter-container,
+        .sort-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-container label,
+        .sort-container label {
+            margin-right: 0.5rem;
+        }
+
+        .filter-container select,
+        .sort-container select {
+            background-color: #374151;
+            color: white;
+            border: 1px solid #4B5563;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
         }
 
         table { width: 100%; border-collapse: collapse; }
@@ -101,10 +140,34 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         <h2>A timeline of predictions that never come true.</h2>
 
         <div class="clock-container">
+            <div class="last-claim">
+                <p>Time elapsed since the last significant prediction...</p>
+                <p><strong>Claim:</strong> "{latestClaim.claim}"</p>
+                <p><strong>Claimer:</strong> {latestClaim.claimer}</p>
+                <p><strong>Date:</strong> {latestClaim.date}</p>
+            </div>
             <div class="clock-title">LAST BURST BUBBLE</div>
             <div id="clock" class="clock"></div>
         </div>
 
+        <div class="table-controls">
+            <div class="filter-container">
+                <label for="status-filter">Filter by Status:</label>
+                <select id="status-filter">
+                    <option value="all">All</option>
+                    <option value="Ongoing">Ongoing</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Expired - Unproven">Expired - Unproven</option>
+                </select>
+            </div>
+            <div class="sort-container">
+                <label for="date-sort">Sort by Date:</label>
+                <select id="date-sort">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+            </div>
+        </div>
         <div class="table-container">
             <table>
                 <thead>
@@ -119,17 +182,6 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
                     </tr>
                 </thead>
                 <tbody>
-                    {CLAIMS_DATA.map(claim => (
-                        <tr>
-                            <td>{claim.date}</td>
-                            <td>{claim.claimer}</td>
-                            <td><img src={claim.thumbnailUrl} alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" /></td>
-                            <td>{claim.claim}</td>
-                            <td><a href={claim.link} target="_blank" rel="noopener noreferrer" class="link">Watch</a></td>
-                            <td><span class={getStatusBadgeClasses(claim.status)}>{claim.status}</span></td>
-                            <td><span class={getClaimTypeBadgeClasses(claim.claimType)}>{claim.claimType}</span></td>
-                        </tr>
-                    ))}
                 </tbody>
             </table>
         </div>
@@ -143,9 +195,79 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
         </div>
 
     </main>
-    <script define:vars={{ latestClaimDate }}>
+    <script define:vars={{ latestClaimDate, CLAIMS_DATA }}>
         const clockElement = document.getElementById('clock');
         const startDate = new Date(latestClaimDate);
+
+        const statusFilter = document.getElementById('status-filter');
+        const dateSort = document.getElementById('date-sort');
+        const tableBody = document.querySelector('table tbody');
+
+        let claims = [...CLAIMS_DATA];
+
+        function renderTable() {
+            tableBody.innerHTML = '';
+            claims.forEach(claim => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${claim.date}</td>
+                    <td>${claim.claimer}</td>
+                    <td><img src="${claim.thumbnailUrl}" alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" /></td>
+                    <td>${claim.claim}</td>
+                    <td><a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="link">Watch</a></td>
+                    <td><span class="${getStatusBadgeClasses(claim.status)}">${claim.status}</span></td>
+                    <td><span class="${getClaimTypeBadgeClasses(claim.claimType)}">${claim.claimType}</span></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function getStatusBadgeClasses(status) {
+            const baseClasses = "badge";
+            if (status.toLowerCase().startsWith('ongoing')) return `${baseClasses} status-ongoing`;
+            if (status.toLowerCase().startsWith('pending')) return `${baseClasses} status-pending`;
+            if (status === 'Expired - Unproven') return `${baseClasses} status-expired-unproven`;
+            if (status.toLowerCase().startsWith('expired')) return `${baseClasses} status-expired`;
+            return `${baseClasses} status-default`;
+        }
+
+        function getClaimTypeBadgeClasses(claimType) {
+            const baseClasses = "badge";
+            if (claimType === 'Title Only') return `${baseClasses} type-title`;
+            if (claimType === 'In-Video Claim') return `${baseClasses} type-video`;
+            return `${baseClasses} type-default`;
+        }
+
+        function updateData() {
+            let filteredClaims = [...CLAIMS_DATA];
+
+            // Filter by status
+            const status = statusFilter.value;
+            if (status !== 'all') {
+                filteredClaims = filteredClaims.filter(claim => claim.status === status);
+            }
+
+            // Sort by date
+            const sortOrder = dateSort.value;
+            filteredClaims.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                if (sortOrder === 'newest') {
+                    return dateB - dateA;
+                } else {
+                    return dateA - dateB;
+                }
+            });
+
+            claims = filteredClaims;
+            renderTable();
+        }
+
+        statusFilter.addEventListener('change', updateData);
+        dateSort.addEventListener('change', updateData);
+
+        // Initial table render
+        updateData();
 
         function updateClock() {
             const now = new Date();
@@ -158,6 +280,15 @@ const getClaimTypeBadgeClasses = (claimType: string): string => {
 
             clockElement.textContent =
                 `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+
+            // Change color based on elapsed time
+            if (days < 30) {
+                clockElement.style.color = '#60A5FA'; // Calm blue
+            } else if (days < 60) {
+                clockElement.style.color = '#FBBF24'; // Warning yellow
+            } else {
+                clockElement.style.color = '#EF4444'; // Warning red
+            }
         }
 
         setInterval(updateClock, 1000);
