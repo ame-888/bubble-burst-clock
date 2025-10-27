@@ -408,16 +408,17 @@ const latestClaimDate = latestClaim.date;
         statusFilter.addEventListener('change', updateData);
         dateSort.addEventListener('change', updateData);
 
-        // Language handling on the client
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedLanguage = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
-            if (savedLanguage !== currentLang) {
-                currentLang = savedLanguage;
-                currentTranslations = getTranslations(currentLang);
-            }
-            updateStaticTranslations();
-            updateData();
-        });
+        // --- Initial Load ---
+        // Immediately run the setup and table rendering.
+        // This is safe because this script is at the end of the <body>,
+        // so all the necessary DOM elements are already available.
+        const savedLanguage = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+        if (savedLanguage !== currentLang) {
+            currentLang = savedLanguage;
+            currentTranslations = getTranslations(currentLang);
+        }
+        updateStaticTranslations();
+        updateData();
 
     </script>
     <script>
