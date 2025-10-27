@@ -25,7 +25,7 @@
   "status_legend": "状态图例",
   "status_ongoing_desc": "无法验证。",
   "status_pending_desc": "等待验证日期。",
-  "status_expired_unproven_desc": "该预测未能在规定的时间内得到证实。任何声称人工智能泡沫“即将破灭”或“已经破灭”的视频都有<strong>3个月的时间限制</strong>来证明自己是正确的，否则将被标记为此状态。",
+  "status_expired_unproven_desc": "该预测未能在规定的时间内得到证实。",
   "expired_unproven": "已过期 - 未经证实",
   "ongoing": "进行中",
   "pending": "待定",

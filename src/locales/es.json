@@ -25,7 +25,7 @@
   "status_legend": "Leyenda de Estado",
   "status_ongoing_desc": "Imposible de verificar.",
   "status_pending_desc": "Esperando la fecha para la verificación.",
-  "status_expired_unproven_desc": "La predicción no se pudo probar dentro del plazo asignado. Cualquier video que afirme que la burbuja de la IA está \\\"a punto de estallar\\\" o \\\"ya está estallando\\\" tiene un <strong>límite de tiempo de 3 meses</strong> para demostrar que es correcto, de lo contrario, se marca con este estado.",
+  "status_expired_unproven_desc": "La predicción no se pudo probar dentro del plazo asignado.",
   "expired_unproven": "Expirado - No probado",
   "ongoing": "En curso",
   "pending": "Pendiente",

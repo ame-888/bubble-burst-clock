@@ -25,7 +25,7 @@
   "status_legend": "ステータスの凡例",
   "status_ongoing_desc": "検証不可能です。",
   "status_pending_desc": "検証の日付を待っています。",
-  "status_expired_unproven_desc": "予測は割り当てられた時間枠内に証明されませんでした。AIバブルが「崩壊寸前」または「すでに崩壊している」と主張する動画は、<strong>3ヶ月の期限</strong>内に正しさを証明しなければならず、そうでなければこのステータスでマークされます。",
+  "status_expired_unproven_desc": "予測は割り当てられた時間枠内に証明されませんでした。",
   "expired_unproven": "期限切れ - 未証明",
   "ongoing": "進行中",
   "pending": "保留中",

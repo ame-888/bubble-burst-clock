@@ -25,7 +25,7 @@
   "status_legend": "Status Legend",
   "status_ongoing_desc": "Impossible to verify.",
   "status_pending_desc": "Awaiting the date for verification.",
-  "status_expired_unproven_desc": "The prediction failed to be proven within the allocated time-frame. Any video with a claim the AI bubble is \\\"about to burst\\\" or \\\"already bursting\\\" has a <strong>3 month time limit</strong> to prove itself correct, else it's marked with this status.",
+  "status_expired_unproven_desc": "The prediction failed to be proven within the allocated time-frame.",
   "expired_unproven": "Expired - Unproven",
   "ongoing": "Ongoing",
   "pending": "Pending",
