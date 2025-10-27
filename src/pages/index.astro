@@ -162,7 +162,15 @@ const latestClaimDate = latestClaim.date;
         th { font-size: 0.875rem; font-weight: 600; }
         td { font-size: 0.875rem; color: #D1D5DB; vertical-align: middle; }
         .table-container { overflow-x: auto; border-radius: 0.5rem; background-color: #1F2937; }
-        .thumbnail { width: 8rem; border-radius: 0.375rem; }
+        .thumbnail {
+            width: 8rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .thumbnail:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
         .link { color: #60A5FA; text-decoration: none; }
         .link:hover { text-decoration: underline; }
         .badge { display: inline-flex; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; white-space: nowrap; }
@@ -264,7 +272,6 @@ const latestClaimDate = latestClaim.date;
                         <th id="table-header-claimer">{t.claimer}</th>
                         <th id="table-header-thumbnail">{t.thumbnail}</th>
                         <th id="table-header-claim">{t.claim}</th>
-                        <th id="table-header-link">{t.link}</th>
                         <th id="table-header-status">{t.status}</th>
                         <th id="table-header-claim-type">{t.claim_type}</th>
                     </tr>
@@ -360,14 +367,12 @@ const latestClaimDate = latestClaim.date;
                 row.innerHTML = `
                     <td>${claim.date}</td>
                     <td>${claim.claimer}</td>
-                    <td><img src="${claim.thumbnailUrl}" alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" /></td>
-                    <td>${claimText}</td>
                     <td>
-                        <a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="watch-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10,16.5V7.5L16,12M20,4.4C19.4,4.2 15.7,4 12,4C8.3,4 4.6,4.19 4,4.38C2.44,4.9 2,8.4 2,12C2,15.59 2.44,19.1 4,19.61C4.6,19.81 8.3,20 12,20C15.7,20 19.4,19.81 20,19.61C21.56,19.1 22,15.59 22,12C22,8.4 21.56,4.9 20,4.4Z"></path></svg>
-                            ${currentTranslations.watch}
+                        <a href="${claim.link}" target="_blank" rel="noopener noreferrer">
+                            <img src="${claim.thumbnailUrl}" alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" />
                         </a>
                     </td>
+                    <td>${claimText}</td>
                     <td class="${getStatusClass(claim.status)}">${statusText}</td>
                     <td>${claimTypeText}</td>
                 `;
