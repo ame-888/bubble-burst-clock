@@ -25,7 +25,7 @@
   "status_legend": "Legenda de Status",
   "status_ongoing_desc": "Impossível de verificar.",
   "status_pending_desc": "Aguardando a data para verificação.",
-  "status_expired_unproven_desc": "A previsão não foi comprovada dentro do prazo alocado. Qualquer vídeo com a alegação de que a bolha da IA está \\\"prestes a estourar\\\" ou \\\"já estourando\\\" tem um <strong>prazo de 3 meses</strong> para se provar correto, caso contrário, é marcado com este status.",
+  "status_expired_unproven_desc": "A previsão não foi comprovada dentro do prazo alocado.",
   "expired_unproven": "Expirado - Não comprovado",
   "ongoing": "Em andamento",
   "pending": "Pendente",
