@@ -60,6 +60,24 @@ const latestClaimDate = latestClaim.date;
             text-align: center;
             margin-bottom: 2rem;
         }
+        #submit-prediction-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        #submit-prediction-form input,
+        #submit-prediction-form textarea {
+            background-color: #374151;
+            color: white;
+            border: 1px solid #4B5563;
+            border-radius: 0.25rem;
+            padding: 0.75rem;
+        }
+        #submit-prediction-form button {
+            cursor: pointer;
+        }
         .submit-button {
             display: inline-block;
             background-color: #4F46E5;
@@ -200,7 +218,12 @@ const latestClaimDate = latestClaim.date;
         <h2 id="subtitle">{t.subtitle}</h2>
 
         <div class="submission-container">
-            <a href="mailto:aiburstdotcom@gmail.com" class="submit-button" id="submit-prediction-button">{t.submit_prediction}</a>
+            <form action="https://formbold.com/s/9k55" method="POST" id="submit-prediction-form">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <textarea name="message" placeholder="Your Prediction" required></textarea>
+                <button type="submit" class="submit-button" id="submit-prediction-button">{t.submit_prediction}</button>
+            </form>
         </div>
 
         <div class="clock-container">
