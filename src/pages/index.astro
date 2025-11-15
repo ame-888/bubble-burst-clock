@@ -226,7 +226,14 @@ const latestClaimDate = latestClaim.date;
         <h2 id="subtitle">{t.subtitle}</h2>
 
         <div class="submission-container">
-            <form action="https://formbold.com/s/9k55" method="POST" id="submit-prediction-form">
+            <!--
+              HOW TO MAKE THIS FORM WORK:
+              1. Go to https://formbold.com/ and create a free account.
+              2. Create a new form in your Formbold dashboard.
+              3. You will be given a unique URL for your form.
+              4. Replace the placeholder URL in the `action` attribute below with your new URL.
+            -->
+            <form action="https://formbold.com/s/YOUR_FORM_ID_HERE" method="POST" id="submit-prediction-form">
                 <input type="text" name="name" placeholder="Your Name" required>
                 <input type="email" name="email" placeholder="Your Email" required>
                 <textarea name="message" placeholder="Your Prediction" required></textarea>
