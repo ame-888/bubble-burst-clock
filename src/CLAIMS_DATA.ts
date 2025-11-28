@@ -69,7 +69,7 @@ export const CLAIMS_DATA: Claim[] = [
             zh: '"是的... 我们可能正处于泡沫之中"',
         },
         link: "https://www.youtube.com/watch?v=fwD9EnCzujM",
-        status: "ongoing",
+        status: "expired_unproven",
         claimType: "title_only"
     },
     {
@@ -84,7 +84,7 @@ export const CLAIMS_DATA: Claim[] = [
             zh: '"美国经济正被人工智能技术泡沫支撑！其实施被高估了！"',
         },
         link: "https://www.youtube.com/watch?v=kVaS1hnBOl4",
-        status: "ongoing",
+        status: "expired_unproven",
         claimType: "in_video_claim"
     },
     {

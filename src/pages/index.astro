@@ -20,29 +20,18 @@ const translations = {
 let lang = 'en'; // Default language
 const supportedLanguages = Object.keys(translations);
 
-// 1. Check for language cookie
-const langCookie = Astro.cookies.get('language');
-if (langCookie && supportedLanguages.includes(langCookie.value)) {
-    lang = langCookie.value;
-}
-// 2. Check for accept-language header
-else {
-    const acceptLanguage = Astro.request.headers.get('accept-language');
-    const browserLang = acceptLanguage?.split(',')[0].split(';')[0];
-    if (browserLang && supportedLanguages.includes(browserLang)) {
-        lang = browserLang;
-    }
-}
-
+// Note: Server-side language detection is skipped for static builds to avoid warnings.
+// The client-side script handles language preference from localStorage/cookies.
 
 const t = translations[lang] || en;
 
-// Get the most recent claim date
-const latestClaim = CLAIMS_DATA.reduce((latest, current) => {
+// Get the most recent claim date (excluding pending claims for the clock)
+const validClaims = CLAIMS_DATA.filter(claim => claim.status !== 'pending');
+const latestClaim = validClaims.length > 0 ? validClaims.reduce((latest, current) => {
     const latestDate = new Date(latest.date);
     const currentDate = new Date(current.date);
     return currentDate > latestDate ? current : latest;
-});
+}) : CLAIMS_DATA[0];
 const latestClaimDate = latestClaim.date;
 ---
 
@@ -244,7 +233,7 @@ const latestClaimDate = latestClaim.date;
         <div class="clock-container">
             <div class="last-claim">
                 <p id="time-elapsed">{t.time_elapsed}</p>
-                <p><strong id="last-claim-claim-label">{t.claim_colon}</strong> "<span id="last-claim-claim-text">{latestClaim.claim[lang] || latestClaim.claim['en']}</span>"</p>
+                <p><strong id="last-claim-claim-label">{t.claim_colon}</strong> <span id="last-claim-claim-text">{latestClaim.claim[lang] || latestClaim.claim['en']}</span></p>
                 <p><strong id="last-claim-claimer-label">{t.claimer_colon}</strong> {latestClaim.claimer}</p>
                 <p><strong id="last-claim-date-label">{t.date_colon}</strong> {latestClaim.date}</p>
             </div>
