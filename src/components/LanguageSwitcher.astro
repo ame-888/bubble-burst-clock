@@ -8,12 +8,8 @@ const languages = [
 ];
 
 let currentLangCode = 'en';
-if (typeof Astro.cookies !== 'undefined') {
-    const langCookie = Astro.cookies.get('language');
-    if (langCookie && languages.some(l => l.code === langCookie.value)) {
-        currentLangCode = langCookie.value;
-    }
-}
+// Note: Server-side cookie detection is skipped for static builds.
+// Client-side script handles the actual language selection.
 const currentLang = languages.find(l => l.code === currentLangCode) || languages[0];
 ---
 
