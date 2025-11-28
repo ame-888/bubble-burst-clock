@@ -162,5 +162,20 @@ export const CLAIMS_DATA: Claim[] = [
         status: "pending",
         claimType: "in_video_claim",
         target: "2028-2030"
+    },
+    {
+        date: "2025-11-27",
+        claimer: "O Primo Rico",
+        thumbnailUrl: "https://i.ytimg.com/vi/fczLMe5DOPI/mqdefault.jpg",
+        claim: {
+            en: '"The AI Bubble is Bursting! (And it\'s MUCH WORSE than you imagine)"',
+            'pt-BR': '"A BOLHA DA I.A. ESTÁ ESTOURANDO! (E é BEM PIOR do que você imagina)"',
+            ja: '"AIバブルは崩壊している！（そして、あなたが想像するよりもずっと悪い）"',
+            es: '"¡La burbuja de la IA está estallando! (Y es MUCHO PEOR de lo que imaginas)"',
+            zh: '"人工智能泡沫正在破裂！（而且比你想象的要糟糕得多）"',
+        },
+        link: "https://www.youtube.com/watch?v=fczLMe5DOPI",
+        status: "ongoing",
+        claimType: "title_only"
     }
 ];
