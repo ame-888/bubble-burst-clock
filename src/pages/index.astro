@@ -100,8 +100,8 @@ const latestClaimDate = latestClaim.date;
 
 <style>
     /* Scoped styles for index page */
-    /* Remove body padding from here, it's now handled in Layout/Global */
-    main { max-width: 80rem; margin: auto; padding-top: 2rem; padding-bottom: 2rem; }
+    body { padding: 2rem; }
+    main { max-width: 80rem; margin: auto; }
 
     /* Modernized Header */
     h1 {
@@ -419,191 +419,161 @@ const latestClaimDate = latestClaim.date;
 </style>
 
 <script define:vars={{ latestClaimDate, CLAIMS_DATA, lang, t, translations }}>
-function init() {
-    try {
-        // --- Easter Egg Logic ---
-        let titleClickCount = 0;
-        const mainTitle = document.getElementById('main-title');
-        const gameCenterWrapper = document.getElementById('game-center-wrapper');
+    // --- Easter Egg Logic ---
+    let titleClickCount = 0;
+    const mainTitle = document.getElementById('main-title');
+    const gameCenterWrapper = document.getElementById('game-center-wrapper');
 
-        if (mainTitle && gameCenterWrapper) {
-            mainTitle.addEventListener('click', () => {
-                titleClickCount++;
-                if (titleClickCount === 5) {
-                    gameCenterWrapper.classList.remove('hidden');
-                    console.log('Game Center Unlocked! 🎮');
-                    mainTitle.style.color = '#F59E0B';
-                    setTimeout(() => {
-                        mainTitle.style.color = '';
-                    }, 500);
-                }
-            });
+    mainTitle.addEventListener('click', () => {
+        titleClickCount++;
+        if (titleClickCount === 5) {
+            gameCenterWrapper.classList.remove('hidden');
+            // Use console log for testing, remove alert or keep it user friendly
+            console.log('Game Center Unlocked! 🎮');
+            // We can also trigger a visual cue if needed
+            mainTitle.style.color = '#F59E0B'; // Turn title gold temporarily
+            setTimeout(() => {
+                mainTitle.style.color = '';
+            }, 500);
         }
+    });
 
-        const clockElement = document.getElementById('clock');
-        const statusFilter = document.getElementById('status-filter');
-        const dateSort = document.getElementById('date-sort');
-        const cardsGrid = document.getElementById('cards-grid');
+    const clockElement = document.getElementById('clock');
+    const startDate = new Date(latestClaimDate  + 'T00:00:00Z');
 
-        if (!statusFilter || !dateSort || !cardsGrid) {
-            console.error("Critical elements missing");
-            return;
-        }
+    const statusFilter = document.getElementById('status-filter');
+    const dateSort = document.getElementById('date-sort');
+    const cardsGrid = document.getElementById('cards-grid');
 
-        let currentLang = lang;
-        let currentTranslations = t;
+    let currentLang = lang;
+    let currentTranslations = t;
 
-        // Function to get translations
-        function getTranslations(langCode) {
-            return translations[langCode] || translations['en'];
-        }
-
-        // Helper functions to style the status cells
-        const getStatusClass = (status) => {
-            if (status.toLowerCase().startsWith('ongoing')) return 'status-ongoing';
-            if (status.toLowerCase().startsWith('pending')) return 'status-pending';
-            if (status === 'expired_unproven') return 'status-expired-unproven';
-            if (status.toLowerCase().startsWith('expired')) return 'status-expired';
-            return 'status-default';
-        };
-
-
-        function updateStaticTranslations() {
-            if (!currentTranslations) return;
-            document.title = currentTranslations.title;
-            const mainTitle = document.getElementById('main-title');
-            if(mainTitle) mainTitle.textContent = currentTranslations.title;
-            const subtitle = document.getElementById('subtitle');
-            if(subtitle) subtitle.textContent = currentTranslations.subtitle;
-            const timeElapsed = document.getElementById('time-elapsed');
-            if(timeElapsed) timeElapsed.textContent = currentTranslations.time_elapsed;
-            const lastBurst = document.getElementById('last-burst-bubble');
-            if(lastBurst) lastBurst.textContent = currentTranslations.last_burst_bubble;
-            const filterLabel = document.getElementById('filter-by-status-label');
-            if(filterLabel) filterLabel.textContent = currentTranslations.filter_by_status;
-
-            // ... (Add null checks for other elements if needed, but these are critical)
-
-            if(document.getElementById('filter-all')) document.getElementById('filter-all').textContent = currentTranslations.all;
-            if(document.getElementById('filter-ongoing')) document.getElementById('filter-ongoing').textContent = currentTranslations.ongoing;
-            if(document.getElementById('filter-pending')) document.getElementById('filter-pending').textContent = currentTranslations.pending;
-            if(document.getElementById('filter-expired-unproven')) document.getElementById('filter-expired-unproven').textContent = currentTranslations.expired_unproven;
-            if(document.getElementById('sort-by-date-label')) document.getElementById('sort-by-date-label').textContent = currentTranslations.sort_by_date;
-            if(document.getElementById('sort-newest')) document.getElementById('sort-newest').textContent = currentTranslations.newest_first;
-            if(document.getElementById('sort-oldest')) document.getElementById('sort-oldest').textContent = currentTranslations.oldest_first;
-
-            if(document.getElementById('legend-title')) document.getElementById('legend-title').textContent = currentTranslations.status_legend;
-            if(document.getElementById('legend-ongoing')) document.getElementById('legend-ongoing').textContent = currentTranslations.status_ongoing_desc;
-            if(document.getElementById('legend-pending')) document.getElementById('legend-pending').textContent = currentTranslations.status_pending_desc;
-            if(document.getElementById('legend-expired-unproven')) document.getElementById('legend-expired-unproven').innerHTML = currentTranslations.status_expired_unproven_desc;
-            if(document.getElementById('submit-prediction-button')) document.getElementById('submit-prediction-button').textContent = currentTranslations.submit_prediction;
-            if(document.getElementById('time-limit-note')) document.getElementById('time-limit-note').textContent = currentTranslations.time_limit_note;
-
-            // Update last claim section
-            const latestClaim = CLAIMS_DATA.find(c => c.date === latestClaimDate);
-            if (latestClaim) {
-                if(document.getElementById('last-claim-claim-label')) document.getElementById('last-claim-claim-label').textContent = currentTranslations.claim_colon;
-                if(document.getElementById('last-claim-claim-text')) document.getElementById('last-claim-claim-text').textContent = latestClaim.claim[currentLang] || latestClaim.claim['en'];
-                if(document.getElementById('last-claim-claimer-label')) document.getElementById('last-claim-claimer-label').textContent = currentTranslations.claimer_colon;
-                if(document.getElementById('last-claim-date-label')) document.getElementById('last-claim-date-label').textContent = currentTranslations.date_colon;
-            }
-        }
-
-        let claims = [...CLAIMS_DATA];
-
-        function renderCards() {
-            if(!cardsGrid) return;
-            cardsGrid.innerHTML = '';
-            claims.forEach(claim => {
-                const card = document.createElement('div');
-                card.className = 'claim-card';
-
-                const claimText = claim.claim[currentLang] || claim.claim['en'];
-                const statusText = currentTranslations[claim.status] || claim.status;
-                const statusClass = getStatusClass(claim.status);
-
-                card.innerHTML = `
-                    <div class="card-thumbnail-container">
-                        <a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="card-thumbnail-link">
-                             <img src="${claim.thumbnailUrl}" alt="Thumbnail" class="card-thumbnail" referrerPolicy="no-referrer" loading="lazy" />
-                             <div class="card-summary-overlay">
-                                <p class="card-text">"${claimText}"</p>
-                             </div>
-                        </a>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-header">
-                            <span class="badge ${statusClass}">${statusText}</span>
-                            <span class="card-date">${claim.date}</span>
-                        </div>
-                        <h3 class="card-claimer">${claim.claimer}</h3>
-                    </div>
-                `;
-                cardsGrid.appendChild(card);
-            });
-        }
-
-        function updateData() {
-            let filteredClaims = [...CLAIMS_DATA];
-
-            // Filter by status
-            const status = statusFilter.value;
-            if (status !== 'all') {
-                filteredClaims = filteredClaims.filter(claim => claim.status === status);
-            }
-
-            // Sort by date
-            const sortOrder = dateSort.value;
-            filteredClaims.sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
-                if (sortOrder === 'newest') {
-                    return dateB - dateA;
-                } else {
-                    return dateA - dateB;
-                }
-            });
-
-            claims = filteredClaims;
-            renderCards();
-        }
-
-        statusFilter.addEventListener('change', updateData);
-        dateSort.addEventListener('change', updateData);
-
-        // --- Initial Load ---
-        const savedLanguage = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
-        if (savedLanguage !== currentLang) {
-            currentLang = savedLanguage;
-            currentTranslations = getTranslations(currentLang);
-        }
-        updateStaticTranslations();
-        updateData();
-    } catch (e) {
-        console.error("Initialization error:", e);
+    // Function to get translations
+    function getTranslations(langCode) {
+        return translations[langCode] || translations['en'];
     }
-}
 
-// Ensure DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
+    // Helper functions to style the status cells
+    const getStatusClass = (status) => {
+        if (status.toLowerCase().startsWith('ongoing')) return 'status-ongoing';
+        if (status.toLowerCase().startsWith('pending')) return 'status-pending';
+        if (status === 'expired_unproven') return 'status-expired-unproven';
+        if (status.toLowerCase().startsWith('expired')) return 'status-expired';
+        return 'status-default';
+    };
+
+
+    function updateStaticTranslations() {
+        document.title = currentTranslations.title;
+        document.getElementById('main-title').textContent = currentTranslations.title;
+        document.getElementById('subtitle').textContent = currentTranslations.subtitle;
+        document.getElementById('time-elapsed').textContent = currentTranslations.time_elapsed;
+        document.getElementById('last-burst-bubble').textContent = currentTranslations.last_burst_bubble;
+        document.getElementById('filter-by-status-label').textContent = currentTranslations.filter_by_status;
+        document.getElementById('filter-all').textContent = currentTranslations.all;
+        document.getElementById('filter-ongoing').textContent = currentTranslations.ongoing;
+        document.getElementById('filter-pending').textContent = currentTranslations.pending;
+        document.getElementById('filter-expired-unproven').textContent = currentTranslations.expired_unproven;
+        document.getElementById('sort-by-date-label').textContent = currentTranslations.sort_by_date;
+        document.getElementById('sort-newest').textContent = currentTranslations.newest_first;
+        document.getElementById('sort-oldest').textContent = currentTranslations.oldest_first;
+
+        document.getElementById('legend-title').textContent = currentTranslations.status_legend;
+        document.getElementById('legend-ongoing').textContent = currentTranslations.status_ongoing_desc;
+        document.getElementById('legend-pending').textContent = currentTranslations.status_pending_desc;
+        document.getElementById('legend-expired-unproven').innerHTML = currentTranslations.status_expired_unproven_desc;
+        document.getElementById('submit-prediction-button').textContent = currentTranslations.submit_prediction;
+        document.getElementById('time-limit-note').textContent = currentTranslations.time_limit_note;
+
+        // Update last claim section
+        const latestClaim = CLAIMS_DATA.find(c => c.date === latestClaimDate);
+        if (latestClaim) {
+            document.getElementById('last-claim-claim-label').textContent = currentTranslations.claim_colon;
+            document.getElementById('last-claim-claim-text').textContent = latestClaim.claim[currentLang] || latestClaim.claim['en'];
+            document.getElementById('last-claim-claimer-label').textContent = currentTranslations.claimer_colon;
+            document.getElementById('last-claim-date-label').textContent = currentTranslations.date_colon;
+        }
+    }
+
+    let claims = [...CLAIMS_DATA];
+
+    function renderCards() {
+        cardsGrid.innerHTML = '';
+        claims.forEach(claim => {
+            const card = document.createElement('div');
+            card.className = 'claim-card';
+
+            const claimText = claim.claim[currentLang] || claim.claim['en'];
+            const statusText = currentTranslations[claim.status] || claim.status;
+            const statusClass = getStatusClass(claim.status);
+
+            card.innerHTML = `
+                <div class="card-thumbnail-container">
+                    <a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="card-thumbnail-link">
+                         <img src="${claim.thumbnailUrl}" alt="Thumbnail" class="card-thumbnail" referrerPolicy="no-referrer" loading="lazy" />
+                         <div class="card-summary-overlay">
+                            <p class="card-text">"${claimText}"</p>
+                         </div>
+                    </a>
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <span class="badge ${statusClass}">${statusText}</span>
+                        <span class="card-date">${claim.date}</span>
+                    </div>
+                    <h3 class="card-claimer">${claim.claimer}</h3>
+                </div>
+            `;
+            cardsGrid.appendChild(card);
+        });
+    }
+
+    function updateData() {
+        let filteredClaims = [...CLAIMS_DATA];
+
+        // Filter by status
+        const status = statusFilter.value;
+        if (status !== 'all') {
+            filteredClaims = filteredClaims.filter(claim => claim.status === status);
+        }
+
+        // Sort by date
+        const sortOrder = dateSort.value;
+        filteredClaims.sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            if (sortOrder === 'newest') {
+                return dateB - dateA;
+            } else {
+                return dateA - dateB;
+            }
+        });
+
+        claims = filteredClaims;
+        renderCards();
+    }
+
+    statusFilter.addEventListener('change', updateData);
+    dateSort.addEventListener('change', updateData);
+
+    // --- Initial Load ---
+    const savedLanguage = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+    if (savedLanguage !== currentLang) {
+        currentLang = savedLanguage;
+        currentTranslations = getTranslations(currentLang);
+    }
+    updateStaticTranslations();
+    updateData();
+
 </script>
 <script>
     function updateClock() {
         const clockElement = document.getElementById('clock');
         if (!clockElement) return;
 
-        const startDateStr = clockElement.dataset.startDate;
-        if (!startDateStr) return; // Guard if attribute is missing
-
-        const startDate = new Date(startDateStr);
+        const startDate = new Date(clockElement.dataset.startDate);
         const now = new Date();
         const diff = now - startDate;
-
-        if (isNaN(diff)) return; // Guard against invalid date
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -623,13 +593,6 @@ if (document.readyState === 'loading') {
         }
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-             updateClock();
-             setInterval(updateClock, 1000);
-        });
-    } else {
-        updateClock();
-        setInterval(updateClock, 1000);
-    }
+    setInterval(updateClock, 1000);
+    document.addEventListener('DOMContentLoaded', updateClock);
 </script>
