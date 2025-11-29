@@ -1,24 +1,110 @@
+---
+const { lang = 'en', title = 'Bubble Burst Clock' } = Astro.props;
+---
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>{title}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;900&display=swap" rel="stylesheet">
 		<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5230972214569734"
      crossorigin="anonymous"></script>
+        <slot name="head" />
 	</head>
 	<body>
-		<slot />
+        <div class="background-bubbles">
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+        </div>
+		<div class="content-wrapper">
+            <slot />
+        </div>
 	</body>
 </html>
 
-<style>
+<style is:global>
+    :root {
+        --font-body: 'Inter', sans-serif;
+        --font-heading: 'Poppins', sans-serif;
+        --color-bg: #111827;
+        --color-text: #F3F4F6;
+    }
+
 	html,
 	body {
 		margin: 0;
 		width: 100%;
 		height: 100%;
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        font-family: var(--font-body);
+        overflow-x: hidden;
 	}
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-heading);
+    }
+
+    .content-wrapper {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Bubbles Background */
+    .background-bubbles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .bubble {
+        position: absolute;
+        bottom: -100px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: rise 15s infinite ease-in;
+    }
+
+    .bubble:nth-child(1) { width: 40px; height: 40px; left: 10%; animation-duration: 8s; }
+    .bubble:nth-child(2) { width: 20px; height: 20px; left: 20%; animation-duration: 5s; animation-delay: 1s; }
+    .bubble:nth-child(3) { width: 50px; height: 50px; left: 35%; animation-duration: 10s; animation-delay: 2s; }
+    .bubble:nth-child(4) { width: 80px; height: 80px; left: 50%; animation-duration: 11s; animation-delay: 0s; }
+    .bubble:nth-child(5) { width: 35px; height: 35px; left: 55%; animation-duration: 6s; animation-delay: 1s; }
+    .bubble:nth-child(6) { width: 45px; height: 45px; left: 65%; animation-duration: 8s; animation-delay: 3s; }
+    .bubble:nth-child(7) { width: 90px; height: 90px; left: 70%; animation-duration: 12s; animation-delay: 2s; }
+    .bubble:nth-child(8) { width: 25px; height: 25px; left: 80%; animation-duration: 6s; animation-delay: 2s; }
+    .bubble:nth-child(9) { width: 15px; height: 15px; left: 70%; animation-duration: 5s; animation-delay: 1s; }
+    .bubble:nth-child(10) { width: 90px; height: 90px; left: 25%; animation-duration: 10s; animation-delay: 4s; }
+
+    @keyframes rise {
+        0% {
+            bottom: -100px;
+            transform: translateX(0);
+        }
+        50% {
+            transform: translateX(100px);
+        }
+        100% {
+            bottom: 1080px;
+            transform: translateX(-200px);
+        }
+    }
 </style>

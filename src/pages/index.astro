@@ -1,6 +1,7 @@
 ---
 // --- PAGE BRAIN ---
 import { CLAIMS_DATA } from '../CLAIMS_DATA';
+import Layout from '../layouts/Layout.astro';
 import LanguageSwitcher from '../components/LanguageSwitcher.astro';
 import GameCenter from '../components/GameCenter.astro';
 import en from '../locales/en.json';
@@ -19,11 +20,6 @@ const translations = {
 
 // --- Language Detection ---
 let lang = 'en'; // Default language
-const supportedLanguages = Object.keys(translations);
-
-// Note: Server-side language detection is skipped for static builds to avoid warnings.
-// The client-side script handles language preference from localStorage/cookies.
-
 const t = translations[lang] || en;
 
 // Get the most recent claim date (excluding pending claims for the clock)
@@ -36,194 +32,19 @@ const latestClaim = validClaims.length > 0 ? validClaims.reduce((latest, current
 const latestClaimDate = latestClaim.date;
 ---
 
-<html lang={lang}>
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>{t.title}</title>
-    <meta name="google-site-verification" content="gi2pzxwjvX7zQtdowKjXbAw1wGHfjs8Cdf2w5ThdNcM" />
-    <style>
-        body { background-color: #111827; color: white; font-family: sans-serif; padding: 2rem; }
-        main { max-width: 80rem; margin: auto; }
-        h1 { font-size: 2.25rem; font-weight: bold; text-align: center; margin-bottom: 0.5rem; }
-        .submission-container {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        #submit-prediction-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        #submit-prediction-form input,
-        #submit-prediction-form textarea {
-            background-color: #374151;
-            color: white;
-            border: 1px solid #4B5563;
-            border-radius: 0.25rem;
-            padding: 0.75rem;
-        }
-        #submit-prediction-form button {
-            cursor: pointer;
-        }
-        .submit-button {
-            display: inline-block;
-            background-color: #4F46E5;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
-        }
-        .submit-button:hover {
-            background-color: #4338CA;
-        }
-        .time-limit-note {
-            text-align: center;
-            margin-top: 1rem;
-            color: #9CA3AF;
-            font-size: 0.875rem;
-        }
-        h2 { font-size: 1.25rem; color: #9CA3AF; text-align: center; margin-bottom: 3rem; }
+<Layout lang={lang} title={t.title}>
+    <!-- Move specific head elements here -->
+    <meta slot="head" name="google-site-verification" content="gi2pzxwjvX7zQtdowKjXbAw1wGHfjs8Cdf2w5ThdNcM" />
 
-        .clock-container {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .clock-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #9CA3AF;
-        }
-
-        .clock {
-            font-size: 4rem;
-            font-weight: 900;
-            color: white;
-            letter-spacing: 0.1em;
-            transition: color 0.5s ease;
-        }
-
-        .last-claim {
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background-color: #1F2937;
-            border-radius: 0.5rem;
-            text-align: center;
-        }
-
-        .last-claim p {
-            margin: 0.5rem 0;
-        }
-
-        .table-controls {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-
-        .filter-container,
-        .sort-container {
-            display: flex;
-            align-items: center;
-        }
-
-        .filter-container label,
-        .sort-container label {
-            margin-right: 0.5rem;
-        }
-
-        .filter-container select,
-        .sort-container select {
-            background-color: #374151;
-            color: white;
-            border: 1px solid #4B5563;
-            border-radius: 0.25rem;
-            padding: 0.5rem;
-        }
-
-        table { width: 100%; border-collapse: collapse; }
-        thead { background-color: #374151; }
-        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #374151; }
-        th { font-size: 0.875rem; font-weight: 600; }
-        td { font-size: 0.875rem; color: #D1D5DB; vertical-align: middle; }
-        .table-container { overflow-x: auto; border-radius: 0.5rem; background-color: #1F2937; }
-        .thumbnail {
-            width: 8rem;
-            border-radius: 0.375rem;
-            transition: all 0.2s ease-in-out;
-        }
-        .thumbnail:hover {
-            transform: scale(1.05);
-            filter: brightness(1.1);
-        }
-        .link { color: #60A5FA; text-decoration: none; }
-        .link:hover { text-decoration: underline; }
-        .badge { display: inline-flex; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; white-space: nowrap; }
-        td.status-ongoing { background-color: #065F46; color: #A7F3D0; }
-        td.status-pending { background-color: #92400E; color: #FDE68A; }
-        td.status-expired-unproven { background-color: #991B1B; color: #FECACA; }
-        .badge.status-ongoing { background-color: #065F46; color: #D1FAE5; }
-        .badge.status-pending { background-color: #92400E; color: #FEF3C7; }
-        .badge.status-expired-unproven { background-color: #991B1B; color: #FEE2E2; }
-        .watch-button {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.375rem 0.75rem;
-            background-color: #DC2626;
-            color: white;
-            text-decoration: none;
-            border-radius: 0.375rem;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
-        .watch-button:hover {
-            background-color: #B91C1C;
-        }
-        .watch-button svg {
-            width: 1rem;
-            height: 1rem;
-            margin-right: 0.375rem;
-        }
-
-        /* Style for the new legend section */
-        .legend-section {
-          margin-top: 3rem;
-          padding: 1.5rem;
-          background-color: #1F2937;
-          border-radius: 0.5rem;
-          color: #D1D5DB;
-        }
-        .legend-section h3 {
-          margin-top: 0;
-          margin-bottom: 1rem;
-          font-size: 1.25rem;
-          color: white;
-        }
-        .legend-section strong {
-          color: #9CA3AF;
-        }
-    </style>
-</head>
-<body>
     <LanguageSwitcher />
-    <GameCenter />
+    <div id="game-center-wrapper" class="hidden">
+        <GameCenter />
+    </div>
     <main>
-        <h1 id="main-title">{t.title}</h1>
+        <h1 id="main-title" class="interactive-title">{t.title}</h1>
         <h2 id="subtitle">{t.subtitle}</h2>
 
         <div class="submission-container">
-            <!--
-              HOW TO MAKE THIS FORM WORK:
-              1. Go to https://formbold.com/ and create a free account.
-              2. Create a new form in your Formbold dashboard.
-              3. You will be given a unique URL for your form.
-              4. Replace the placeholder URL in the `action` attribute below with your new URL.
-            -->
             <form action="https://formbold.com/s/3jKWm" method="POST" id="submit-prediction-form">
                 <input type="text" name="name" placeholder="Your Name" required>
                 <input type="email" name="email" placeholder="Your Email" required>
@@ -262,24 +83,11 @@ const latestClaimDate = latestClaim.date;
                 </select>
             </div>
         </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th id="table-header-date">{t.date}</th>
-                        <th id="table-header-claimer">{t.claimer}</th>
-                        <th id="table-header-thumbnail">{t.thumbnail}</th>
-                        <th id="table-header-claim">{t.claim}</th>
-                        <th id="table-header-status">{t.status}</th>
-                        <th id="table-header-claim-type">{t.claim_type}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+
+        <div id="cards-grid" class="cards-grid">
+            <!-- Cards will be injected here by JS -->
         </div>
 
-        <!-- New legend section added here -->
         <div class="legend-section">
           <h3 id="legend-title">{t.status_legend}</h3>
           <p><span class="badge status-ongoing">{t.ongoing}</span> <span id="legend-ongoing">{t.status_ongoing_desc}</span></p>
@@ -288,13 +96,359 @@ const latestClaimDate = latestClaim.date;
         </div>
 
     </main>
-    <script define:vars={{ latestClaimDate, CLAIMS_DATA, lang, t, translations }}>
-        const clockElement = document.getElementById('clock');
-        const startDate = new Date(latestClaimDate  + 'T00:00:00Z');
+</Layout>
 
+<style>
+    /* Scoped styles for index page */
+    /* Remove body padding from here, it's now handled in Layout/Global */
+    main { max-width: 80rem; margin: auto; padding-top: 2rem; padding-bottom: 2rem; }
+
+    /* Modernized Header */
+    h1 {
+        font-size: 3rem;
+        font-weight: 900;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, #60A5FA, #A78BFA);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    h2 { font-size: 1.25rem; color: #9CA3AF; text-align: center; margin-bottom: 3rem; }
+
+    /* Form Styling */
+    .submission-container {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    #submit-prediction-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: rgba(31, 41, 55, 0.4);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+    }
+    #submit-prediction-form input,
+    #submit-prediction-form textarea {
+        background-color: rgba(17, 24, 39, 0.6);
+        color: white;
+        border: 1px solid #4B5563;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        font-family: inherit;
+        transition: border-color 0.3s;
+    }
+    #submit-prediction-form input:focus,
+    #submit-prediction-form textarea:focus {
+        outline: none;
+        border-color: #60A5FA;
+    }
+    #submit-prediction-form button {
+        cursor: pointer;
+    }
+    .submit-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: none;
+    }
+    .submit-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+    .time-limit-note {
+        text-align: center;
+        margin-top: 1rem;
+        color: #9CA3AF;
+        font-size: 0.875rem;
+    }
+
+    /* Clock Section */
+    .clock-container {
+        text-align: center;
+        margin-bottom: 4rem;
+        position: relative;
+        padding: 2rem;
+    }
+
+    .clock-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #9CA3AF;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.5rem;
+    }
+
+    .clock {
+        font-size: 6rem;
+        font-weight: 900;
+        color: #fff;
+        letter-spacing: 0.05em;
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(96, 165, 250, 0.3);
+        transition: all 0.5s ease;
+        line-height: 1.1;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .clock {
+            font-size: 3rem;
+        }
+    }
+
+    .last-claim {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: rgba(31, 41, 55, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        text-align: center;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .last-claim p {
+        margin: 0.5rem 0;
+    }
+
+    /* Controls */
+    .table-controls {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        background: rgba(31, 41, 55, 0.4);
+        padding: 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .filter-container,
+    .sort-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-container label,
+    .sort-container label {
+        margin-right: 0.5rem;
+        color: #D1D5DB;
+        font-weight: 500;
+    }
+
+    .filter-container select,
+    .sort-container select {
+        background-color: #1F2937;
+        color: white;
+        border: 1px solid #4B5563;
+        border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+    }
+
+    /* Grid Layout */
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .claim-card {
+        background: rgba(31, 41, 55, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1rem;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .claim-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        border-color: rgba(96, 165, 250, 0.3);
+    }
+
+    .card-thumbnail-container {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%; /* 16:9 Aspect Ratio */
+        overflow: hidden;
+    }
+
+    .card-thumbnail {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .claim-card:hover .card-thumbnail {
+        transform: scale(1.05);
+    }
+
+    .card-content {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .card-date {
+        font-size: 0.875rem;
+        color: #9CA3AF;
+    }
+
+    .card-claimer {
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-summary-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(17, 24, 39, 0.9);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        backdrop-filter: blur(5px);
+        text-align: center;
+    }
+
+    .claim-card:hover .card-summary-overlay {
+        opacity: 1;
+        pointer-events: none;
+    }
+
+    .card-thumbnail-link {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .card-text {
+        color: #E5E7EB;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    /* Status Badges */
+    .badge {
+        display: inline-flex;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .status-ongoing { background-color: rgba(6, 95, 70, 0.2); color: #6EE7B7; border: 1px solid rgba(6, 95, 70, 0.5); }
+    .status-pending { background-color: rgba(146, 64, 14, 0.2); color: #FCD34D; border: 1px solid rgba(146, 64, 14, 0.5); }
+    .status-expired-unproven { background-color: rgba(153, 27, 27, 0.2); color: #FCA5A5; border: 1px solid rgba(153, 27, 27, 0.5); }
+    .status-expired { background-color: rgba(31, 41, 55, 0.5); color: #9CA3AF; border: 1px solid #4B5563; }
+
+    /* Legend */
+    .legend-section {
+        margin-top: 3rem;
+        padding: 2rem;
+        background: rgba(31, 41, 55, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1rem;
+        color: #D1D5DB;
+    }
+    .legend-section h3 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.25rem;
+        color: white;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 0.5rem;
+    }
+    .legend-section p {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .interactive-title {
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.1s;
+    }
+    .interactive-title:active {
+        transform: scale(0.95);
+    }
+</style>
+
+<script define:vars={{ latestClaimDate, CLAIMS_DATA, lang, t, translations }}>
+function init() {
+    try {
+        // --- Easter Egg Logic ---
+        let titleClickCount = 0;
+        const mainTitle = document.getElementById('main-title');
+        const gameCenterWrapper = document.getElementById('game-center-wrapper');
+
+        if (mainTitle && gameCenterWrapper) {
+            mainTitle.addEventListener('click', () => {
+                titleClickCount++;
+                if (titleClickCount === 5) {
+                    gameCenterWrapper.classList.remove('hidden');
+                    console.log('Game Center Unlocked! 🎮');
+                    mainTitle.style.color = '#F59E0B';
+                    setTimeout(() => {
+                        mainTitle.style.color = '';
+                    }, 500);
+                }
+            });
+        }
+
+        const clockElement = document.getElementById('clock');
         const statusFilter = document.getElementById('status-filter');
         const dateSort = document.getElementById('date-sort');
-        const tableBody = document.querySelector('table tbody');
+        const cardsGrid = document.getElementById('cards-grid');
+
+        if (!statusFilter || !dateSort || !cardsGrid) {
+            console.error("Critical elements missing");
+            return;
+        }
 
         let currentLang = lang;
         let currentTranslations = t;
@@ -315,65 +469,77 @@ const latestClaimDate = latestClaim.date;
 
 
         function updateStaticTranslations() {
+            if (!currentTranslations) return;
             document.title = currentTranslations.title;
-            document.getElementById('main-title').textContent = currentTranslations.title;
-            document.getElementById('subtitle').textContent = currentTranslations.subtitle;
-            document.getElementById('time-elapsed').textContent = currentTranslations.time_elapsed;
-            document.getElementById('last-burst-bubble').textContent = currentTranslations.last_burst_bubble;
-            document.getElementById('filter-by-status-label').textContent = currentTranslations.filter_by_status;
-            document.getElementById('filter-all').textContent = currentTranslations.all;
-            document.getElementById('filter-ongoing').textContent = currentTranslations.ongoing;
-            document.getElementById('filter-pending').textContent = currentTranslations.pending;
-            document.getElementById('filter-expired-unproven').textContent = currentTranslations.expired_unproven;
-            document.getElementById('sort-by-date-label').textContent = currentTranslations.sort_by_date;
-            document.getElementById('sort-newest').textContent = currentTranslations.newest_first;
-            document.getElementById('sort-oldest').textContent = currentTranslations.oldest_first;
-            document.getElementById('table-header-date').textContent = currentTranslations.date;
-            document.getElementById('table-header-claimer').textContent = currentTranslations.claimer;
-            document.getElementById('table-header-thumbnail').textContent = currentTranslations.thumbnail;
-            document.getElementById('table-header-claim').textContent = currentTranslations.claim;
-            document.getElementById('table-header-status').textContent = currentTranslations.status;
-            document.getElementById('table-header-claim-type').textContent = currentTranslations.claim_type;
-            document.getElementById('legend-title').textContent = currentTranslations.status_legend;
-            document.getElementById('legend-ongoing').textContent = currentTranslations.status_ongoing_desc;
-            document.getElementById('legend-pending').textContent = currentTranslations.status_pending_desc;
-            document.getElementById('legend-expired-unproven').innerHTML = currentTranslations.status_expired_unproven_desc;
-            document.getElementById('submit-prediction-button').textContent = currentTranslations.submit_prediction;
-            document.getElementById('time-limit-note').textContent = currentTranslations.time_limit_note;
+            const mainTitle = document.getElementById('main-title');
+            if(mainTitle) mainTitle.textContent = currentTranslations.title;
+            const subtitle = document.getElementById('subtitle');
+            if(subtitle) subtitle.textContent = currentTranslations.subtitle;
+            const timeElapsed = document.getElementById('time-elapsed');
+            if(timeElapsed) timeElapsed.textContent = currentTranslations.time_elapsed;
+            const lastBurst = document.getElementById('last-burst-bubble');
+            if(lastBurst) lastBurst.textContent = currentTranslations.last_burst_bubble;
+            const filterLabel = document.getElementById('filter-by-status-label');
+            if(filterLabel) filterLabel.textContent = currentTranslations.filter_by_status;
+
+            // ... (Add null checks for other elements if needed, but these are critical)
+
+            if(document.getElementById('filter-all')) document.getElementById('filter-all').textContent = currentTranslations.all;
+            if(document.getElementById('filter-ongoing')) document.getElementById('filter-ongoing').textContent = currentTranslations.ongoing;
+            if(document.getElementById('filter-pending')) document.getElementById('filter-pending').textContent = currentTranslations.pending;
+            if(document.getElementById('filter-expired-unproven')) document.getElementById('filter-expired-unproven').textContent = currentTranslations.expired_unproven;
+            if(document.getElementById('sort-by-date-label')) document.getElementById('sort-by-date-label').textContent = currentTranslations.sort_by_date;
+            if(document.getElementById('sort-newest')) document.getElementById('sort-newest').textContent = currentTranslations.newest_first;
+            if(document.getElementById('sort-oldest')) document.getElementById('sort-oldest').textContent = currentTranslations.oldest_first;
+
+            if(document.getElementById('legend-title')) document.getElementById('legend-title').textContent = currentTranslations.status_legend;
+            if(document.getElementById('legend-ongoing')) document.getElementById('legend-ongoing').textContent = currentTranslations.status_ongoing_desc;
+            if(document.getElementById('legend-pending')) document.getElementById('legend-pending').textContent = currentTranslations.status_pending_desc;
+            if(document.getElementById('legend-expired-unproven')) document.getElementById('legend-expired-unproven').innerHTML = currentTranslations.status_expired_unproven_desc;
+            if(document.getElementById('submit-prediction-button')) document.getElementById('submit-prediction-button').textContent = currentTranslations.submit_prediction;
+            if(document.getElementById('time-limit-note')) document.getElementById('time-limit-note').textContent = currentTranslations.time_limit_note;
 
             // Update last claim section
             const latestClaim = CLAIMS_DATA.find(c => c.date === latestClaimDate);
             if (latestClaim) {
-                document.getElementById('last-claim-claim-label').textContent = currentTranslations.claim_colon;
-                document.getElementById('last-claim-claim-text').textContent = latestClaim.claim[currentLang] || latestClaim.claim['en'];
-                document.getElementById('last-claim-claimer-label').textContent = currentTranslations.claimer_colon;
-                document.getElementById('last-claim-date-label').textContent = currentTranslations.date_colon;
+                if(document.getElementById('last-claim-claim-label')) document.getElementById('last-claim-claim-label').textContent = currentTranslations.claim_colon;
+                if(document.getElementById('last-claim-claim-text')) document.getElementById('last-claim-claim-text').textContent = latestClaim.claim[currentLang] || latestClaim.claim['en'];
+                if(document.getElementById('last-claim-claimer-label')) document.getElementById('last-claim-claimer-label').textContent = currentTranslations.claimer_colon;
+                if(document.getElementById('last-claim-date-label')) document.getElementById('last-claim-date-label').textContent = currentTranslations.date_colon;
             }
         }
 
         let claims = [...CLAIMS_DATA];
 
-        function renderTable() {
-            tableBody.innerHTML = '';
+        function renderCards() {
+            if(!cardsGrid) return;
+            cardsGrid.innerHTML = '';
             claims.forEach(claim => {
-                const row = document.createElement('tr');
+                const card = document.createElement('div');
+                card.className = 'claim-card';
+
                 const claimText = claim.claim[currentLang] || claim.claim['en'];
                 const statusText = currentTranslations[claim.status] || claim.status;
-                const claimTypeText = currentTranslations[claim.claimType] || claim.claimType;
+                const statusClass = getStatusClass(claim.status);
 
-                row.innerHTML = `
-                    <td>${claim.date}</td>
-                    <td>${claim.claimer}</td>
-                    <td>
-                        <a href="${claim.link}" target="_blank" rel="noopener noreferrer">
-                            <img src="${claim.thumbnailUrl}" alt="Thumbnail" class="thumbnail" referrerPolicy="no-referrer" />
+                card.innerHTML = `
+                    <div class="card-thumbnail-container">
+                        <a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="card-thumbnail-link">
+                             <img src="${claim.thumbnailUrl}" alt="Thumbnail" class="card-thumbnail" referrerPolicy="no-referrer" loading="lazy" />
+                             <div class="card-summary-overlay">
+                                <p class="card-text">"${claimText}"</p>
+                             </div>
                         </a>
-                    </td>
-                    <td>${claimText}</td>
-                    <td class="${getStatusClass(claim.status)}">${statusText}</td>
-                    <td>${claimTypeText}</td>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <span class="badge ${statusClass}">${statusText}</span>
+                            <span class="card-date">${claim.date}</span>
+                        </div>
+                        <h3 class="card-claimer">${claim.claimer}</h3>
+                    </div>
                 `;
-                tableBody.appendChild(row);
+                cardsGrid.appendChild(card);
             });
         }
 
@@ -399,16 +565,13 @@ const latestClaimDate = latestClaim.date;
             });
 
             claims = filteredClaims;
-            renderTable();
+            renderCards();
         }
 
         statusFilter.addEventListener('change', updateData);
         dateSort.addEventListener('change', updateData);
 
         // --- Initial Load ---
-        // Immediately run the setup and table rendering.
-        // This is safe because this script is at the end of the <body>,
-        // so all the necessary DOM elements are already available.
         const savedLanguage = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
         if (savedLanguage !== currentLang) {
             currentLang = savedLanguage;
@@ -416,37 +579,57 @@ const latestClaimDate = latestClaim.date;
         }
         updateStaticTranslations();
         updateData();
+    } catch (e) {
+        console.error("Initialization error:", e);
+    }
+}
 
-    </script>
-    <script>
-        function updateClock() {
-            const clockElement = document.getElementById('clock');
-            if (!clockElement) return;
+// Ensure DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+</script>
+<script>
+    function updateClock() {
+        const clockElement = document.getElementById('clock');
+        if (!clockElement) return;
 
-            const startDate = new Date(clockElement.dataset.startDate);
-            const now = new Date();
-            const diff = now - startDate;
+        const startDateStr = clockElement.dataset.startDate;
+        if (!startDateStr) return; // Guard if attribute is missing
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        const startDate = new Date(startDateStr);
+        const now = new Date();
+        const diff = now - startDate;
 
-            clockElement.textContent =
-                `${days.toString().padStart(2, '0')}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+        if (isNaN(diff)) return; // Guard against invalid date
 
-            // Change color based on elapsed time
-            if (days < 30) {
-                clockElement.style.color = '#60A5FA'; // Calm blue
-            } else if (days < 60) {
-                clockElement.style.color = '#FBBF24'; // Warning yellow
-            } else {
-                clockElement.style.color = '#EF4444'; // Warning red
-            }
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        clockElement.textContent =
+            `${days.toString().padStart(2, '0')}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+
+        // Change color based on elapsed time
+        if (days < 30) {
+            clockElement.style.color = '#60A5FA'; // Calm blue
+        } else if (days < 60) {
+            clockElement.style.color = '#FBBF24'; // Warning yellow
+        } else {
+            clockElement.style.color = '#EF4444'; // Warning red
         }
+    }
 
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+             updateClock();
+             setInterval(updateClock, 1000);
+        });
+    } else {
+        updateClock();
         setInterval(updateClock, 1000);
-        document.addEventListener('DOMContentLoaded', updateClock);
-    </script>
-</body>
-</html>
+    }
+</script>
