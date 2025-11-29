@@ -29,12 +29,22 @@
                 <button class="game-select-btn" data-game="tictactoe">
                     <span class="game-icon">❌</span> Tic-Tac-Toe
                 </button>
+                <button class="game-select-btn" id="leaderboard-btn" style="margin-top: 1rem; border-color: #F59E0B; color: #F59E0B;">
+                    <span class="game-icon">🏆</span> High Scores
+                </button>
+            </div>
+
+            <div id="leaderboard-view" class="hidden">
+                <h3>Top Scores</h3>
+                <div id="leaderboard-content"></div>
+                <button id="back-from-leaderboard-btn" class="menu-back-btn">← Back to Menu</button>
             </div>
 
             <div id="game-area" class="hidden">
                 <!-- Tetris -->
                 <div id="tetris-container" class="game-container hidden">
-                    <canvas id="tetris-canvas" width="240" height="400"></canvas>
+                    <div class="scanline"></div>
+                    <canvas id="tetris-canvas" width="200" height="400"></canvas>
                     <div class="game-info">
                         <div class="score-display">Score: <span id="tetris-score">0</span></div>
                         <p class="controls-hint">← → Move, ↑ Rotate, ↓ Drop</p>
@@ -44,7 +54,8 @@
 
                 <!-- Snake -->
                 <div id="snake-container" class="game-container hidden">
-                    <canvas id="snake-canvas" width="400" height="400"></canvas>
+                     <div class="scanline"></div>
+                    <canvas id="snake-canvas" width="400" height="300"></canvas>
                     <div class="game-info">
                         <div class="score-display">Score: <span id="snake-score">0</span></div>
                         <p class="controls-hint">Arrow Keys to Move</p>
@@ -61,7 +72,7 @@
                     </div>
                 </div>
 
-                <button id="back-to-menu-btn">← Back to Menu</button>
+                <button id="back-to-menu-btn" class="menu-back-btn">← Back to Menu</button>
             </div>
         </div>
     </div>
@@ -247,7 +258,7 @@
         background-color: #B91C1C;
     }
 
-    #back-to-menu-btn {
+    .menu-back-btn {
         margin-top: 1.5rem;
         background: none;
         border: none;
@@ -256,10 +267,70 @@
         font-size: 0.875rem;
         text-decoration: underline;
         width: 100%;
+        text-align: center;
     }
 
-    #back-to-menu-btn:hover {
+    .menu-back-btn:hover {
         color: white;
+    }
+
+    #leaderboard-view h3 {
+        text-align: center;
+        color: #F59E0B;
+        margin-top: 0;
+    }
+
+    .leaderboard-game-section {
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #374151;
+        padding-bottom: 0.5rem;
+    }
+
+    .leaderboard-game-title {
+        font-weight: bold;
+        color: #60A5FA;
+        margin-bottom: 0.5rem;
+    }
+
+    .leaderboard-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .leaderboard-list li {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+        color: #D1D5DB;
+    }
+
+    /* CRT Scanline Effect */
+    .scanline {
+        width: 100%;
+        height: 100px;
+        z-index: 10;
+        background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(0,0,0,0) 100%);
+        opacity: 0.1;
+        position: absolute;
+        bottom: 100%;
+        pointer-events: none;
+        animation: scanline 10s linear infinite;
+    }
+    @keyframes scanline {
+        0% { bottom: 100%; }
+        100% { bottom: -100%; }
+    }
+
+    .game-container {
+        position: relative;
+        overflow: hidden; /* For scanline */
+    }
+
+    canvas {
+        box-shadow: 0 0 10px rgba(96, 165, 250, 0.2), inset 0 0 20px rgba(0,0,0,0.5);
+        border: 2px solid #60A5FA;
     }
 
     /* Tic-Tac-Toe Specific */
@@ -302,6 +373,12 @@
 </style>
 
 <script>
+    import { SoundManager, ScoreManager } from '../scripts/GameUtils.js';
+
+    // --- Utilities ---
+    const soundManager = new SoundManager();
+    const scoreManager = new ScoreManager();
+
     // --- State Management ---
     let currentGame = null;
     let gameLoopId = null;
@@ -314,13 +391,21 @@
     const gameArea = document.getElementById('game-area');
     const backToMenuBtn = document.getElementById('back-to-menu-btn');
     const gameButtons = document.querySelectorAll('.game-select-btn');
+    const leaderboardBtn = document.getElementById('leaderboard-btn');
+    const backFromLeaderboardBtn = document.getElementById('back-from-leaderboard-btn');
+    const leaderboardView = document.getElementById('leaderboard-view');
+    const leaderboardContent = document.getElementById('leaderboard-content');
 
     // --- Event Listeners ---
     joystickBtn.addEventListener('click', openModal);
     closeModalBtn.addEventListener('click', closeModal);
     backToMenuBtn.addEventListener('click', showMenu);
+    backFromLeaderboardBtn.addEventListener('click', showMenu);
+
+    leaderboardBtn.addEventListener('click', showLeaderboard);
 
     gameButtons.forEach(btn => {
+        if (btn.id === 'leaderboard-btn') return;
         btn.addEventListener('click', () => {
             const gameName = btn.dataset.game;
             startGame(gameName);
@@ -347,13 +432,49 @@
         stopGameLoop();
         gameMenu.classList.remove('hidden');
         gameArea.classList.add('hidden');
+        leaderboardView.classList.add('hidden');
         document.querySelectorAll('.game-container').forEach(el => el.classList.add('hidden'));
         document.getElementById('modal-title').textContent = "Arcade Center";
+    }
+
+    function showLeaderboard() {
+        gameMenu.classList.add('hidden');
+        leaderboardView.classList.remove('hidden');
+        document.getElementById('modal-title').textContent = "Hall of Fame";
+
+        const scores = scoreManager.getScores();
+        let html = '';
+
+        // Tetris
+        html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Tetris</div><ul class="leaderboard-list">`;
+        if (scores.tetris && scores.tetris.length) {
+            scores.tetris.forEach(s => html += `<li><span>${new Date(s.date).toLocaleDateString()}</span><span>${s.score}</span></li>`);
+        } else {
+            html += `<li>No scores yet</li>`;
+        }
+        html += `</ul></div>`;
+
+        // Snake
+        html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Snake</div><ul class="leaderboard-list">`;
+        if (scores.snake && scores.snake.length) {
+            scores.snake.forEach(s => html += `<li><span>${new Date(s.date).toLocaleDateString()}</span><span>${s.score}</span></li>`);
+        } else {
+            html += `<li>No scores yet</li>`;
+        }
+        html += `</ul></div>`;
+
+        // Tic-Tac-Toe
+        html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Tic-Tac-Toe (Max Streak)</div><ul class="leaderboard-list">`;
+        html += `<li><span>Current Best Streak</span><span>${scores.tictactoe || 0}</span></li>`;
+        html += `</ul></div>`;
+
+        leaderboardContent.innerHTML = html;
     }
 
     function startGame(gameName) {
         gameMenu.classList.add('hidden');
         gameArea.classList.remove('hidden');
+        leaderboardView.classList.add('hidden');
         currentGame = gameName;
 
         document.querySelectorAll('.game-container').forEach(el => el.classList.add('hidden'));
@@ -390,11 +511,13 @@
     let tttBoard = Array(9).fill(null);
     let tttPlayer = 'X';
     let tttActive = true;
+    let tttStreak = 0;
 
     function initTicTacToe() {
         tttBoard = Array(9).fill(null);
         tttPlayer = 'X';
         tttActive = true;
+        tttStreak = 0;
         updateTicTacToeUI();
     }
 
@@ -412,11 +535,26 @@
             boardEl.appendChild(cellEl);
         });
 
-        if (checkTicTacToeWin()) {
-            statusEl.textContent = `Player ${tttPlayer === 'X' ? 'O' : 'X'} Wins!`;
+        const winner = checkTicTacToeWin();
+        if (winner) {
+            statusEl.textContent = `Player ${winner} Wins!`;
             tttActive = false;
+
+            if (winner === 'X') {
+                soundManager.play('win');
+                tttStreak++;
+                const isHigh = scoreManager.saveScore('tictactoe', tttStreak);
+                if (isHigh) {
+                    statusEl.textContent += " (New Record!)";
+                }
+            } else {
+                soundManager.play('gameover');
+                tttStreak = 0; // Reset streak on loss
+            }
+
         } else if (!tttBoard.includes(null)) {
             statusEl.textContent = "It's a Draw!";
+            soundManager.play('gameover');
             tttActive = false;
         } else {
             statusEl.textContent = `Player ${tttPlayer}'s Turn`;
@@ -424,12 +562,38 @@
     }
 
     function handleTicTacToeClick(index) {
-        if (!tttActive || tttBoard[index]) return;
-        tttBoard[index] = tttPlayer;
-        if (!checkTicTacToeWin()) {
-            tttPlayer = tttPlayer === 'X' ? 'O' : 'X';
+        if (!tttActive || tttBoard[index] || tttPlayer !== 'X') return;
+
+        // Player Move
+        tttBoard[index] = 'X';
+        soundManager.play('click');
+
+        if (checkTicTacToeWin() || !tttBoard.includes(null)) {
+            updateTicTacToeUI();
+            return;
         }
+
+        tttPlayer = 'O';
         updateTicTacToeUI();
+
+        // CPU Move
+        setTimeout(() => {
+            if (!tttActive) return;
+            makeCPUMove();
+            if (!checkTicTacToeWin()) {
+                tttPlayer = 'X';
+            }
+            updateTicTacToeUI();
+        }, 500);
+    }
+
+    function makeCPUMove() {
+        const emptyIndices = tttBoard.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
+        if (emptyIndices.length > 0) {
+            const randomIdx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+            tttBoard[randomIdx] = 'O';
+            soundManager.play('move');
+        }
     }
 
     function checkTicTacToeWin() {
@@ -438,10 +602,14 @@
             [0,3,6], [1,4,7], [2,5,8], // Cols
             [0,4,8], [2,4,6]           // Diags
         ];
-        return wins.some(combo => {
+
+        for (const combo of wins) {
             const [a, b, c] = combo;
-            return tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c];
-        });
+            if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
+                return tttBoard[a];
+            }
+        }
+        return null;
     }
 
     // ==========================================
@@ -453,7 +621,9 @@
     let snakeDir = 'right';
     let snakeNextDir = 'right';
     let snakeScore = 0;
-    let snakeInterval = null;
+    let snakeLastTime = 0;
+    let snakeSpeed = 100;
+    let snakeAccumulator = 0;
     const snakeGrid = 20;
 
     function initSnake() {
@@ -461,17 +631,39 @@
         snakeCanvas = document.getElementById('snake-canvas');
         snakeCtx = snakeCanvas.getContext('2d');
 
+        // Ensure compact size
+        snakeCanvas.width = 400;
+        snakeCanvas.height = 300; // Reduced height to fit better
+
         snake = [{x: 10, y: 10}, {x: 9, y: 10}, {x: 8, y: 10}];
         snakeDir = 'right';
         snakeNextDir = 'right';
         snakeScore = 0;
+        snakeSpeed = 100;
         document.getElementById('snake-score').textContent = snakeScore;
         placeSnakeFood();
 
-        // Use SetInterval for Snake speed control
-        snakeInterval = setInterval(updateSnake, 100);
+        snakeLastTime = 0;
+        snakeAccumulator = 0;
 
+        gameLoopId = requestAnimationFrame(gameLoopSnake);
         document.addEventListener('keydown', handleSnakeInput);
+    }
+
+    function gameLoopSnake(time) {
+        if (currentGame !== 'snake') return;
+
+        const deltaTime = time - snakeLastTime;
+        snakeLastTime = time;
+        snakeAccumulator += deltaTime;
+
+        if (snakeAccumulator > snakeSpeed) {
+            updateSnake();
+            snakeAccumulator = 0;
+        }
+
+        drawSnake();
+        gameLoopId = requestAnimationFrame(gameLoopSnake);
     }
 
     function handleSnakeInput(e) {
@@ -483,10 +675,22 @@
         }
 
         switch(e.key) {
-            case 'ArrowUp': if (snakeDir !== 'down') snakeNextDir = 'up'; break;
-            case 'ArrowDown': if (snakeDir !== 'up') snakeNextDir = 'down'; break;
-            case 'ArrowLeft': if (snakeDir !== 'right') snakeNextDir = 'left'; break;
-            case 'ArrowRight': if (snakeDir !== 'left') snakeNextDir = 'right'; break;
+            case 'ArrowUp':
+                if (snakeDir !== 'down') snakeNextDir = 'up';
+                soundManager.play('move');
+                break;
+            case 'ArrowDown':
+                if (snakeDir !== 'up') snakeNextDir = 'down';
+                soundManager.play('move');
+                break;
+            case 'ArrowLeft':
+                if (snakeDir !== 'right') snakeNextDir = 'left';
+                soundManager.play('move');
+                break;
+            case 'ArrowRight':
+                if (snakeDir !== 'left') snakeNextDir = 'right';
+                soundManager.play('move');
+                break;
         }
     }
 
@@ -502,8 +706,6 @@
     }
 
     function updateSnake() {
-        if (currentGame !== 'snake') return;
-
         snakeDir = snakeNextDir;
         const head = { ...snake[0] };
 
@@ -512,8 +714,7 @@
         if (snakeDir === 'up') head.y--;
         if (snakeDir === 'down') head.y++;
 
-        // Wrap around? Or Game Over? Classic snake is game over on wall.
-        // Let's do Game Over on wall for challenge.
+        // Wall Collision
         if (head.x < 0 || head.x >= snakeCanvas.width / snakeGrid ||
             head.y < 0 || head.y >= snakeCanvas.height / snakeGrid ||
             snake.some(seg => seg.x === head.x && seg.y === head.y)) {
@@ -525,13 +726,15 @@
 
         if (head.x === snakeFood.x && head.y === snakeFood.y) {
             snakeScore += 10;
+            // Speed up slightly
+            if (snakeSpeed > 50) snakeSpeed -= 1;
+
             document.getElementById('snake-score').textContent = snakeScore;
+            soundManager.play('eat');
             placeSnakeFood();
         } else {
             snake.pop();
         }
-
-        drawSnake();
     }
 
     function drawSnake() {
@@ -539,19 +742,44 @@
         snakeCtx.fillStyle = '#111827';
         snakeCtx.fillRect(0, 0, snakeCanvas.width, snakeCanvas.height);
 
+        // Grid lines
+        snakeCtx.strokeStyle = '#1F2937';
+        snakeCtx.lineWidth = 1;
+        for (let x = 0; x <= snakeCanvas.width; x += snakeGrid) {
+            snakeCtx.beginPath();
+            snakeCtx.moveTo(x, 0);
+            snakeCtx.lineTo(x, snakeCanvas.height);
+            snakeCtx.stroke();
+        }
+        for (let y = 0; y <= snakeCanvas.height; y += snakeGrid) {
+            snakeCtx.beginPath();
+            snakeCtx.moveTo(0, y);
+            snakeCtx.lineTo(snakeCanvas.width, y);
+            snakeCtx.stroke();
+        }
+
         // Food
         snakeCtx.fillStyle = '#EF4444';
+        snakeCtx.shadowBlur = 10;
+        snakeCtx.shadowColor = '#EF4444';
         snakeCtx.fillRect(snakeFood.x * snakeGrid, snakeFood.y * snakeGrid, snakeGrid - 2, snakeGrid - 2);
+        snakeCtx.shadowBlur = 0;
 
         // Snake
-        snakeCtx.fillStyle = '#10B981';
-        snake.forEach(seg => {
+        snakeCtx.shadowBlur = 5;
+        snakeCtx.shadowColor = '#10B981';
+        snake.forEach((seg, index) => {
+            snakeCtx.fillStyle = index === 0 ? '#34D399' : '#10B981'; // Head is brighter
             snakeCtx.fillRect(seg.x * snakeGrid, seg.y * snakeGrid, snakeGrid - 2, snakeGrid - 2);
         });
+        snakeCtx.shadowBlur = 0;
     }
 
     function gameOverSnake() {
         stopGameLoop();
+        soundManager.play('gameover');
+        scoreManager.saveScore('snake', snakeScore);
+
         snakeCtx.fillStyle = 'white';
         snakeCtx.font = '30px sans-serif';
         snakeCtx.textAlign = 'center';
@@ -563,7 +791,7 @@
     // ==========================================
     const tetrisCols = 10;
     const tetrisRows = 20;
-    const blockSize = 24;
+    const blockSize = 20; // Reduced to 20px to fit 200x400 canvas
     let tetrisCanvas, tetrisCtx;
     let tetrisBoard = [];
     let tetrisScore = 0;
@@ -591,7 +819,11 @@
         stopGameLoop();
         tetrisCanvas = document.getElementById('tetris-canvas');
         tetrisCtx = tetrisCanvas.getContext('2d');
-        tetrisCtx.scale(1, 1); // Reset scale if needed?
+        tetrisCtx.scale(1, 1);
+
+        // Resize canvas to match new block size * rows/cols
+        tetrisCanvas.width = tetrisCols * blockSize;
+        tetrisCanvas.height = tetrisRows * blockSize;
 
         tetrisBoard = Array(tetrisRows).fill().map(() => Array(tetrisCols).fill(0));
         tetrisScore = 0;
@@ -614,9 +846,10 @@
         };
         if (collide(tetrisBoard, currentPiece)) {
             // Game Over
-            tetrisBoard.forEach(row => row.fill(0)); // Reset board for visual effect
-            tetrisScore = 0; // Or handle game over properly
-            // For now, just reset
+            soundManager.play('gameover');
+            scoreManager.saveScore('tetris', tetrisScore);
+            tetrisBoard.forEach(row => row.fill(0));
+            tetrisScore = 0;
             resetPiece();
         }
     }
@@ -639,22 +872,59 @@
         matrix.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value !== 0) {
-                    // Logic to determine color: if matrix is the board, value is string color type
-                    // If matrix is piece, use piece type
                     const color = typeof value === 'string' ? colors[value] : colors[currentPiece.type];
                     tetrisCtx.fillStyle = color;
+                    tetrisCtx.shadowBlur = 15;
+                    tetrisCtx.shadowColor = color;
                     tetrisCtx.fillRect((x + offset.x) * blockSize, (y + offset.y) * blockSize, blockSize - 1, blockSize - 1);
+                    tetrisCtx.shadowBlur = 0;
                 }
             });
         });
     }
 
     function drawTetris() {
+        if (!tetrisCtx) return;
         tetrisCtx.fillStyle = '#111827';
         tetrisCtx.fillRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
 
-        drawMatrix(tetrisBoard, {x: 0, y: 0});
-        drawMatrix(currentPiece.matrix, currentPiece.pos);
+        // Grid lines for retro feel
+        tetrisCtx.strokeStyle = '#1F2937';
+        tetrisCtx.lineWidth = 1;
+        for (let i = 0; i <= tetrisCols; i++) {
+            tetrisCtx.beginPath();
+            tetrisCtx.moveTo(i * blockSize, 0);
+            tetrisCtx.lineTo(i * blockSize, tetrisCanvas.height);
+            tetrisCtx.stroke();
+        }
+        for (let i = 0; i <= tetrisRows; i++) {
+            tetrisCtx.beginPath();
+            tetrisCtx.moveTo(0, i * blockSize);
+            tetrisCtx.lineTo(tetrisCanvas.width, i * blockSize);
+            tetrisCtx.stroke();
+        }
+
+        // Draw Ghost Piece
+        if (currentPiece) {
+            const ghostPos = { ...currentPiece.pos };
+            while (!collide(tetrisBoard, { matrix: currentPiece.matrix, pos: ghostPos, type: currentPiece.type })) {
+                ghostPos.y++;
+            }
+            ghostPos.y--;
+
+            currentPiece.matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        tetrisCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                        tetrisCtx.lineWidth = 1;
+                        tetrisCtx.strokeRect((x + ghostPos.x) * blockSize, (y + ghostPos.y) * blockSize, blockSize - 1, blockSize - 1);
+                    }
+                });
+            });
+
+            drawMatrix(tetrisBoard, {x: 0, y: 0});
+            drawMatrix(currentPiece.matrix, currentPiece.pos);
+        }
     }
 
     function merge(board, piece) {
@@ -708,6 +978,7 @@
         if (rowCount > 0) {
             tetrisScore += rowCount * 10 * rowCount;
             document.getElementById('tetris-score').textContent = tetrisScore;
+            soundManager.play('clear');
         }
     }
 
@@ -716,6 +987,7 @@
         if (collide(tetrisBoard, currentPiece)) {
             currentPiece.pos.y--;
             merge(tetrisBoard, currentPiece);
+            soundManager.play('drop');
             resetPiece();
             arenaSweep();
         }
