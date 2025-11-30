@@ -557,39 +557,54 @@ const latestClaimDate = latestClaim.date;
     dateSort.addEventListener('change', updateData);
 
     // --- Initial Load ---
-    const savedLanguage = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
-    if (savedLanguage !== currentLang) {
+    let savedLanguage = lang;
+    try {
+        savedLanguage = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+    } catch (e) {
+        console.warn('Language detection failed:', e);
+    }
+
+    if (savedLanguage && savedLanguage !== currentLang) {
         currentLang = savedLanguage;
         currentTranslations = getTranslations(currentLang);
     }
-    updateStaticTranslations();
-    updateData();
+
+    try {
+        updateStaticTranslations();
+        updateData();
+    } catch (e) {
+        console.error('Error updating data:', e);
+    }
 
 </script>
 <script>
     function updateClock() {
-        const clockElement = document.getElementById('clock');
-        if (!clockElement) return;
+        try {
+            const clockElement = document.getElementById('clock');
+            if (!clockElement) return;
 
-        const startDate = new Date(clockElement.dataset.startDate);
-        const now = new Date();
-        const diff = now - startDate;
+            const startDate = new Date(clockElement.dataset.startDate);
+            const now = new Date();
+            const diff = now - startDate;
 
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-        clockElement.textContent =
-            `${days.toString().padStart(2, '0')}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+            clockElement.textContent =
+                `${days.toString().padStart(2, '0')}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
 
-        // Change color based on elapsed time
-        if (days < 30) {
-            clockElement.style.color = '#60A5FA'; // Calm blue
-        } else if (days < 60) {
-            clockElement.style.color = '#FBBF24'; // Warning yellow
-        } else {
-            clockElement.style.color = '#EF4444'; // Warning red
+            // Change color based on elapsed time
+            if (days < 30) {
+                clockElement.style.color = '#60A5FA'; // Calm blue
+            } else if (days < 60) {
+                clockElement.style.color = '#FBBF24'; // Warning yellow
+            } else {
+                clockElement.style.color = '#EF4444'; // Warning red
+            }
+        } catch (e) {
+            console.error('Error updating clock:', e);
         }
     }
 
