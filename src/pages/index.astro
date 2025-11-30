@@ -1,6 +1,5 @@
 ---
 // --- PAGE BRAIN ---
-import { CLAIMS_DATA } from '../CLAIMS_DATA';
 import Layout from '../layouts/Layout.astro';
 import LanguageSwitcher from '../components/LanguageSwitcher.astro';
 import GameCenter from '../components/GameCenter.astro';
@@ -21,15 +20,6 @@ const translations = {
 // --- Language Detection ---
 let lang = 'en'; // Default language
 const t = translations[lang] || en;
-
-// Get the most recent claim date (excluding pending claims for the clock)
-const validClaims = CLAIMS_DATA.filter(claim => claim.status !== 'pending');
-const latestClaim = validClaims.length > 0 ? validClaims.reduce((latest, current) => {
-    const latestDate = new Date(latest.date);
-    const currentDate = new Date(current.date);
-    return currentDate > latestDate ? current : latest;
-}) : CLAIMS_DATA[0];
-const latestClaimDate = latestClaim.date;
 ---
 
 <Layout lang={lang} title={t.title}>
@@ -52,49 +42,6 @@ const latestClaimDate = latestClaim.date;
                 <button type="submit" class="submit-button" id="submit-prediction-button">{t.submit_prediction}</button>
             </form>
         </div>
-
-        <div class="clock-container">
-            <div class="last-claim">
-                <p id="time-elapsed">{t.time_elapsed}</p>
-                <p><strong id="last-claim-claim-label">{t.claim_colon}</strong> <span id="last-claim-claim-text">{latestClaim.claim[lang] || latestClaim.claim['en']}</span></p>
-                <p><strong id="last-claim-claimer-label">{t.claimer_colon}</strong> {latestClaim.claimer}</p>
-                <p><strong id="last-claim-date-label">{t.date_colon}</strong> {latestClaim.date}</p>
-            </div>
-            <div id="last-burst-bubble" class="clock-title">{t.last_burst_bubble}</div>
-            <div id="clock" class="clock" data-start-date={latestClaimDate}></div>
-            <p class="time-limit-note" id="time-limit-note">{t.time_limit_note}</p>
-        </div>
-
-        <div class="table-controls">
-            <div class="filter-container">
-                <label id="filter-by-status-label" for="status-filter">{t.filter_by_status}</label>
-                <select id="status-filter">
-                    <option id="filter-all" value="all">{t.all}</option>
-                    <option id="filter-ongoing" value="ongoing">{t.ongoing}</option>
-                    <option id="filter-pending" value="pending">{t.pending}</option>
-                    <option id="filter-expired-unproven" value="expired_unproven">{t.expired_unproven}</option>
-                </select>
-            </div>
-            <div class="sort-container">
-                <label id="sort-by-date-label" for="date-sort">{t.sort_by_date}</label>
-                <select id="date-sort">
-                    <option id="sort-newest" value="newest">{t.newest_first}</option>
-                    <option id="sort-oldest" value="oldest">{t.oldest_first}</option>
-                </select>
-            </div>
-        </div>
-
-        <div id="cards-grid" class="cards-grid">
-            <!-- Cards will be injected here by JS -->
-        </div>
-
-        <div class="legend-section">
-          <h3 id="legend-title">{t.status_legend}</h3>
-          <p><span class="badge status-ongoing">{t.ongoing}</span> <span id="legend-ongoing">{t.status_ongoing_desc}</span></p>
-          <p><span class="badge status-pending">{t.pending}</span> <span id="legend-pending">{t.status_pending_desc}</span></p>
-          <p><span class="badge status-expired-unproven">{t.expired_unproven}</span> <span id="legend-expired-unproven" set:html={t.status_expired_unproven_desc} /></span></p>
-        </div>
-
     </main>
 </Layout>
 
@@ -166,243 +113,6 @@ const latestClaimDate = latestClaim.date;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
     }
-    .time-limit-note {
-        text-align: center;
-        margin-top: 1rem;
-        color: #9CA3AF;
-        font-size: 0.875rem;
-    }
-
-    /* Clock Section */
-    .clock-container {
-        text-align: center;
-        margin-bottom: 4rem;
-        position: relative;
-        padding: 2rem;
-    }
-
-    .clock-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #9CA3AF;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        margin-bottom: 0.5rem;
-    }
-
-    .clock {
-        font-size: 6rem;
-        font-weight: 900;
-        color: #fff;
-        letter-spacing: 0.05em;
-        text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(96, 165, 250, 0.3);
-        transition: all 0.5s ease;
-        line-height: 1.1;
-        margin-bottom: 1rem;
-    }
-
-    @media (max-width: 768px) {
-        .clock {
-            font-size: 3rem;
-        }
-    }
-
-    .last-claim {
-        margin-bottom: 2rem;
-        padding: 1.5rem;
-        background: rgba(31, 41, 55, 0.6);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 1rem;
-        text-align: center;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-
-    .last-claim p {
-        margin: 0.5rem 0;
-    }
-
-    /* Controls */
-    .table-controls {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 2rem;
-        background: rgba(31, 41, 55, 0.4);
-        padding: 1rem;
-        border-radius: 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .filter-container,
-    .sort-container {
-        display: flex;
-        align-items: center;
-    }
-
-    .filter-container label,
-    .sort-container label {
-        margin-right: 0.5rem;
-        color: #D1D5DB;
-        font-weight: 500;
-    }
-
-    .filter-container select,
-    .sort-container select {
-        background-color: #1F2937;
-        color: white;
-        border: 1px solid #4B5563;
-        border-radius: 0.375rem;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-    }
-
-    /* Grid Layout */
-    .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-bottom: 3rem;
-    }
-
-    .claim-card {
-        background: rgba(31, 41, 55, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 1rem;
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .claim-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        border-color: rgba(96, 165, 250, 0.3);
-    }
-
-    .card-thumbnail-container {
-        position: relative;
-        width: 100%;
-        padding-top: 56.25%; /* 16:9 Aspect Ratio */
-        overflow: hidden;
-    }
-
-    .card-thumbnail {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-
-    .claim-card:hover .card-thumbnail {
-        transform: scale(1.05);
-    }
-
-    .card-content {
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-    }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1rem;
-    }
-
-    .card-date {
-        font-size: 0.875rem;
-        color: #9CA3AF;
-    }
-
-    .card-claimer {
-        font-weight: 600;
-        color: white;
-        margin-bottom: 0.5rem;
-    }
-
-    .card-summary-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(17, 24, 39, 0.9);
-        padding: 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        backdrop-filter: blur(5px);
-        text-align: center;
-    }
-
-    .claim-card:hover .card-summary-overlay {
-        opacity: 1;
-        pointer-events: none;
-    }
-
-    .card-thumbnail-link {
-        display: block;
-        width: 100%;
-        height: 100%;
-    }
-
-    .card-text {
-        color: #E5E7EB;
-        font-size: 1rem;
-        line-height: 1.5;
-    }
-
-    /* Status Badges */
-    .badge {
-        display: inline-flex;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        white-space: nowrap;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .status-ongoing { background-color: rgba(6, 95, 70, 0.2); color: #6EE7B7; border: 1px solid rgba(6, 95, 70, 0.5); }
-    .status-pending { background-color: rgba(146, 64, 14, 0.2); color: #FCD34D; border: 1px solid rgba(146, 64, 14, 0.5); }
-    .status-expired-unproven { background-color: rgba(153, 27, 27, 0.2); color: #FCA5A5; border: 1px solid rgba(153, 27, 27, 0.5); }
-    .status-expired { background-color: rgba(31, 41, 55, 0.5); color: #9CA3AF; border: 1px solid #4B5563; }
-
-    /* Legend */
-    .legend-section {
-        margin-top: 3rem;
-        padding: 2rem;
-        background: rgba(31, 41, 55, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 1rem;
-        color: #D1D5DB;
-    }
-    .legend-section h3 {
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-        font-size: 1.25rem;
-        color: white;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 0.5rem;
-    }
-    .legend-section p {
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
 
     .hidden {
         display: none !important;
@@ -418,7 +128,7 @@ const latestClaimDate = latestClaim.date;
     }
 </style>
 
-<script define:vars={{ latestClaimDate, CLAIMS_DATA, lang, t, translations }}>
+<script define:vars={{ lang, t, translations }}>
     function init() {
         // --- Easter Egg Logic ---
         let titleClickCount = 0;
@@ -439,10 +149,6 @@ const latestClaimDate = latestClaim.date;
             });
         }
 
-        const statusFilter = document.getElementById('status-filter');
-        const dateSort = document.getElementById('date-sort');
-        const cardsGrid = document.getElementById('cards-grid');
-
         let currentLang = lang;
         let currentTranslations = t;
 
@@ -450,15 +156,6 @@ const latestClaimDate = latestClaim.date;
         function getTranslations(langCode) {
             return translations[langCode] || translations['en'];
         }
-
-        // Helper functions to style the status cells
-        const getStatusClass = (status) => {
-            if (status.toLowerCase().startsWith('ongoing')) return 'status-ongoing';
-            if (status.toLowerCase().startsWith('pending')) return 'status-pending';
-            if (status === 'expired_unproven') return 'status-expired-unproven';
-            if (status.toLowerCase().startsWith('expired')) return 'status-expired';
-            return 'status-default';
-        };
 
         function updateStaticTranslations() {
             if (!mainTitle) return; // Basic check
@@ -468,136 +165,9 @@ const latestClaimDate = latestClaim.date;
             const subtitle = document.getElementById('subtitle');
             if (subtitle) subtitle.textContent = currentTranslations.subtitle;
 
-            const timeElapsed = document.getElementById('time-elapsed');
-            if (timeElapsed) timeElapsed.textContent = currentTranslations.time_elapsed;
-
-            const lastBurstBubble = document.getElementById('last-burst-bubble');
-            if (lastBurstBubble) lastBurstBubble.textContent = currentTranslations.last_burst_bubble;
-
-            const filterLabel = document.getElementById('filter-by-status-label');
-            if (filterLabel) filterLabel.textContent = currentTranslations.filter_by_status;
-
-            const filterAll = document.getElementById('filter-all');
-            if (filterAll) filterAll.textContent = currentTranslations.all;
-
-            const filterOngoing = document.getElementById('filter-ongoing');
-            if (filterOngoing) filterOngoing.textContent = currentTranslations.ongoing;
-
-            const filterPending = document.getElementById('filter-pending');
-            if (filterPending) filterPending.textContent = currentTranslations.pending;
-
-            const filterExpired = document.getElementById('filter-expired-unproven');
-            if (filterExpired) filterExpired.textContent = currentTranslations.expired_unproven;
-
-            const sortLabel = document.getElementById('sort-by-date-label');
-            if (sortLabel) sortLabel.textContent = currentTranslations.sort_by_date;
-
-            const sortNewest = document.getElementById('sort-newest');
-            if (sortNewest) sortNewest.textContent = currentTranslations.newest_first;
-
-            const sortOldest = document.getElementById('sort-oldest');
-            if (sortOldest) sortOldest.textContent = currentTranslations.oldest_first;
-
-            const legendTitle = document.getElementById('legend-title');
-            if (legendTitle) legendTitle.textContent = currentTranslations.status_legend;
-
-            const legendOngoing = document.getElementById('legend-ongoing');
-            if (legendOngoing) legendOngoing.textContent = currentTranslations.status_ongoing_desc;
-
-            const legendPending = document.getElementById('legend-pending');
-            if (legendPending) legendPending.textContent = currentTranslations.status_pending_desc;
-
-            const legendExpired = document.getElementById('legend-expired-unproven');
-            if (legendExpired) legendExpired.innerHTML = currentTranslations.status_expired_unproven_desc;
-
             const submitBtn = document.getElementById('submit-prediction-button');
             if (submitBtn) submitBtn.textContent = currentTranslations.submit_prediction;
-
-            const timeLimitNote = document.getElementById('time-limit-note');
-            if (timeLimitNote) timeLimitNote.textContent = currentTranslations.time_limit_note;
-
-            // Update last claim section
-            const latestClaim = CLAIMS_DATA.find(c => c.date === latestClaimDate);
-            if (latestClaim) {
-                const labelClaim = document.getElementById('last-claim-claim-label');
-                if (labelClaim) labelClaim.textContent = currentTranslations.claim_colon;
-
-                const textClaim = document.getElementById('last-claim-claim-text');
-                if (textClaim) textClaim.textContent = latestClaim.claim[currentLang] || latestClaim.claim['en'];
-
-                const labelClaimer = document.getElementById('last-claim-claimer-label');
-                if (labelClaimer) labelClaimer.textContent = currentTranslations.claimer_colon;
-
-                const labelDate = document.getElementById('last-claim-date-label');
-                if (labelDate) labelDate.textContent = currentTranslations.date_colon;
-            }
         }
-
-        let claims = [...CLAIMS_DATA];
-
-        function renderCards() {
-            if (!cardsGrid) return;
-            cardsGrid.innerHTML = '';
-            claims.forEach(claim => {
-                const card = document.createElement('div');
-                card.className = 'claim-card';
-
-                const claimText = claim.claim[currentLang] || claim.claim['en'];
-                const statusText = currentTranslations[claim.status] || claim.status;
-                const statusClass = getStatusClass(claim.status);
-
-                card.innerHTML = `
-                    <div class="card-thumbnail-container">
-                        <a href="${claim.link}" target="_blank" rel="noopener noreferrer" class="card-thumbnail-link">
-                             <img src="${claim.thumbnailUrl}" alt="Thumbnail" class="card-thumbnail" referrerPolicy="no-referrer" loading="lazy" />
-                             <div class="card-summary-overlay">
-                                <p class="card-text">"${claimText}"</p>
-                             </div>
-                        </a>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-header">
-                            <span class="badge ${statusClass}">${statusText}</span>
-                            <span class="card-date">${claim.date}</span>
-                        </div>
-                        <h3 class="card-claimer">${claim.claimer}</h3>
-                    </div>
-                `;
-                cardsGrid.appendChild(card);
-            });
-        }
-
-        function updateData() {
-            let filteredClaims = [...CLAIMS_DATA];
-
-            // Filter by status
-            if (statusFilter) {
-                const status = statusFilter.value;
-                if (status !== 'all') {
-                    filteredClaims = filteredClaims.filter(claim => claim.status === status);
-                }
-            }
-
-            // Sort by date
-            if (dateSort) {
-                const sortOrder = dateSort.value;
-                filteredClaims.sort((a, b) => {
-                    const dateA = new Date(a.date);
-                    const dateB = new Date(b.date);
-                    if (sortOrder === 'newest') {
-                        return dateB - dateA;
-                    } else {
-                        return dateA - dateB;
-                    }
-                });
-            }
-
-            claims = filteredClaims;
-            renderCards();
-        }
-
-        if (statusFilter) statusFilter.addEventListener('change', updateData);
-        if (dateSort) dateSort.addEventListener('change', updateData);
 
         // --- Initial Load ---
         let savedLanguage = lang;
@@ -614,9 +184,8 @@ const latestClaimDate = latestClaim.date;
 
         try {
             updateStaticTranslations();
-            updateData();
         } catch (e) {
-            console.error('Error updating data:', e);
+            console.error('Error updating static translations:', e);
         }
     }
 
@@ -624,45 +193,5 @@ const latestClaimDate = latestClaim.date;
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
-    }
-</script>
-<script is:inline>
-    function updateClock() {
-        try {
-            const clockElement = document.getElementById('clock');
-            if (!clockElement) return;
-
-            const startDate = new Date(clockElement.dataset.startDate);
-            if (isNaN(startDate.getTime())) return;
-
-            const now = new Date();
-            const diff = now - startDate;
-
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            clockElement.textContent =
-                `${days.toString().padStart(2, '0')}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
-
-            // Change color based on elapsed time
-            if (days < 30) {
-                clockElement.style.color = '#60A5FA'; // Calm blue
-            } else if (days < 60) {
-                clockElement.style.color = '#FBBF24'; // Warning yellow
-            } else {
-                clockElement.style.color = '#EF4444'; // Warning red
-            }
-        } catch (e) {
-            console.error('Error updating clock:', e);
-        }
-    }
-
-    setInterval(updateClock, 1000);
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', updateClock);
-    } else {
-        updateClock();
     }
 </script>
