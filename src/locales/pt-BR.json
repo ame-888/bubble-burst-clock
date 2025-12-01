@@ -5,6 +5,7 @@
   "future_prediction": "PREVISÃO FUTURA",
   "claim_label": "Alegação",
   "creator_label": "Criador",
+  "upload_label": "Enviado",
   "window_label": "Janela",
   "form_heading": "Enviar uma Previsão",
   "form_description": "Encontrou uma nova previsão do fim do mundo da IA? Avise-nos!",

@@ -22,6 +22,41 @@ const translations = {
 // --- Language Detection ---
 let lang = 'en'; // Default language
 const t = translations[lang] || en;
+
+// --- Status Logic ---
+// SIMULATED TIME FOR STORY CONTEXT: Dec 1, 2025
+// In a real app, this would be new Date().
+const now = new Date('2025-12-01T00:00:00Z');
+const processedPredictions = predictions.map(p => {
+    let status = 'FUTURE PREDICTION'; // Default
+    let statusKey = 'future_prediction'; // For translation key lookup
+
+    const start = p.validityStart ? new Date(p.validityStart) : null;
+    const end = p.validityEnd ? new Date(p.validityEnd) : null;
+
+    if (start && end) {
+        if (now < start) {
+            status = 'FUTURE PREDICTION';
+            statusKey = 'future_prediction';
+        } else if (now >= start && now <= end) {
+            status = 'ACTIVE';
+            statusKey = 'active_prediction'; // Ensure this key exists or handle fallback
+        } else {
+            status = 'EXPIRED';
+            statusKey = 'expired_prediction'; // Ensure this key exists or handle fallback
+        }
+    }
+
+    return { ...p, status, statusKey, failureDate: end };
+});
+
+// Find the latest failure date for the Clock
+const expiredPredictions = processedPredictions.filter(p => p.status === 'EXPIRED');
+expiredPredictions.sort((a, b) => b.failureDate - a.failureDate);
+const latestExpired = expiredPredictions.length > 0 ? expiredPredictions[0] : null;
+const latestClaimDate = latestExpired ? latestExpired.failureDate.toISOString() : null;
+const simulatedServerTime = now.getTime(); // Pass to client
+
 ---
 
 <Layout lang={lang} title={t.title}>
@@ -36,9 +71,15 @@ const t = translations[lang] || en;
         <h1 id="main-title" class="interactive-title">{t.title}</h1>
         <h2 id="subtitle">{t.subtitle}</h2>
 
+        <!-- THE CLOCK -->
+        <div id="clock-container" class={latestClaimDate ? '' : 'hidden'}>
+            <div class="clock-label">TIME SINCE LAST BUBBLE BURST</div>
+            <div id="big-clock">00d 00h 00m 00s</div>
+        </div>
+
         <div class="predictions-grid">
-            {predictions.map(p => (
-                <PredictionCard prediction={p} t={t} />
+            {processedPredictions.map(p => (
+                <PredictionCard prediction={p} t={t} status={p.status} />
             ))}
         </div>
 
@@ -74,6 +115,45 @@ const t = translations[lang] || en;
     }
 
     h2 { font-size: 1.25rem; color: #9CA3AF; text-align: center; margin-bottom: 3rem; }
+
+    /* Clock Styling */
+    #clock-container {
+        text-align: center;
+        margin-bottom: 4rem;
+        padding: 2rem;
+        background: rgba(17, 24, 39, 0.5);
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 0 40px rgba(96, 165, 250, 0.1);
+        backdrop-filter: blur(5px);
+    }
+
+    .clock-label {
+        font-size: 1rem;
+        color: #9CA3AF;
+        letter-spacing: 0.2em;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    #big-clock {
+        font-family: 'Courier New', Courier, monospace; /* Monospace for alignment */
+        font-size: 4rem;
+        font-weight: 700;
+        color: #F3F4F6;
+        text-shadow: 0 0 20px rgba(96, 165, 250, 0.6);
+        letter-spacing: -0.05em;
+        background: linear-gradient(to bottom, #FFFFFF, #93C5FD);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    @media (max-width: 600px) {
+        #big-clock {
+            font-size: 2.5rem;
+        }
+    }
 
     /* Predictions Grid */
     .predictions-grid {
@@ -212,7 +292,7 @@ const t = translations[lang] || en;
     }
 </style>
 
-<script define:vars={{ lang, t, translations }}>
+<script define:vars={{ lang, t, translations, latestClaimDate, simulatedServerTime }}>
     function init() {
         // --- Easter Egg Logic ---
         let titleClickCount = 0;
@@ -274,6 +354,44 @@ const t = translations[lang] || en;
             // Future improvement: Use a framework island or re-render logic if needed.
         }
 
+        // --- Clock Logic ---
+        function startClock() {
+            const clockElement = document.getElementById('big-clock');
+            if (!clockElement || !latestClaimDate) return;
+
+            const startDate = new Date(latestClaimDate);
+
+            // Calculate time offset: Simulated Server Time - Client Real Time
+            // This forces the client to perceive "now" as the simulated server time (Dec 1, 2025)
+            // plus whatever seconds pass while the user is on the page.
+            const serverTime = simulatedServerTime;
+            const clientTime = new Date().getTime();
+            const timeOffset = serverTime - clientTime;
+
+            function updateClock() {
+                // Effective Now = Client Current Time + Offset
+                const now = new Date(new Date().getTime() + timeOffset);
+                const diff = now - startDate;
+
+                if (diff < 0) {
+                    clockElement.textContent = "00d 00h 00m 00s";
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                const pad = (n) => n.toString().padStart(2, '0');
+
+                clockElement.textContent = `${pad(days)}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+            }
+
+            updateClock(); // Initial call
+            setInterval(updateClock, 1000);
+        }
+
         // --- Initial Load ---
         let savedLanguage = lang;
         try {
@@ -289,6 +407,7 @@ const t = translations[lang] || en;
 
         try {
             updateStaticTranslations();
+            startClock();
         } catch (e) {
             console.error('Error updating static translations:', e);
         }
