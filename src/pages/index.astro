@@ -72,12 +72,26 @@ const processedBenchmarks = benchmarks.models.map(m => {
     <meta slot="head" name="google-site-verification" content="gi2pzxwjvX7zQtdowKjXbAw1wGHfjs8Cdf2w5ThdNcM" />
 
     <LanguageSwitcher />
+    <button id="btn-about" class="about-button">ABOUT</button>
     <div id="game-center-wrapper" class="hidden">
         <GameCenter />
     </div>
 
     <!-- Modals -->
     <div id="modal-overlay" class="hidden"></div>
+
+    <div id="about-modal" class="modal hidden">
+        <div class="modal-content about-theme">
+            <button class="close-modal">&times;</button>
+            <h3>About Bubble Burst</h3>
+            <div class="about-content">
+                <p>Welcome to the <strong>AI Prediction Tracker</strong>.</p>
+                <p>We monitor the bold claims of the AI industry. The Clock counts up from the last failed prediction (or "bubble burst").</p>
+                <p>Explore active claims, submit new ones, and check the leaderboard to see which models really perform.</p>
+                <p class="secret-hint"><em>Psst... rumor has it the main title hides a retro secret if you tap it enough times.</em></p>
+            </div>
+        </div>
+    </div>
 
     <div id="submission-modal" class="modal hidden">
         <div class="modal-content">
@@ -146,9 +160,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
                 <p id="clock-explanation" class="explanation-text">{t.clock_explanation}</p>
             </div>
             <button id="btn-benchmark" class="benchmark-trigger" title="View Benchmarks">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-                    <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
-                </svg>
+                <span class="icon">🏆</span> OUR AI LEADERBOARD
             </button>
         </div>
 
@@ -316,52 +328,40 @@ const processedBenchmarks = benchmarks.models.map(m => {
 
     /* Benchmark Button */
     .clock-section-wrapper {
-        position: relative;
-        max-width: fit-content;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
         margin: 0 auto 4rem auto;
     }
 
     .benchmark-trigger {
-        position: absolute;
-        top: 50%;
-        right: -60px;
-        transform: translateY(-50%);
         background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
         border: none;
         color: white;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
+        padding: 0.75rem 1.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        border-radius: 2rem;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        gap: 0.5rem;
         box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         transition: all 0.2s;
         z-index: 10;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .benchmark-trigger .icon {
+        font-size: 1.2rem;
     }
 
     .benchmark-trigger:hover {
-        transform: translateY(-50%) scale(1.1);
-        box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
-    }
-
-    @media (max-width: 768px) {
-        .benchmark-trigger {
-            position: relative;
-            right: auto;
-            top: auto;
-            transform: none;
-            margin: 1rem auto 0 auto;
-        }
-        .clock-section-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .benchmark-trigger:hover {
-            transform: scale(1.1);
-        }
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
     }
 
     /* Modals */
@@ -408,6 +408,27 @@ const processedBenchmarks = benchmarks.models.map(m => {
         border: 1px solid rgba(245, 158, 11, 0.3);
         box-shadow: 0 0 30px rgba(245, 158, 11, 0.1);
         max-width: 500px;
+    }
+
+    .modal-content.about-theme {
+        border: 1px solid rgba(96, 165, 250, 0.3);
+        box-shadow: 0 0 30px rgba(96, 165, 250, 0.1);
+    }
+
+    .about-content {
+        line-height: 1.6;
+        color: #D1D5DB;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .secret-hint {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #9CA3AF;
+        border-top: 1px dashed rgba(255,255,255,0.1);
+        padding-top: 1rem;
     }
 
     .close-modal {
@@ -458,6 +479,29 @@ const processedBenchmarks = benchmarks.models.map(m => {
     }
     .fab-left:hover {
         box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+    }
+
+    /* About Button */
+    .about-button {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        z-index: 10;
+        background-color: #374151;
+        color: white;
+        border: 1px solid #4B5563;
+        border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-size: 0.875rem;
+        font-weight: 600;
+        font-family: inherit;
+        line-height: 1.25rem;
+    }
+
+    .about-button:hover {
+        background-color: #4B5563;
     }
 
     /* Benchmark Styling */
@@ -617,10 +661,12 @@ const processedBenchmarks = benchmarks.models.map(m => {
         const submissionModal = document.getElementById('submission-modal');
         const bugModal = document.getElementById('bug-modal');
         const benchmarkModal = document.getElementById('benchmark-modal');
+        const aboutModal = document.getElementById('about-modal');
 
         const btnSubmit = document.getElementById('fab-submit');
         const btnBug = document.getElementById('fab-bug');
         const btnBenchmark = document.getElementById('btn-benchmark');
+        const btnAbout = document.getElementById('btn-about');
 
         const closeButtons = document.querySelectorAll('.close-modal');
 
@@ -635,11 +681,13 @@ const processedBenchmarks = benchmarks.models.map(m => {
             submissionModal.classList.add('hidden');
             bugModal.classList.add('hidden');
             benchmarkModal.classList.add('hidden');
+            aboutModal.classList.add('hidden');
         }
 
         if (btnSubmit) btnSubmit.addEventListener('click', () => openModal(submissionModal));
         if (btnBug) btnBug.addEventListener('click', () => openModal(bugModal));
         if (btnBenchmark) btnBenchmark.addEventListener('click', () => openModal(benchmarkModal));
+        if (btnAbout) btnAbout.addEventListener('click', () => openModal(aboutModal));
         if (overlay) overlay.addEventListener('click', closeModal);
 
         closeButtons.forEach(btn => btn.addEventListener('click', closeModal));
