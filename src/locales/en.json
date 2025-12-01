@@ -15,5 +15,9 @@
   "email_placeholder": "Your Email",
   "message_placeholder": "Your Prediction",
   "status_explanation": "Future: Prediction starts later. Active: Currently tracking. Expired: Failed.",
-  "clock_explanation": "Time elapsed since the last failed prediction."
+  "clock_explanation": "Time elapsed since the last failed prediction.",
+  "sort_label": "Sort by:",
+  "sort_newest": "Newest First",
+  "sort_oldest": "Oldest First",
+  "sort_status": "Status"
 }

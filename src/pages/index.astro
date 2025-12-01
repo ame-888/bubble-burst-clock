@@ -164,7 +164,16 @@ const processedBenchmarks = benchmarks.models.map(m => {
             </button>
         </div>
 
-        <div class="predictions-grid">
+        <div class="sort-container">
+            <label for="sort-select" id="sort-label">{t.sort_label}</label>
+            <select id="sort-select">
+                <option value="newest" selected>{t.sort_newest}</option>
+                <option value="oldest">{t.sort_oldest}</option>
+                <option value="status">{t.sort_status}</option>
+            </select>
+        </div>
+
+        <div class="predictions-grid" id="predictions-grid">
             {processedPredictions.map(p => (
                 <PredictionCard prediction={p} t={t} status={p.status} />
             ))}
@@ -324,6 +333,50 @@ const processedBenchmarks = benchmarks.models.map(m => {
         gap: 2rem;
         margin-bottom: 4rem;
         padding: 0 1rem;
+    }
+
+    /* Sort Selector */
+    .sort-container {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+    }
+
+    #sort-label {
+        color: #9CA3AF;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    #sort-select {
+        background: rgba(31, 41, 55, 0.6);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        padding: 0.5rem 2rem 0.5rem 1rem;
+        font-family: inherit;
+        font-size: 0.9rem;
+        cursor: pointer;
+        outline: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1rem;
+        transition: all 0.2s;
+    }
+
+    #sort-select:hover {
+        background-color: rgba(31, 41, 55, 0.9);
+        border-color: rgba(96, 165, 250, 0.5);
+    }
+
+    #sort-select:focus {
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
     }
 
     /* Benchmark Button */
@@ -654,7 +707,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
     }
 </style>
 
-<script define:vars={{ lang, t, translations, latestClaimDate, simulatedServerTime }}>
+<script define:vars={{ lang, t, translations, latestClaimDate, simulatedServerTime, predictions }}>
     function init() {
         // --- Modal Logic ---
         const overlay = document.getElementById('modal-overlay');
@@ -751,11 +804,38 @@ const processedBenchmarks = benchmarks.models.map(m => {
             const statusExplanation = document.getElementById('status-explanation');
             if (statusExplanation) statusExplanation.textContent = currentTranslations.status_explanation;
 
-            // Note: Dynamic content like the prediction cards is rendered server-side in Astro
-            // and won't update client-side without full page reload or React/hydration.
-            // Since this is a static site mainly, reloading or server-side pref is fine.
-            // For now, we only update static elements that have IDs.
-            // Future improvement: Use a framework island or re-render logic if needed.
+            const sortLabel = document.getElementById('sort-label');
+            if (sortLabel) sortLabel.textContent = currentTranslations.sort_label;
+
+            const sortSelect = document.getElementById('sort-select');
+            if (sortSelect) {
+                // Update options text while preserving selection
+                const options = sortSelect.options;
+                if (options.length >= 3) {
+                    options[0].text = currentTranslations.sort_newest;
+                    options[1].text = currentTranslations.sort_oldest;
+                    options[2].text = currentTranslations.sort_status;
+                }
+            }
+
+            // Update prediction claim texts dynamically
+            const claimElements = document.querySelectorAll('.prediction-claim-text');
+            claimElements.forEach(el => {
+                const id = el.getAttribute('data-prediction-id');
+                const prediction = predictions.find(p => p.id === id);
+                if (prediction && prediction.claim) {
+                    let newText = '';
+                    if (typeof prediction.claim === 'string') {
+                        newText = prediction.claim;
+                    } else if (typeof prediction.claim === 'object') {
+                        newText = prediction.claim[currentLang] || prediction.claim['en'] || Object.values(prediction.claim)[0];
+                    }
+                    if (newText) {
+                         // Wrap in quotes to match server-side styling
+                        el.textContent = `"${newText}"`;
+                    }
+                }
+            });
         }
 
         // --- Clock Logic ---
@@ -796,6 +876,56 @@ const processedBenchmarks = benchmarks.models.map(m => {
             setInterval(updateClock, 1000);
         }
 
+        // --- Sort Logic ---
+        function setupSort() {
+            const sortSelect = document.getElementById('sort-select');
+            const grid = document.getElementById('predictions-grid');
+
+            if (!sortSelect || !grid) return;
+
+            function sortCards() {
+                const criteria = sortSelect.value;
+                const cards = Array.from(grid.children);
+
+                cards.sort((a, b) => {
+                    const dateA = new Date(a.getAttribute('data-upload-date') || 0);
+                    const dateB = new Date(b.getAttribute('data-upload-date') || 0);
+                    const statusA = a.getAttribute('data-status');
+                    const statusB = b.getAttribute('data-status');
+
+                    if (criteria === 'newest') {
+                        return dateB - dateA;
+                    } else if (criteria === 'oldest') {
+                        return dateA - dateB;
+                    } else if (criteria === 'status') {
+                        // Priority: Active (1) > Future (2) > Expired (3)
+                        const getPriority = (s) => {
+                            if (s === 'ACTIVE') return 1;
+                            if (s === 'FUTURE PREDICTION') return 2;
+                            if (s === 'EXPIRED') return 3;
+                            return 4;
+                        };
+                        const pA = getPriority(statusA);
+                        const pB = getPriority(statusB);
+
+                        if (pA !== pB) return pA - pB;
+                        return dateB - dateA; // Fallback to newest
+                    }
+                    return 0;
+                });
+
+                // Detach and re-append in new order
+                cards.forEach(card => grid.appendChild(card));
+            }
+
+            sortSelect.addEventListener('change', sortCards);
+
+            // Initial sort (default is Newest, which should match server render, but good to ensure)
+            // Actually server render might not be sorted by date descending by default unless the data array is.
+            // Let's force a sort on load to match the default selector value.
+            sortCards();
+        }
+
         // --- Initial Load ---
         let savedLanguage = lang;
         try {
@@ -812,6 +942,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
         try {
             updateStaticTranslations();
             startClock();
+            setupSort();
         } catch (e) {
             console.error('Error updating static translations:', e);
         }

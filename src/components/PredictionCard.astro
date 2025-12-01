@@ -20,11 +20,20 @@ if (status === 'FUTURE PREDICTION') {
     statusLabel = t.expired_prediction || 'EXPIRED'; // Make sure this key exists in en.json
     statusClass = 'status-badge-expired';
 }
+
+// Handle localized claim object
+// Default to English ('en') if available, or the first available key, or a fallback string
+let claimText = '';
+if (typeof prediction.claim === 'string') {
+    claimText = prediction.claim;
+} else if (typeof prediction.claim === 'object' && prediction.claim !== null) {
+    claimText = prediction.claim['en'] || Object.values(prediction.claim)[0] || '';
+}
 ---
 
-<a href={prediction.videoUrl} target="_blank" rel="noopener noreferrer" class="card">
+<a href={prediction.videoUrl} target="_blank" rel="noopener noreferrer" class="card" data-upload-date={prediction.uploadDate} data-status={status}>
     <div class="thumbnail-wrapper">
-        <img src={prediction.thumbnailUrl} alt={prediction.claim} class="thumbnail" />
+        <img src={prediction.thumbnailUrl} alt={claimText} class="thumbnail" />
         <div class="play-overlay">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="play-icon">
                 <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
@@ -36,7 +45,8 @@ if (status === 'FUTURE PREDICTION') {
             <span class="creator">{t.creator_label}: {prediction.creator}</span>
             <span class={`status-badge ${statusClass}`}>{statusLabel}</span>
         </div>
-        <p class="claim">"{prediction.claim}"</p>
+        <!-- Add data-prediction-id and a class for JS targeting -->
+        <p class="claim prediction-claim-text" data-prediction-id={prediction.id}>"{claimText}"</p>
         <div class="footer">
             {prediction.uploadDate && (
                 <span class="date-label">{t.upload_label}: {prediction.uploadDate}</span>
