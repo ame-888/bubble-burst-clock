@@ -39,5 +39,8 @@
   "status_expired_title": "EXPIRED",
   "status_expired_desc": "Failed",
   "fab_report_bug": "Report Bug",
-  "fab_submit_prediction": "Submit Prediction"
+  "fab_submit_prediction": "Submit Prediction",
+  "status_future_tooltip": "Prediction validity starts in the future. Countdown hasn't begun.",
+  "status_active_tooltip": "Prediction is currently being tracked. The 2-week validation window is open.",
+  "status_expired_tooltip": "The 2-week window has passed. The prediction failed to materialize."
 }

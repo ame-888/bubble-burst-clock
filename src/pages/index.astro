@@ -181,15 +181,15 @@ const processedBenchmarks = benchmarks.models.map(m => {
 
         <div class="explanation-container">
             <div class="status-legend">
-                <div class="status-badge future">
+                <div class="status-badge future" data-tooltip={t.status_future_tooltip}>
                     <span class="badge-title" id="status-future-title">{t.status_future_title}</span>
                     <span class="badge-desc" id="status-future-desc">{t.status_future_desc}</span>
                 </div>
-                <div class="status-badge active">
+                <div class="status-badge active" data-tooltip={t.status_active_tooltip}>
                     <span class="badge-title" id="status-active-title">{t.status_active_title}</span>
                     <span class="badge-desc" id="status-active-desc">{t.status_active_desc}</span>
                 </div>
-                <div class="status-badge expired">
+                <div class="status-badge expired" data-tooltip={t.status_expired_tooltip}>
                     <span class="badge-title" id="status-expired-title">{t.status_expired_title}</span>
                     <span class="badge-desc" id="status-expired-desc">{t.status_expired_desc}</span>
                 </div>
@@ -302,10 +302,56 @@ const processedBenchmarks = benchmarks.models.map(m => {
         min-width: 140px;
         border: 1px solid rgba(255, 255, 255, 0.05);
         transition: transform 0.2s;
+        position: relative; /* For tooltip positioning */
     }
 
     .status-badge:hover {
         transform: translateY(-3px);
+    }
+
+    /* Tooltip Styling */
+    .status-badge::before,
+    .status-badge::after {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s, visibility 0.2s;
+        pointer-events: none;
+        position: absolute;
+        z-index: 20;
+    }
+
+    /* Tooltip Text Bubble */
+    .status-badge::after {
+        content: attr(data-tooltip);
+        background: #111827; /* Dark background */
+        color: #F3F4F6;
+        font-size: 0.85rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        bottom: 110%; /* Above the element */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 200px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.1);
+        line-height: 1.4;
+    }
+
+    /* Tooltip Arrow */
+    .status-badge::before {
+        content: '';
+        border: 6px solid transparent;
+        border-top-color: #111827; /* Match bubble background */
+        bottom: calc(110% - 12px); /* Position it right below the bubble */
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .status-badge:hover::before,
+    .status-badge:hover::after {
+        opacity: 1;
+        visibility: visible;
     }
 
     .status-badge.future { border-top: 4px solid #3B82F6; }
@@ -538,7 +584,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
     .about-button {
         position: absolute;
         top: 1rem;
-        left: 1rem;
+        left: 4rem;
         z-index: 10;
         background-color: #374151;
         color: white;
@@ -847,6 +893,11 @@ const processedBenchmarks = benchmarks.models.map(m => {
             if (statusExpiredTitle) statusExpiredTitle.textContent = currentTranslations.status_expired_title;
             const statusExpiredDesc = document.getElementById('status-expired-desc');
             if (statusExpiredDesc) statusExpiredDesc.textContent = currentTranslations.status_expired_desc;
+
+            // Update Tooltips
+            document.querySelector('.status-badge.future')?.setAttribute('data-tooltip', currentTranslations.status_future_tooltip || '');
+            document.querySelector('.status-badge.active')?.setAttribute('data-tooltip', currentTranslations.status_active_tooltip || '');
+            document.querySelector('.status-badge.expired')?.setAttribute('data-tooltip', currentTranslations.status_expired_tooltip || '');
 
             // FABs
             if (btnBug) btnBug.textContent = currentTranslations.fab_report_bug;
