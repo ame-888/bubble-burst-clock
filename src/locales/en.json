@@ -13,5 +13,7 @@
   "form_description": "Found a new AI doomsday prediction or hype bubble claim? Let us know!",
   "name_placeholder": "Your Name",
   "email_placeholder": "Your Email",
-  "message_placeholder": "Your Prediction"
+  "message_placeholder": "Your Prediction",
+  "status_explanation": "Future: Prediction starts later. Active: Currently tracking. Expired: Failed.",
+  "clock_explanation": "Time elapsed since the last failed prediction."
 }

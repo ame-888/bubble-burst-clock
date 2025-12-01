@@ -11,5 +11,7 @@
   "form_description": "Encontrou uma nova previsão do fim do mundo da IA? Avise-nos!",
   "name_placeholder": "Seu Nome",
   "email_placeholder": "Seu Email",
-  "message_placeholder": "Sua Previsão"
+  "message_placeholder": "Sua Previsão",
+  "status_explanation": "Futuro: Previsão começa mais tarde. Ativo: Rastreando agora. Expirado: Falhou.",
+  "clock_explanation": "Tempo decorrido desde a última previsão falha."
 }

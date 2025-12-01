@@ -11,5 +11,7 @@
   "form_description": "AIの破滅予言や誇大広告を見つけましたか？お知らせください！",
   "name_placeholder": "お名前",
   "email_placeholder": "メールアドレス",
-  "message_placeholder": "あなたの予測"
+  "message_placeholder": "予測内容",
+  "status_explanation": "未来: 予測は後で始まります。アクティブ: 追跡中。期限切れ: 失敗。",
+  "clock_explanation": "最後の予測失敗からの経過時間。"
 }
