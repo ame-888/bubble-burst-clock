@@ -43,12 +43,16 @@ const t = translations[lang] || en;
         </div>
 
         <div class="submission-container">
-            <form action="https://formbold.com/s/3jKWm" method="POST" id="submit-prediction-form">
-                <input type="text" name="name" placeholder="Your Name" required>
-                <input type="email" name="email" placeholder="Your Email" required>
-                <textarea name="message" placeholder="Your Prediction" required></textarea>
-                <button type="submit" class="submit-button" id="submit-prediction-button">{t.submit_prediction}</button>
-            </form>
+            <div class="submission-content">
+                <h3 id="form-heading">{t.form_heading}</h3>
+                <p id="form-description">{t.form_description}</p>
+                <form action="https://formbold.com/s/3jKWm" method="POST" id="submit-prediction-form">
+                    <input type="text" name="name" placeholder="Your Name" required>
+                    <input type="email" name="email" placeholder="Your Email" required>
+                    <textarea name="message" placeholder="Your Prediction" required></textarea>
+                    <button type="submit" class="submit-button" id="submit-prediction-button">{t.submit_prediction}</button>
+                </form>
+            </div>
         </div>
     </main>
 </Layout>
@@ -82,53 +86,116 @@ const t = translations[lang] || en;
 
     /* Form Styling */
     .submission-container {
-        text-align: center;
+        display: flex;
+        justify-content: center;
         margin-bottom: 3rem;
     }
-    #submit-prediction-form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        max-width: 500px;
-        margin: 0 auto;
-        padding: 2rem;
+
+    .submission-content {
+        max-width: 600px;
+        width: 100%;
+        padding: 2.5rem;
         background: rgba(31, 41, 55, 0.4);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 1rem;
+        border-radius: 1.5rem;
+        text-align: center;
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05);
+        position: relative;
+        overflow: hidden;
     }
+
+    /* Subtle glow effect for "flashy" feel */
+    .submission-content::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(96, 165, 250, 0.1) 0%, rgba(0,0,0,0) 60%);
+        pointer-events: none;
+        z-index: 0;
+        animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .submission-content > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .submission-content h3 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 0 0 0.5rem 0;
+        background: linear-gradient(135deg, #F3F4F6 0%, #D1D5DB 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .submission-content p {
+        color: #9CA3AF;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    #submit-prediction-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        width: 100%;
+        margin: 0 auto;
+    }
+
     #submit-prediction-form input,
     #submit-prediction-form textarea {
         background-color: rgba(17, 24, 39, 0.6);
         color: white;
         border: 1px solid #4B5563;
-        border-radius: 0.5rem;
-        padding: 0.75rem;
+        border-radius: 0.75rem;
+        padding: 1rem;
         font-family: inherit;
-        transition: border-color 0.3s;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
     }
+
     #submit-prediction-form input:focus,
     #submit-prediction-form textarea:focus {
         outline: none;
-        border-color: #60A5FA;
+        border-color: #8B5CF6;
+        background-color: rgba(17, 24, 39, 0.9);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
     }
+
     #submit-prediction-form button {
         cursor: pointer;
     }
+
     .submit-button {
         display: inline-block;
         background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
         color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
+        padding: 1rem 2rem;
+        border-radius: 0.75rem;
         text-decoration: none;
-        font-weight: 600;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
+
     .submit-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.5), 0 8px 10px -6px rgba(124, 58, 237, 0.1);
+        filter: brightness(1.1);
     }
 
     .hidden {
