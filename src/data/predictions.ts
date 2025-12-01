@@ -49,5 +49,56 @@ export const predictions = [
         uploadDate: "2025-11-27",
         validityStart: "2025-11-27",
         validityEnd: "2025-12-11"
+    },
+    {
+        id: "FcKYvzJbTko",
+        creator: "Georg Rockall-Schmidt",
+        claim: {
+            "en": "AI Bubble Go Pop",
+            "pt-BR": "A Bolha da IA Vai Estourar",
+            "es": "La Burbuja de la IA Va a Estallar",
+            "ja": "AIバブルが弾ける",
+            "zh": "人工智能泡沫破灭"
+        },
+        videoUrl: "https://www.youtube.com/watch?v=FcKYvzJbTko&t=1s",
+        thumbnailUrl: "https://img.youtube.com/vi/FcKYvzJbTko/maxresdefault.jpg",
+        dateRange: "2 Weeks",
+        uploadDate: "2025-10-10",
+        validityStart: "2025-10-10",
+        validityEnd: "2025-10-24"
+    },
+    {
+        id: "2FohHLZTHmM",
+        creator: "Cole Hastings",
+        claim: {
+            "en": "The AI Bubble Is About To Burst",
+            "pt-BR": "A Bolha da IA Está Prestes a Estourar",
+            "es": "La Burbuja de la IA Está a Punto de Estallar",
+            "ja": "AIバブルは崩壊寸前だ",
+            "zh": "人工智能泡沫即将破裂"
+        },
+        videoUrl: "https://www.youtube.com/watch?v=2FohHLZTHmM",
+        thumbnailUrl: "https://img.youtube.com/vi/2FohHLZTHmM/maxresdefault.jpg",
+        dateRange: "2 Weeks",
+        uploadDate: "2025-10-19",
+        validityStart: "2025-10-19",
+        validityEnd: "2025-11-02"
+    },
+    {
+        id: "5os_nalLwvI",
+        creator: "Shade of Code",
+        claim: {
+            "en": "The AI Bubble is BURSTING…",
+            "pt-BR": "A Bolha da IA Está ESTOURANDO...",
+            "es": "La Burbuja de la IA Está ESTALLANDO...",
+            "ja": "AIバブルが崩壊している...",
+            "zh": "人工智能泡沫正在破裂……"
+        },
+        videoUrl: "https://www.youtube.com/watch?v=5os_nalLwvI&t=14s",
+        thumbnailUrl: "https://img.youtube.com/vi/5os_nalLwvI/maxresdefault.jpg",
+        dateRange: "2 Weeks",
+        uploadDate: "2025-09-09",
+        validityStart: "2025-09-09",
+        validityEnd: "2025-09-23"
     }
 ];

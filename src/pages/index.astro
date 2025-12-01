@@ -72,7 +72,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
     <meta slot="head" name="google-site-verification" content="gi2pzxwjvX7zQtdowKjXbAw1wGHfjs8Cdf2w5ThdNcM" />
 
     <LanguageSwitcher />
-    <button id="btn-about" class="about-button">ABOUT</button>
+    <button id="btn-about" class="about-button">{t.about_button}</button>
     <div id="game-center-wrapper" class="hidden">
         <GameCenter />
     </div>
@@ -83,12 +83,12 @@ const processedBenchmarks = benchmarks.models.map(m => {
     <div id="about-modal" class="modal hidden">
         <div class="modal-content about-theme">
             <button class="close-modal">&times;</button>
-            <h3>About Bubble Burst</h3>
+            <h3 id="about-title">{t.about_title}</h3>
             <div class="about-content">
-                <p>Welcome to the <strong>AI Prediction Tracker</strong>.</p>
-                <p>We monitor the bold claims of the AI industry. The Clock counts up from the last failed prediction (or "bubble burst").</p>
-                <p>Explore active claims, submit new ones, and check the leaderboard to see which models really perform.</p>
-                <p class="secret-hint"><em>Psst... rumor has it the main title hides a retro secret if you tap it enough times.</em></p>
+                <p id="about-welcome">{t.about_welcome}</p>
+                <p id="about-desc1">{t.about_desc1}</p>
+                <p id="about-desc2">{t.about_desc2}</p>
+                <p class="secret-hint"><em id="secret-hint">{t.secret_hint}</em></p>
             </div>
         </div>
     </div>
@@ -110,14 +110,14 @@ const processedBenchmarks = benchmarks.models.map(m => {
     <div id="bug-modal" class="modal hidden">
         <div class="modal-content bug-theme">
             <button class="close-modal">&times;</button>
-            <h3>Report a Bug</h3>
-            <p>Found something broken? Let us know.</p>
+            <h3 id="report-bug-title">{t.report_bug_title}</h3>
+            <p id="report-bug-desc">{t.report_bug_desc}</p>
             <form action="https://formbold.com/s/3jKWm" method="POST" id="bug-report-form">
                 <input type="hidden" name="type" value="bug_report">
-                <input type="text" name="name" placeholder="Your Name" required>
-                <input type="email" name="email" placeholder="Your Email" required>
-                <textarea name="message" placeholder="Describe the bug..." required></textarea>
-                <button type="submit" class="submit-button bug-button">Report Bug</button>
+                <input type="text" name="name" placeholder={t.name_placeholder} required>
+                <input type="email" name="email" placeholder={t.email_placeholder} required>
+                <textarea name="message" placeholder={t.message_placeholder} required></textarea>
+                <button type="submit" class="submit-button bug-button" id="report-bug-button">{t.report_bug_button}</button>
             </form>
         </div>
     </div>
@@ -125,7 +125,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
     <div id="benchmark-modal" class="modal hidden">
         <div class="modal-content benchmark-theme">
             <button class="close-modal">&times;</button>
-            <h3>Ultimate Visual Bench</h3>
+            <h3 id="benchmark-title">{t.benchmark_title}</h3>
             <div class="benchmark-list">
                 {processedBenchmarks.map((m, index) => (
                     <div class="benchmark-item">
@@ -155,12 +155,12 @@ const processedBenchmarks = benchmarks.models.map(m => {
         <!-- THE CLOCK -->
         <div class="clock-section-wrapper">
              <div id="clock-container" class={latestClaimDate ? '' : 'hidden'}>
-                <div class="clock-label">TIME SINCE LAST BUBBLE BURST</div>
+                <div class="clock-label" id="clock-label">{t.clock_label}</div>
                 <div id="big-clock">00d 00h 00m 00s</div>
                 <p id="clock-explanation" class="explanation-text">{t.clock_explanation}</p>
             </div>
             <button id="btn-benchmark" class="benchmark-trigger" title="View Benchmarks">
-                <span class="icon">🏆</span> OUR AI LEADERBOARD
+                <span class="icon">🏆</span> <span id="leaderboard-button">{t.leaderboard_button}</span>
             </button>
         </div>
 
@@ -182,16 +182,16 @@ const processedBenchmarks = benchmarks.models.map(m => {
         <div class="explanation-container">
             <div class="status-legend">
                 <div class="status-badge future">
-                    <span class="badge-title">FUTURE</span>
-                    <span class="badge-desc">Prediction starts later</span>
+                    <span class="badge-title" id="status-future-title">{t.status_future_title}</span>
+                    <span class="badge-desc" id="status-future-desc">{t.status_future_desc}</span>
                 </div>
                 <div class="status-badge active">
-                    <span class="badge-title">ACTIVE</span>
-                    <span class="badge-desc">Currently tracking</span>
+                    <span class="badge-title" id="status-active-title">{t.status_active_title}</span>
+                    <span class="badge-desc" id="status-active-desc">{t.status_active_desc}</span>
                 </div>
                 <div class="status-badge expired">
-                    <span class="badge-title">EXPIRED</span>
-                    <span class="badge-desc">Failed</span>
+                    <span class="badge-title" id="status-expired-title">{t.status_expired_title}</span>
+                    <span class="badge-desc" id="status-expired-desc">{t.status_expired_desc}</span>
                 </div>
             </div>
         </div>
@@ -200,11 +200,11 @@ const processedBenchmarks = benchmarks.models.map(m => {
 
     <!-- FABs -->
     <button id="fab-bug" class="fab fab-left">
-        Report Bug
+        {t.fab_report_bug}
     </button>
 
     <button id="fab-submit" class="fab fab-right">
-        Submit Prediction
+        {t.fab_submit_prediction}
     </button>
 
 </Layout>
@@ -780,32 +780,77 @@ const processedBenchmarks = benchmarks.models.map(m => {
             const subtitle = document.getElementById('subtitle');
             if (subtitle) subtitle.textContent = currentTranslations.subtitle;
 
+            // Header
+            if (btnAbout) btnAbout.textContent = currentTranslations.about_button;
+
+            // About Modal
+            const aboutTitle = document.getElementById('about-title');
+            if (aboutTitle) aboutTitle.textContent = currentTranslations.about_title;
+            const aboutWelcome = document.getElementById('about-welcome');
+            if (aboutWelcome) aboutWelcome.textContent = currentTranslations.about_welcome;
+            const aboutDesc1 = document.getElementById('about-desc1');
+            if (aboutDesc1) aboutDesc1.textContent = currentTranslations.about_desc1;
+            const aboutDesc2 = document.getElementById('about-desc2');
+            if (aboutDesc2) aboutDesc2.textContent = currentTranslations.about_desc2;
+            const secretHint = document.getElementById('secret-hint');
+            if (secretHint) secretHint.textContent = currentTranslations.secret_hint;
+
+            // Bug Modal
+            const reportBugTitle = document.getElementById('report-bug-title');
+            if (reportBugTitle) reportBugTitle.textContent = currentTranslations.report_bug_title;
+            const reportBugDesc = document.getElementById('report-bug-desc');
+            if (reportBugDesc) reportBugDesc.textContent = currentTranslations.report_bug_desc;
+            const reportBugButton = document.getElementById('report-bug-button');
+            if (reportBugButton) reportBugButton.textContent = currentTranslations.report_bug_button;
+
+            // Submit Modal
             const submitBtn = document.getElementById('submit-prediction-button');
             if (submitBtn) submitBtn.textContent = currentTranslations.submit_prediction;
-
             const formHeading = document.getElementById('form-heading');
             if (formHeading) formHeading.textContent = currentTranslations.form_heading;
-
             const formDescription = document.getElementById('form-description');
             if (formDescription) formDescription.textContent = currentTranslations.form_description;
 
-            const nameInput = document.querySelector('input[name="name"]');
-            if (nameInput) nameInput.placeholder = currentTranslations.name_placeholder;
+            // Inputs
+            document.querySelectorAll('input[name="name"]').forEach(el => el.placeholder = currentTranslations.name_placeholder);
+            document.querySelectorAll('input[name="email"]').forEach(el => el.placeholder = currentTranslations.email_placeholder);
+            document.querySelectorAll('textarea[name="message"]').forEach(el => el.placeholder = currentTranslations.message_placeholder);
 
-            const emailInput = document.querySelector('input[name="email"]');
-            if (emailInput) emailInput.placeholder = currentTranslations.email_placeholder;
+            // Benchmark Modal
+            const benchmarkTitle = document.getElementById('benchmark-title');
+            if (benchmarkTitle) benchmarkTitle.textContent = currentTranslations.benchmark_title;
 
-            const messageInput = document.querySelector('textarea[name="message"]');
-            if (messageInput) messageInput.placeholder = currentTranslations.message_placeholder;
-
+            // Clock & Main
+            const clockLabel = document.getElementById('clock-label');
+            if (clockLabel) clockLabel.textContent = currentTranslations.clock_label;
             const clockExplanation = document.getElementById('clock-explanation');
             if (clockExplanation) clockExplanation.textContent = currentTranslations.clock_explanation;
+            const leaderboardButton = document.getElementById('leaderboard-button');
+            if (leaderboardButton) leaderboardButton.textContent = currentTranslations.leaderboard_button;
 
-            const statusExplanation = document.getElementById('status-explanation');
-            if (statusExplanation) statusExplanation.textContent = currentTranslations.status_explanation;
-
+            // Sort
             const sortLabel = document.getElementById('sort-label');
             if (sortLabel) sortLabel.textContent = currentTranslations.sort_label;
+
+            // Status Legend
+            const statusFutureTitle = document.getElementById('status-future-title');
+            if (statusFutureTitle) statusFutureTitle.textContent = currentTranslations.status_future_title;
+            const statusFutureDesc = document.getElementById('status-future-desc');
+            if (statusFutureDesc) statusFutureDesc.textContent = currentTranslations.status_future_desc;
+
+            const statusActiveTitle = document.getElementById('status-active-title');
+            if (statusActiveTitle) statusActiveTitle.textContent = currentTranslations.status_active_title;
+            const statusActiveDesc = document.getElementById('status-active-desc');
+            if (statusActiveDesc) statusActiveDesc.textContent = currentTranslations.status_active_desc;
+
+            const statusExpiredTitle = document.getElementById('status-expired-title');
+            if (statusExpiredTitle) statusExpiredTitle.textContent = currentTranslations.status_expired_title;
+            const statusExpiredDesc = document.getElementById('status-expired-desc');
+            if (statusExpiredDesc) statusExpiredDesc.textContent = currentTranslations.status_expired_desc;
+
+            // FABs
+            if (btnBug) btnBug.textContent = currentTranslations.fab_report_bug;
+            if (btnSubmit) btnSubmit.textContent = currentTranslations.fab_submit_prediction;
 
             const sortSelect = document.getElementById('sort-select');
             if (sortSelect) {
