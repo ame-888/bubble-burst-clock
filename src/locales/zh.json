@@ -39,5 +39,9 @@
   "status_expired_title": "已过期",
   "status_expired_desc": "失败",
   "fab_report_bug": "报告错误",
-  "fab_submit_prediction": "提交预测"
+  "fab_submit_prediction": "提交预测",
+  "serial_popper_button": "连环泡沫戳破者名人堂",
+  "serial_popper_modal_title": "连环泡沫戳破者名人堂",
+  "serial_popper_count_label": "主张",
+  "serial_popper_tooltip": "连环泡沫戳破者：多项主张"
 }

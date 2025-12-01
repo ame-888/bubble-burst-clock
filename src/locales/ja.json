@@ -42,5 +42,9 @@
   "fab_submit_prediction": "予測送信",
   "status_future_tooltip": "この予測の有効期間は未来に設定されています。カウントダウンはまだ始まっていません。",
   "status_active_tooltip": "現在追跡中です。投稿から2週間の有効期間内です。",
-  "status_expired_tooltip": "2週間の有効期間が終了しました。予測は実現しませんでした。"
+  "status_expired_tooltip": "2週間の有効期間が終了しました。予測は実現しませんでした。",
+  "serial_popper_button": "連続崩壊者殿堂",
+  "serial_popper_modal_title": "連続崩壊者殿堂",
+  "serial_popper_count_label": "件数",
+  "serial_popper_tooltip": "連続崩壊者：複数の主張"
 }

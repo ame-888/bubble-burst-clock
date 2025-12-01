@@ -28,6 +28,18 @@ const t = translations[lang] || en;
 // SIMULATED TIME FOR STORY CONTEXT: Dec 1, 2025
 // In a real app, this would be new Date().
 const now = new Date('2025-12-01T00:00:00Z');
+
+// --- Serial Popper Logic ---
+const creatorCounts: Record<string, number> = {};
+predictions.forEach(p => {
+    creatorCounts[p.creator] = (creatorCounts[p.creator] || 0) + 1;
+});
+
+const serialPoppers = Object.entries(creatorCounts)
+    .filter(([name, count]) => count > 1)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
 const processedPredictions = predictions.map(p => {
     let status = 'FUTURE PREDICTION'; // Default
     let statusKey = 'future_prediction'; // For translation key lookup
@@ -48,7 +60,9 @@ const processedPredictions = predictions.map(p => {
         }
     }
 
-    return { ...p, status, statusKey, failureDate: end };
+    const isSerialPopper = creatorCounts[p.creator] > 1;
+
+    return { ...p, status, statusKey, failureDate: end, isSerialPopper };
 });
 
 // Find the latest failure date for the Clock
@@ -148,6 +162,28 @@ const processedBenchmarks = benchmarks.models.map(m => {
         </div>
     </div>
 
+    <div id="serial-popper-modal" class="modal hidden">
+        <div class="modal-content serial-popper-theme">
+            <button class="close-modal">&times;</button>
+            <h3 id="serial-popper-title">{t.serial_popper_modal_title}</h3>
+            <div class="serial-popper-list">
+                {serialPoppers.length > 0 ? (
+                    serialPoppers.map((sp, index) => (
+                        <div class="serial-popper-item">
+                            <div class="rank">#{index + 1}</div>
+                            <div class="popper-info">
+                                <div class="popper-name">{sp.name} 🍿</div>
+                                <div class="popper-count"><span id="serial-popper-count-label">{t.serial_popper_count_label}</span>: {sp.count}</div>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <p class="no-data">No serial poppers yet...</p>
+                )}
+            </div>
+        </div>
+    </div>
+
     <main>
         <h1 id="main-title" class="interactive-title">{t.title}</h1>
         <h2 id="subtitle">{t.subtitle}</h2>
@@ -159,9 +195,14 @@ const processedBenchmarks = benchmarks.models.map(m => {
                 <div id="big-clock">00d 00h 00m 00s</div>
                 <p id="clock-explanation" class="explanation-text">{t.clock_explanation}</p>
             </div>
-            <button id="btn-benchmark" class="benchmark-trigger" title="View Benchmarks">
-                <span class="icon">🏆</span> <span id="leaderboard-button">{t.leaderboard_button}</span>
-            </button>
+            <div class="button-group">
+                <button id="btn-serial-popper" class="serial-popper-trigger" title="View Serial Poppers">
+                    <span class="icon">🍿</span> <span id="serial-popper-button">{t.serial_popper_button}</span>
+                </button>
+                <button id="btn-benchmark" class="benchmark-trigger" title="View Benchmarks">
+                    <span class="icon">🏆</span> <span id="leaderboard-button">{t.leaderboard_button}</span>
+                </button>
+            </div>
         </div>
 
         <div class="sort-container">
@@ -175,7 +216,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
 
         <div class="predictions-grid" id="predictions-grid">
             {processedPredictions.map(p => (
-                <PredictionCard prediction={p} t={t} status={p.status} />
+                <PredictionCard prediction={p} t={t} status={p.status} isSerialPopper={p.isSerialPopper} />
             ))}
         </div>
 
@@ -425,7 +466,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
         box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
     }
 
-    /* Benchmark Button */
+    /* Benchmark Button & Serial Popper Button */
     .clock-section-wrapper {
         display: flex;
         flex-direction: column;
@@ -434,8 +475,14 @@ const processedBenchmarks = benchmarks.models.map(m => {
         margin: 0 auto 4rem auto;
     }
 
-    .benchmark-trigger {
-        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .benchmark-trigger, .serial-popper-trigger {
         border: none;
         color: white;
         padding: 0.75rem 1.5rem;
@@ -452,6 +499,12 @@ const processedBenchmarks = benchmarks.models.map(m => {
         z-index: 10;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        width: 100%; /* Make them same width in the column */
+        max-width: 350px;
+    }
+
+    .benchmark-trigger {
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
     }
 
     .benchmark-trigger .icon {
@@ -461,6 +514,19 @@ const processedBenchmarks = benchmarks.models.map(m => {
     .benchmark-trigger:hover {
         transform: scale(1.05);
         box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+    }
+
+    .serial-popper-trigger {
+        background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+    }
+
+    .serial-popper-trigger .icon {
+        font-size: 1.2rem;
+    }
+
+    .serial-popper-trigger:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
     }
 
     /* Modals */
@@ -506,6 +572,12 @@ const processedBenchmarks = benchmarks.models.map(m => {
     .modal-content.benchmark-theme {
         border: 1px solid rgba(245, 158, 11, 0.3);
         box-shadow: 0 0 30px rgba(245, 158, 11, 0.1);
+        max-width: 500px;
+    }
+
+    .modal-content.serial-popper-theme {
+        border: 1px solid rgba(248, 113, 113, 0.3);
+        box-shadow: 0 0 30px rgba(248, 113, 113, 0.1);
         max-width: 500px;
     }
 
@@ -668,6 +740,45 @@ const processedBenchmarks = benchmarks.models.map(m => {
         color: #D1D5DB;
     }
 
+    /* Serial Popper List */
+    .serial-popper-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .serial-popper-item {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .serial-popper-item:last-child { border-bottom: none; }
+
+    .popper-info {
+        flex: 1;
+    }
+
+    .popper-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .popper-count {
+        font-size: 0.9rem;
+        color: #9CA3AF;
+        margin-top: 0.25rem;
+    }
+
+    .no-data {
+        text-align: center;
+        color: #9CA3AF;
+        font-style: italic;
+    }
+
     /* Animations */
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideIn { from { transform: translate(-50%, -45%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
@@ -761,10 +872,12 @@ const processedBenchmarks = benchmarks.models.map(m => {
         const bugModal = document.getElementById('bug-modal');
         const benchmarkModal = document.getElementById('benchmark-modal');
         const aboutModal = document.getElementById('about-modal');
+        const serialPopperModal = document.getElementById('serial-popper-modal');
 
         const btnSubmit = document.getElementById('fab-submit');
         const btnBug = document.getElementById('fab-bug');
         const btnBenchmark = document.getElementById('btn-benchmark');
+        const btnSerialPopper = document.getElementById('btn-serial-popper');
         const btnAbout = document.getElementById('btn-about');
 
         const closeButtons = document.querySelectorAll('.close-modal');
@@ -781,11 +894,13 @@ const processedBenchmarks = benchmarks.models.map(m => {
             bugModal.classList.add('hidden');
             benchmarkModal.classList.add('hidden');
             aboutModal.classList.add('hidden');
+            serialPopperModal.classList.add('hidden');
         }
 
         if (btnSubmit) btnSubmit.addEventListener('click', () => openModal(submissionModal));
         if (btnBug) btnBug.addEventListener('click', () => openModal(bugModal));
         if (btnBenchmark) btnBenchmark.addEventListener('click', () => openModal(benchmarkModal));
+        if (btnSerialPopper) btnSerialPopper.addEventListener('click', () => openModal(serialPopperModal));
         if (btnAbout) btnAbout.addEventListener('click', () => openModal(aboutModal));
         if (overlay) overlay.addEventListener('click', closeModal);
 
@@ -866,6 +981,12 @@ const processedBenchmarks = benchmarks.models.map(m => {
             const benchmarkTitle = document.getElementById('benchmark-title');
             if (benchmarkTitle) benchmarkTitle.textContent = currentTranslations.benchmark_title;
 
+            // Serial Popper Modal
+            const serialPopperTitle = document.getElementById('serial-popper-title');
+            if (serialPopperTitle) serialPopperTitle.textContent = currentTranslations.serial_popper_modal_title;
+            const serialPopperCountLabel = document.getElementById('serial-popper-count-label');
+            if (serialPopperCountLabel) serialPopperCountLabel.textContent = currentTranslations.serial_popper_count_label;
+
             // Clock & Main
             const clockLabel = document.getElementById('clock-label');
             if (clockLabel) clockLabel.textContent = currentTranslations.clock_label;
@@ -873,6 +994,8 @@ const processedBenchmarks = benchmarks.models.map(m => {
             if (clockExplanation) clockExplanation.textContent = currentTranslations.clock_explanation;
             const leaderboardButton = document.getElementById('leaderboard-button');
             if (leaderboardButton) leaderboardButton.textContent = currentTranslations.leaderboard_button;
+            const serialPopperButton = document.getElementById('serial-popper-button');
+            if (serialPopperButton) serialPopperButton.textContent = currentTranslations.serial_popper_button;
 
             // Sort
             const sortLabel = document.getElementById('sort-label');

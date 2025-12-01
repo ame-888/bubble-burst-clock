@@ -100,5 +100,56 @@ export const predictions = [
         uploadDate: "2025-09-09",
         validityStart: "2025-09-09",
         validityEnd: "2025-09-23"
+    },
+    {
+        id: "T8ByoAt5gCA",
+        creator: "Adam Conover",
+        claim: {
+            "en": "The A.I. Bubble is Bursting with Ed Zitron",
+            "pt-BR": "A Bolha da IA está Estourando com Ed Zitron",
+            "es": "La burbuja de la IA está estallando con Ed Zitron",
+            "ja": "Ed Zitronと見るAIバブルの崩壊",
+            "zh": "Ed Zitron：人工智能泡沫正在破裂"
+        },
+        videoUrl: "https://www.youtube.com/watch?v=T8ByoAt5gCA",
+        thumbnailUrl: "https://img.youtube.com/vi/T8ByoAt5gCA/maxresdefault.jpg",
+        dateRange: "2 Weeks",
+        uploadDate: "2024-07-03",
+        validityStart: "2024-07-03",
+        validityEnd: "2024-07-17"
+    },
+    {
+        id: "_L1JbzDnEMk",
+        creator: "Sabine Hossenfelder",
+        claim: {
+            "en": "5 Signs the AI Bubble is Bursting",
+            "pt-BR": "5 Sinais de que a Bolha da IA está Estourando",
+            "es": "5 señales de que la burbuja de la IA está estallando",
+            "ja": "AIバブル崩壊の5つの兆候",
+            "zh": "人工智能泡沫正在破裂的5个迹象"
+        },
+        videoUrl: "https://www.youtube.com/watch?v=_L1JbzDnEMk",
+        thumbnailUrl: "https://img.youtube.com/vi/_L1JbzDnEMk/maxresdefault.jpg",
+        dateRange: "2 Weeks",
+        uploadDate: "2025-09-15",
+        validityStart: "2025-09-15",
+        validityEnd: "2025-09-29"
+    },
+    {
+        id: "2gTzid5Jl-w",
+        creator: "Sasha Yanshin",
+        claim: {
+            "en": "The AI Bubble Is About To Burst",
+            "pt-BR": "A Bolha da IA Está Prestes a Estourar",
+            "es": "La burbuja de la IA está a punto de estallar",
+            "ja": "AIバブルは崩壊寸前だ",
+            "zh": "人工智能泡沫即将破裂"
+        },
+        videoUrl: "https://www.youtube.com/watch?v=2gTzid5Jl-w",
+        thumbnailUrl: "https://img.youtube.com/vi/2gTzid5Jl-w/maxresdefault.jpg",
+        dateRange: "2 Weeks",
+        uploadDate: "2025-10-04",
+        validityStart: "2025-10-04",
+        validityEnd: "2025-10-18"
     }
 ];
