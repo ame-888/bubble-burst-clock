@@ -1,17 +1,23 @@
 {
-  "title": "O Relógio do Estouro da Bolha da IA",
+  "title": "Relógio do Estouro da Bolha de IA",
   "subtitle": "Uma linha do tempo de previsões que nunca se concretizam.",
-  "submit_prediction": "Sabe de uma Previsão? Envie Aqui",
+  "submit_prediction": "Conhece uma previsão? Envie aqui",
   "future_prediction": "PREVISÃO FUTURA",
+  "active_prediction": "ATIVO",
+  "expired_prediction": "EXPIRADO",
   "claim_label": "Alegação",
   "creator_label": "Criador",
   "upload_label": "Enviado",
   "window_label": "Janela",
   "form_heading": "Enviar uma Previsão",
-  "form_description": "Encontrou uma nova previsão do fim do mundo da IA? Avise-nos!",
+  "form_description": "Encontrou uma nova previsão apocalíptica de IA ou alegação de bolha? Avise-nos!",
   "name_placeholder": "Seu Nome",
   "email_placeholder": "Seu Email",
   "message_placeholder": "Sua Previsão",
-  "status_explanation": "Futuro: Previsão começa mais tarde. Ativo: Rastreando agora. Expirado: Falhou.",
-  "clock_explanation": "Tempo decorrido desde a última previsão falha."
+  "status_explanation": "Futuro: A previsão começa depois. Ativo: Rastreando atualmente. Expirado: Falhou.",
+  "clock_explanation": "Tempo decorrido desde a última previsão falhada.",
+  "sort_label": "Ordenar por:",
+  "sort_newest": "Mais Recente",
+  "sort_oldest": "Mais Antigo",
+  "sort_status": "Status"
 }
