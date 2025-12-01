@@ -29,12 +29,6 @@
                 <button class="game-select-btn" data-game="tictactoe">
                     <span class="game-icon">🧠</span> Neural Nodes
                 </button>
-                 <button class="game-select-btn" data-game="breakout">
-                    <span class="game-icon">🧱</span> Firewall Breaker
-                </button>
-                <button class="game-select-btn" data-game="sudoku">
-                    <span class="game-icon">🔢</span> Cipher Grid
-                </button>
                 <button class="game-select-btn" id="leaderboard-btn" style="margin-top: 1rem; border-color: #F59E0B; color: #F59E0B;">
                     <span class="game-icon">🏆</span> High Scores
                 </button>
@@ -54,15 +48,6 @@
                         <p id="game-overlay-score">Score: 0</p>
                         <button id="game-restart-btn">Play Again</button>
                         <button id="game-quit-btn">Quit to Menu</button>
-                    </div>
-                    <!-- Sudoku Controls (Only Visible for Sudoku) -->
-                    <div id="sudoku-controls" class="hidden">
-                        <div class="sudoku-numpad">
-                            <button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button>
-                            <button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button>
-                            <button data-num="7">7</button><button data-num="8">8</button><button data-num="9">9</button>
-                            <button data-num="0" class="clear-btn">C</button>
-                        </div>
                     </div>
                 </div>
 
@@ -321,38 +306,6 @@
         border-bottom: 1px dashed #374151;
     }
     .leaderboard-list li:last-child { border-bottom: none; }
-
-    /* Sudoku Controls */
-    #sudoku-controls {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(17, 24, 39, 0.9);
-        padding: 0.5rem;
-        display: flex;
-        justify-content: center;
-        border-top: 1px solid #374151;
-    }
-    #sudoku-controls.hidden { display: none !important; }
-
-    .sudoku-numpad {
-        display: flex;
-        gap: 0.25rem;
-    }
-
-    .sudoku-numpad button {
-        width: 2rem;
-        height: 2rem;
-        border-radius: 0.25rem;
-        border: 1px solid #4B5563;
-        background: #1F2937;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    .sudoku-numpad button:hover { background: #374151; }
-    .sudoku-numpad .clear-btn { color: #F87171; border-color: #F87171; }
 </style>
 
 <script>
@@ -420,31 +373,20 @@
                     osc.start(now);
                     osc.stop(now + 1);
                     break;
-                case 'hit': // Brick hit
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(200, now);
-                    osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
-                    gain.gain.setValueAtTime(0.05, now);
-                    gain.gain.linearRampToValueAtTime(0, now + 0.05);
-                    osc.start(now);
-                    osc.stop(now + 0.05);
-                    break;
             }
         }
     }
 
     class ScoreManager {
         constructor() {
-            this.key = 'ai_arcade_scores_v2';
+            this.key = 'ai_arcade_scores';
         }
 
         getScores() {
             try {
-                return JSON.parse(localStorage.getItem(this.key)) || {
-                    tetris: [], snake: [], tictactoe: 0, breakout: [], sudoku: []
-                };
+                return JSON.parse(localStorage.getItem(this.key)) || { tetris: [], snake: [], tictactoe: 0 };
             } catch (e) {
-                return { tetris: [], snake: [], tictactoe: 0, breakout: [], sudoku: [] };
+                return { tetris: [], snake: [], tictactoe: 0 };
             }
         }
 
@@ -496,9 +438,6 @@
         const leaderboardContent = document.getElementById('leaderboard-content');
         const backFromLeaderboardBtn = document.getElementById('back-from-leaderboard-btn');
 
-        const sudokuControls = document.getElementById('sudoku-controls');
-        const sudokuBtns = document.querySelectorAll('.sudoku-numpad button');
-
         // Utils
         const sound = new SoundManager();
         const scores = new ScoreManager();
@@ -513,8 +452,6 @@
         let snakeState = {};
         let tetrisState = {};
         let tttState = {};
-        let breakoutState = {};
-        let sudokuState = {};
 
         // --- HANDLERS ---
         joystickBtn.addEventListener('click', () => {
@@ -542,8 +479,6 @@
             if (currentGame === 'snake') initSnake();
             else if (currentGame === 'tetris') initTetris();
             else if (currentGame === 'tictactoe') initTicTacToe();
-            else if (currentGame === 'breakout') initBreakout();
-            else if (currentGame === 'sudoku') initSudoku();
         });
 
         leaderboardBtn.addEventListener('click', showLeaderboard);
@@ -568,32 +503,17 @@
 
             if (currentGame === 'snake') handleSnakeInput(e);
             if (currentGame === 'tetris') handleTetrisInput(e);
-            if (currentGame === 'breakout') handleBreakoutInput(e);
         });
 
-        document.addEventListener('keyup', (e) => {
-             if (currentGame === 'breakout') handleBreakoutKeyUp(e);
-        });
-
-        // Changed to CLICK for better consistency than mousedown
-        canvas.addEventListener('click', (e) => {
-             if (!gameActive) return;
-             if (currentGame === 'tictactoe') handleTicTacToeClick(e);
-             if (currentGame === 'sudoku') handleSudokuClick(e);
-        });
-
-        // Sudoku Numpad
-        sudokuBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                if (currentGame === 'sudoku') handleSudokuInput(btn.dataset.num);
-            });
+        canvas.addEventListener('mousedown', (e) => {
+             if (!gameActive || currentGame !== 'tictactoe') return;
+             handleTicTacToeClick(e);
         });
 
         function showMenu() {
             gameMenu.classList.remove('hidden');
             gameArea.classList.add('hidden');
             leaderboardView.classList.add('hidden');
-            sudokuControls.classList.add('hidden');
             document.getElementById('modal-title').textContent = "AI Arcade";
         }
 
@@ -601,21 +521,22 @@
             gameMenu.classList.add('hidden');
             leaderboardView.classList.remove('hidden');
             const data = scores.getScores();
+
             const fmtDate = (d) => new Date(d).toLocaleDateString();
 
             let html = '';
-            const addSec = (title, list) => {
-                html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">${title}</div><ul class="leaderboard-list">`;
-                if (list.length) list.forEach(s => html += `<li><span>${fmtDate(s.date)}</span><span>${s.score}</span></li>`);
-                else html += `<li>No scores yet</li>`;
-                html += `</ul></div>`;
-            };
 
-            addSec("Cluster Builder", data.tetris || []);
-            addSec("Data Stream", data.snake || []);
-            addSec("Firewall Breaker", data.breakout || []);
-            addSec("Cipher Grid (Solved)", data.sudoku || []);
+            // Tetris
+            html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Cluster Builder</div><ul class="leaderboard-list">`;
+            data.tetris.forEach(s => html += `<li><span>${fmtDate(s.date)}</span><span>${s.score}</span></li>`);
+            html += `</ul></div>`;
 
+            // Snake
+            html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Data Stream</div><ul class="leaderboard-list">`;
+            data.snake.forEach(s => html += `<li><span>${fmtDate(s.date)}</span><span>${s.score}</span></li>`);
+            html += `</ul></div>`;
+
+            // TTT
             html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Neural Nodes (Streak)</div><ul class="leaderboard-list">`;
             html += `<li><span>Best Streak</span><span>${data.tictactoe || 0}</span></li>`;
             html += `</ul></div>`;
@@ -628,15 +549,12 @@
             gameMenu.classList.add('hidden');
             gameArea.classList.remove('hidden');
             gameOverlay.classList.add('hidden');
-            sudokuControls.classList.add('hidden'); // Reset
             canvas.width = 400;
-            canvas.height = 400;
+            canvas.height = 400; // Reset size
 
             if (game === 'snake') initSnake();
             else if (game === 'tetris') initTetris();
             else if (game === 'tictactoe') initTicTacToe();
-            else if (game === 'breakout') initBreakout();
-            else if (game === 'sudoku') initSudoku();
         }
 
         function stopGame() {
@@ -650,12 +568,10 @@
             scores.saveScore(currentGame, score);
 
             gameOverlayTitle.textContent = "System Failure";
-            if (currentGame === 'tictactoe' && score > 0) gameOverlayTitle.textContent = "Victory!";
-            if (currentGame === 'sudoku' && score === 1) gameOverlayTitle.textContent = "Grid Decrypted!";
+            if (currentGame === 'tictactoe' && score > 0) gameOverlayTitle.textContent = "Victory!"; // Handle TTT differently usually
 
             gameOverlayScore.textContent = `Score: ${score}`;
             gameOverlay.classList.remove('hidden');
-            sudokuControls.classList.add('hidden');
         }
 
         function loop(time) {
@@ -667,9 +583,7 @@
 
             if (currentGame === 'snake') updateSnake(dt);
             if (currentGame === 'tetris') updateTetris(dt);
-            if (currentGame === 'breakout') updateBreakout(dt);
-            if (currentGame === 'tictactoe') drawTicTacToe();
-            if (currentGame === 'sudoku') drawSudoku();
+            if (currentGame === 'tictactoe') drawTicTacToe(); // Static mostly
 
             gameLoopId = requestAnimationFrame(loop);
         }
@@ -727,6 +641,7 @@
                 y: snakeState.snake[0].y + snakeState.dir.y
             };
 
+            // Walls (Wrap or Die? Die.)
             const cols = canvas.width / snakeState.grid;
             const rows = canvas.height / snakeState.grid;
 
@@ -744,7 +659,7 @@
                 sound.play('pop');
                 currentScoreEl.textContent = snakeState.score;
                 spawnSnakeFood();
-                snakeState.speed = Math.max(50, snakeState.speed * 0.98);
+                snakeState.speed = Math.max(50, snakeState.speed * 0.98); // Speed up
             } else {
                 snakeState.snake.pop();
             }
@@ -753,6 +668,7 @@
         }
 
         function drawSnake() {
+            // Draw Food (Glowing Orb)
             const g = snakeState.grid;
             const f = snakeState.food;
 
@@ -763,6 +679,7 @@
             ctx.arc(f.x * g + g/2, f.y * g + g/2, g/2 - 2, 0, Math.PI * 2);
             ctx.fill();
 
+            // Draw Snake (Data Stream)
             ctx.shadowBlur = 10;
             ctx.shadowColor = '#60A5FA';
 
@@ -776,15 +693,14 @@
         }
 
         // --- TETRIS: CLUSTER BUILDER ---
-        // Padded to 4x4 or 3x3 for rotation consistency
         const tetrisShapes = [
-            [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]], // I (4x4 center)
-            [[1,1],[1,1]], // O (2x2 no rotate effect really)
-            [[0,1,0],[1,1,1],[0,0,0]], // T (3x3)
-            [[1,0,0],[1,1,1],[0,0,0]], // J (3x3)
-            [[0,0,1],[1,1,1],[0,0,0]], // L (3x3)
-            [[0,1,1],[1,1,0],[0,0,0]], // S (3x3)
-            [[1,1,0],[0,1,1],[0,0,0]]  // Z (3x3)
+            [[1,1,1,1]], // I
+            [[1,1],[1,1]], // O
+            [[0,1,0],[1,1,1]], // T
+            [[1,0,0],[1,1,1]], // J
+            [[0,0,1],[1,1,1]], // L
+            [[0,1,1],[1,1,0]], // S
+            [[1,1,0],[0,1,1]]  // Z
         ];
         const tetrisColors = ['#06B6D4', '#F59E0B', '#8B5CF6', '#3B82F6', '#F97316', '#10B981', '#EF4444'];
 
@@ -801,6 +717,8 @@
                 speed: 1000,
                 piece: null
             };
+
+            // Resize canvas for Tetris specifically
             canvas.width = tetrisState.cols * tetrisState.grid;
             canvas.height = tetrisState.rows * tetrisState.grid;
 
@@ -814,14 +732,11 @@
         function spawnTetrisPiece() {
             const id = Math.floor(Math.random() * tetrisShapes.length);
             tetrisState.piece = {
-                shape: tetrisShapes[id], // Use ref
+                shape: tetrisShapes[id],
                 color: tetrisColors[id],
                 x: 3,
-                y: -1 // Start slightly higher
+                y: 0
             };
-            // Deep copy shape for rotation
-            tetrisState.piece.shape = JSON.parse(JSON.stringify(tetrisShapes[id]));
-
             if (checkTetrisCollide()) {
                 gameOver(tetrisState.score);
             }
@@ -838,7 +753,6 @@
                         const bx = px + x;
                         const by = py + y;
                         if (bx < 0 || bx >= tetrisState.cols || by >= tetrisState.rows) return true;
-                        // Ignore collision if above board (spawning)
                         if (by >= 0 && tetrisState.board[by][bx]) return true;
                     }
                 }
@@ -848,19 +762,10 @@
 
         function rotateTetrisPiece() {
             const piece = tetrisState.piece;
-            // Matrix rotation
-            const N = piece.shape.length;
-            const newShape = piece.shape.map((row, i) =>
-                row.map((val, j) => piece.shape[N - 1 - j][i])
-            );
-
+            const newShape = piece.shape[0].map((_, i) => piece.shape.map(row => row[i]).reverse());
             if (!checkTetrisCollide(0, 0, newShape)) {
                 piece.shape = newShape;
                 sound.play('move');
-            } else {
-                // Wall kick attempt (simple)
-                if (!checkTetrisCollide(-1, 0, newShape)) { piece.x--; piece.shape = newShape; return; }
-                if (!checkTetrisCollide(1, 0, newShape)) { piece.x++; piece.shape = newShape; return; }
             }
         }
 
@@ -905,7 +810,7 @@
                             tetrisState.board.splice(y, 1);
                             tetrisState.board.unshift(Array(tetrisState.cols).fill(0));
                             lines++;
-                            y++;
+                            y++; // Check same row again
                         }
                     }
                     if (lines > 0) {
@@ -914,8 +819,9 @@
                         sound.play('score');
                         tetrisState.speed *= 0.95;
                     } else {
-                        sound.play('pop');
+                        sound.play('pop'); // Land sound
                     }
+
                     spawnTetrisPiece();
                 }
             }
@@ -923,7 +829,10 @@
         }
 
         function drawTetris() {
+            // Draw Board (Existing Bubbles)
             const g = tetrisState.grid;
+
+            // Grid
             ctx.strokeStyle = '#1F2937';
             ctx.lineWidth = 1;
             for(let x=0; x<=canvas.width; x+=g) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
@@ -933,9 +842,10 @@
                     if (color) {
                         drawBubble(x, y, color);
                     }
-                });
+                }
             });
 
+            // Draw Piece
             if (tetrisState.piece) {
                 tetrisState.piece.shape.forEach((row, y) => {
                     row.forEach((val, x) => {
@@ -952,16 +862,21 @@
             const x = gx * g + g/2;
             const y = gy * g + g/2;
             const r = g/2 - 2;
+
             ctx.fillStyle = color;
             ctx.shadowBlur = active ? 10 : 0;
             ctx.shadowColor = color;
+
             ctx.beginPath();
             ctx.arc(x, y, r, 0, Math.PI * 2);
             ctx.fill();
+
+            // Shine
             ctx.fillStyle = 'rgba(255,255,255,0.5)';
             ctx.beginPath();
             ctx.arc(x - r/3, y - r/3, r/4, 0, Math.PI * 2);
             ctx.fill();
+
             ctx.shadowBlur = 0;
         }
 
@@ -973,8 +888,7 @@
                 board: Array(9).fill(null),
                 player: 'X',
                 streak: 0,
-                winner: null,
-                lock: false // Input lock for cpu turn
+                winner: null
             };
             gameActive = true;
             currentScoreEl.textContent = 0;
@@ -982,12 +896,13 @@
         }
 
         function handleTicTacToeClick(e) {
-            if (tttState.winner || tttState.player !== 'X' || tttState.lock) return;
+            if (tttState.winner || tttState.player !== 'X') return;
 
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
+            // Grid is 3x3
             const cellW = canvas.width / 3;
             const cellH = canvas.height / 3;
 
@@ -995,18 +910,17 @@
             const row = Math.floor(y / cellH);
             const idx = row * 3 + col;
 
-            if (idx >= 0 && idx < 9 && tttState.board[idx] === null) {
+            if (tttState.board[idx] === null) {
                 tttState.board[idx] = 'X';
                 sound.play('pop');
-                drawTicTacToe();
                 checkTTTWin();
-
                 if (!tttState.winner) {
                     tttState.player = 'O';
-                    tttState.lock = true;
-                    setTimeout(cpuMove, 600);
+                    drawTicTacToe();
+                    setTimeout(cpuMove, 500);
                 }
             }
+            drawTicTacToe();
         }
 
         function cpuMove() {
@@ -1022,7 +936,6 @@
                 }
                 drawTicTacToe();
             }
-            tttState.lock = false;
         }
 
         function checkTTTWin() {
@@ -1047,22 +960,21 @@
                 currentScoreEl.textContent = tttState.streak;
                 sound.play('score');
                 setTimeout(() => {
-                    if(!gameActive) return;
                     tttState.board.fill(null);
                     tttState.winner = null;
-                    tttState.player = 'X';
-                    tttState.lock = false;
+                    tttState.player = 'X'; // Player keeps turn
                     drawTicTacToe();
-                }, 1000);
+                }, 1000); // Auto restart for streak
             } else {
                 gameActive = false;
-                gameOver(tttState.streak);
+                gameOver(tttState.streak); // Save streak
             }
         }
 
         function drawTicTacToe() {
             const w = canvas.width / 3;
             const h = canvas.height / 3;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Grid Lines
@@ -1082,227 +994,26 @@
                 const row = Math.floor(i / 3);
                 const cx = col * w + w/2;
                 const cy = row * h + h/2;
+
                 ctx.shadowBlur = 20;
+
                 if (cell === 'X') {
+                    // Blue Node
                     ctx.fillStyle = '#3B82F6';
                     ctx.shadowColor = '#3B82F6';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, w/3, 0, Math.PI * 2);
+                    ctx.fill();
                 } else {
+                    // Red Node
                     ctx.fillStyle = '#EF4444';
                     ctx.shadowColor = '#EF4444';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, w/3, 0, Math.PI * 2);
+                    ctx.fill();
                 }
-                ctx.beginPath();
-                ctx.arc(cx, cy, w/3, 0, Math.PI * 2);
-                ctx.fill();
                 ctx.shadowBlur = 0;
             });
-        }
-
-        // --- BREAKOUT: FIREWALL BREAKER ---
-        function initBreakout() {
-            document.getElementById('modal-title').textContent = "Firewall Breaker";
-            controlsHintEl.textContent = "Arrow Keys to move";
-            breakoutState = {
-                paddle: { x: 150, y: 380, w: 80, h: 10, dx: 0 },
-                ball: { x: 200, y: 300, r: 6, dx: 3, dy: -3 },
-                bricks: [],
-                score: 0,
-                lives: 3
-            };
-
-            // Create bricks
-            for(let c=0; c<8; c++) {
-                for(let r=0; r<6; r++) {
-                    breakoutState.bricks.push({ x: c*50, y: r*25 + 30, status: 1 });
-                }
-            }
-
-            currentScoreEl.textContent = 0;
-            gameActive = true;
-            lastTime = performance.now();
-            loop(lastTime);
-        }
-
-        function handleBreakoutInput(e) {
-            if(e.key === 'ArrowRight') breakoutState.paddle.dx = 6;
-            if(e.key === 'ArrowLeft') breakoutState.paddle.dx = -6;
-        }
-
-        function handleBreakoutKeyUp(e) {
-            if(e.key === 'ArrowRight' || e.key === 'ArrowLeft') breakoutState.paddle.dx = 0;
-        }
-
-        function updateBreakout(dt) {
-            const b = breakoutState;
-
-            // Move Paddle
-            b.paddle.x += b.paddle.dx;
-            if(b.paddle.x < 0) b.paddle.x = 0;
-            if(b.paddle.x + b.paddle.w > canvas.width) b.paddle.x = canvas.width - b.paddle.w;
-
-            // Move Ball
-            b.ball.x += b.ball.dx;
-            b.ball.y += b.ball.dy;
-
-            // Walls
-            if(b.ball.x + b.ball.r > canvas.width || b.ball.x - b.ball.r < 0) { b.ball.dx = -b.ball.dx; sound.play('move'); }
-            if(b.ball.y - b.ball.r < 0) { b.ball.dy = -b.ball.dy; sound.play('move'); }
-
-            // Paddle Collision
-            if(b.ball.y + b.ball.r >= b.paddle.y && b.ball.x >= b.paddle.x && b.ball.x <= b.paddle.x + b.paddle.w) {
-                b.ball.dy = -Math.abs(b.ball.dy); // Force up
-                sound.play('move');
-            }
-
-            // Floor (Death)
-            if(b.ball.y + b.ball.r > canvas.height) {
-                b.lives--;
-                sound.play('gameover');
-                if(b.lives === 0) {
-                    gameOver(b.score);
-                } else {
-                    b.ball.x = 200; b.ball.y = 300; b.ball.dy = -3;
-                }
-            }
-
-            // Bricks
-            b.bricks.forEach(brick => {
-                if(brick.status === 1) {
-                    if(b.ball.x > brick.x && b.ball.x < brick.x + 50 && b.ball.y > brick.y && b.ball.y < brick.y + 25) {
-                        b.ball.dy = -b.ball.dy;
-                        brick.status = 0;
-                        b.score += 10;
-                        sound.play('hit');
-                        currentScoreEl.textContent = b.score;
-                        if(b.score === b.bricks.length * 10) gameOver(b.score); // Win
-                    }
-                }
-            });
-
-            drawBreakout();
-        }
-
-        function drawBreakout() {
-            // Draw Bricks
-            breakoutState.bricks.forEach(brick => {
-                if(brick.status === 1) {
-                    ctx.fillStyle = '#60A5FA';
-                    ctx.fillRect(brick.x + 2, brick.y + 2, 46, 21);
-                    ctx.shadowBlur = 5; ctx.shadowColor = '#60A5FA';
-                }
-            });
-            ctx.shadowBlur = 0;
-
-            // Paddle
-            ctx.fillStyle = '#10B981';
-            ctx.fillRect(breakoutState.paddle.x, breakoutState.paddle.y, breakoutState.paddle.w, breakoutState.paddle.h);
-
-            // Ball
-            ctx.beginPath();
-            ctx.arc(breakoutState.ball.x, breakoutState.ball.y, breakoutState.ball.r, 0, Math.PI*2);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fill();
-        }
-
-        // --- SUDOKU: CIPHER GRID ---
-        // Simple solved board + mask
-        const solvedSudoku = "534678912672195348198342567859761423426853791713924856961537284287419635345286179";
-
-        function initSudoku() {
-             document.getElementById('modal-title').textContent = "Cipher Grid";
-             controlsHintEl.textContent = "Select Cell -> Type Number";
-             sudokuControls.classList.remove('hidden');
-
-             sudokuState = {
-                 grid: Array(81).fill(0),
-                 fixed: Array(81).fill(false),
-                 selected: -1,
-                 solved: solvedSudoku
-             };
-
-             // Create puzzle (mask ~40%)
-             for(let i=0; i<81; i++) {
-                 if(Math.random() > 0.5) {
-                     sudokuState.grid[i] = parseInt(solvedSudoku[i]);
-                     sudokuState.fixed[i] = true;
-                 } else {
-                     sudokuState.grid[i] = 0;
-                 }
-             }
-
-             gameActive = true;
-             currentScoreEl.textContent = 0;
-             drawSudoku();
-        }
-
-        function handleSudokuClick(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const cellS = canvas.width / 9;
-
-            const col = Math.floor(x / cellS);
-            const row = Math.floor(y / cellS);
-            const idx = row * 9 + col;
-
-            if(idx >= 0 && idx < 81) {
-                sudokuState.selected = idx;
-                drawSudoku();
-            }
-        }
-
-        function handleSudokuInput(numStr) {
-            if(sudokuState.selected === -1) return;
-            if(sudokuState.fixed[sudokuState.selected]) return;
-
-            const num = parseInt(numStr);
-            sudokuState.grid[sudokuState.selected] = num;
-            sound.play('pop');
-            drawSudoku();
-
-            // Check win?
-            if(sudokuState.grid.join('') === sudokuState.solved) {
-                 sound.play('score');
-                 gameOver(1); // 1 = Win
-            }
-        }
-
-        function drawSudoku() {
-            const s = canvas.width / 9;
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-
-            // Cells
-            for(let i=0; i<81; i++) {
-                const col = i % 9;
-                const row = Math.floor(i / 9);
-                const x = col * s;
-                const y = row * s;
-
-                // Selection
-                if(sudokuState.selected === i) {
-                    ctx.fillStyle = 'rgba(96, 165, 250, 0.2)';
-                    ctx.fillRect(x,y,s,s);
-                }
-
-                // Text
-                const val = sudokuState.grid[i];
-                if(val !== 0) {
-                    ctx.fillStyle = sudokuState.fixed[i] ? '#9CA3AF' : '#60A5FA';
-                    ctx.font = '24px Inter';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(val, x + s/2, y + s/2);
-                }
-            }
-
-            // Grid Lines
-            ctx.strokeStyle = '#374151';
-            for(let i=0; i<=9; i++) {
-                ctx.lineWidth = (i % 3 === 0) ? 3 : 1;
-                ctx.beginPath();
-                ctx.moveTo(i*s, 0); ctx.lineTo(i*s, canvas.height);
-                ctx.moveTo(0, i*s); ctx.lineTo(canvas.width, i*s);
-                ctx.stroke();
-            }
         }
     });
 </script>
