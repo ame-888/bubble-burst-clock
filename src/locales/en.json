@@ -7,6 +7,7 @@
   "expired_prediction": "EXPIRED",
   "claim_label": "Claim",
   "creator_label": "Creator",
+  "upload_label": "Uploaded",
   "window_label": "Window",
   "form_heading": "Submit a Prediction",
   "form_description": "Found a new AI doomsday prediction or hype bubble claim? Let us know!",
