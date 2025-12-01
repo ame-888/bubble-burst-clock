@@ -11,5 +11,7 @@
   "form_description": "¿Encontraste una nueva predicción del fin del mundo de la IA? ¡Avísanos!",
   "name_placeholder": "Tu Nombre",
   "email_placeholder": "Tu Email",
-  "message_placeholder": "Tu Predicción"
+  "message_placeholder": "Tu Predicción",
+  "status_explanation": "Futuro: La predicción comienza más tarde. Activo: Rastreado ahora. Expirado: Fallido.",
+  "clock_explanation": "Tiempo transcurrido desde la última predicción fallida."
 }

@@ -75,12 +75,17 @@ const simulatedServerTime = now.getTime(); // Pass to client
         <div id="clock-container" class={latestClaimDate ? '' : 'hidden'}>
             <div class="clock-label">TIME SINCE LAST BUBBLE BURST</div>
             <div id="big-clock">00d 00h 00m 00s</div>
+            <p id="clock-explanation" class="explanation-text">{t.clock_explanation}</p>
         </div>
 
         <div class="predictions-grid">
             {processedPredictions.map(p => (
                 <PredictionCard prediction={p} t={t} status={p.status} />
             ))}
+        </div>
+
+        <div class="explanation-container">
+            <p id="status-explanation" class="explanation-text">{t.status_explanation}</p>
         </div>
 
         <div class="submission-container">
@@ -153,6 +158,23 @@ const simulatedServerTime = now.getTime(); // Pass to client
         #big-clock {
             font-size: 2.5rem;
         }
+    }
+
+    .explanation-text {
+        color: #9CA3AF;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        text-align: center;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.5;
+    }
+
+    .explanation-container {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
     }
 
     /* Predictions Grid */
@@ -346,6 +368,12 @@ const simulatedServerTime = now.getTime(); // Pass to client
 
             const messageInput = document.querySelector('textarea[name="message"]');
             if (messageInput) messageInput.placeholder = currentTranslations.message_placeholder;
+
+            const clockExplanation = document.getElementById('clock-explanation');
+            if (clockExplanation) clockExplanation.textContent = currentTranslations.clock_explanation;
+
+            const statusExplanation = document.getElementById('status-explanation');
+            if (statusExplanation) statusExplanation.textContent = currentTranslations.status_explanation;
 
             // Note: Dynamic content like the prediction cards is rendered server-side in Astro
             // and won't update client-side without full page reload or React/hydration.
