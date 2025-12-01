@@ -51,7 +51,9 @@ if (typeof prediction.claim === 'string') {
             {prediction.uploadDate && (
                 <span class="date-label">{t.upload_label}: {prediction.uploadDate}</span>
             )}
-            <span class="date-label">{t.window_label}: {prediction.dateRange}</span>
+            {status === 'FUTURE PREDICTION' && (
+                <span class="date-label">{t.window_label}: {prediction.dateRange}</span>
+            )}
         </div>
     </div>
 </a>
