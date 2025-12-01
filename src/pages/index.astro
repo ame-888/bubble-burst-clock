@@ -3,6 +3,8 @@
 import Layout from '../layouts/Layout.astro';
 import LanguageSwitcher from '../components/LanguageSwitcher.astro';
 import GameCenter from '../components/GameCenter.astro';
+import PredictionCard from '../components/PredictionCard.astro';
+import { predictions } from '../data/predictions';
 import en from '../locales/en.json';
 import ptBR from '../locales/pt-BR.json';
 import ja from '../locales/ja.json';
@@ -34,6 +36,12 @@ const t = translations[lang] || en;
         <h1 id="main-title" class="interactive-title">{t.title}</h1>
         <h2 id="subtitle">{t.subtitle}</h2>
 
+        <div class="predictions-grid">
+            {predictions.map(p => (
+                <PredictionCard prediction={p} t={t} />
+            ))}
+        </div>
+
         <div class="submission-container">
             <form action="https://formbold.com/s/3jKWm" method="POST" id="submit-prediction-form">
                 <input type="text" name="name" placeholder="Your Name" required>
@@ -62,6 +70,15 @@ const t = translations[lang] || en;
     }
 
     h2 { font-size: 1.25rem; color: #9CA3AF; text-align: center; margin-bottom: 3rem; }
+
+    /* Predictions Grid */
+    .predictions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+        padding: 0 1rem;
+    }
 
     /* Form Styling */
     .submission-container {
@@ -167,6 +184,12 @@ const t = translations[lang] || en;
 
             const submitBtn = document.getElementById('submit-prediction-button');
             if (submitBtn) submitBtn.textContent = currentTranslations.submit_prediction;
+
+            // Note: Dynamic content like the prediction cards is rendered server-side in Astro
+            // and won't update client-side without full page reload or React/hydration.
+            // Since this is a static site mainly, reloading or server-side pref is fine.
+            // For now, we only update static elements that have IDs.
+            // Future improvement: Use a framework island or re-render logic if needed.
         }
 
         // --- Initial Load ---
