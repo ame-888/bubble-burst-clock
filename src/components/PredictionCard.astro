@@ -1,5 +1,25 @@
 ---
-const { prediction, t } = Astro.props;
+const { prediction, t, status } = Astro.props;
+
+// Map status to translation key and style class
+let statusLabel = status;
+let statusClass = 'status-badge-future';
+
+// Fallback if no status prop (shouldn't happen with new logic)
+if (!status) {
+    statusLabel = 'FUTURE PREDICTION';
+}
+
+if (status === 'FUTURE PREDICTION') {
+    statusLabel = t.future_prediction || 'FUTURE PREDICTION';
+    statusClass = 'status-badge-future';
+} else if (status === 'ACTIVE') {
+    statusLabel = t.active_prediction || 'ACTIVE'; // Make sure this key exists in en.json
+    statusClass = 'status-badge-active';
+} else if (status === 'EXPIRED') {
+    statusLabel = t.expired_prediction || 'EXPIRED'; // Make sure this key exists in en.json
+    statusClass = 'status-badge-expired';
+}
 ---
 
 <a href={prediction.videoUrl} target="_blank" rel="noopener noreferrer" class="card">
@@ -14,7 +34,7 @@ const { prediction, t } = Astro.props;
     <div class="content">
         <div class="header">
             <span class="creator">{t.creator_label}: {prediction.creator}</span>
-            <span class="status-badge">{t.future_prediction}</span>
+            <span class={`status-badge ${statusClass}`}>{statusLabel}</span>
         </div>
         <p class="claim">"{prediction.claim}"</p>
         <div class="footer">
@@ -106,14 +126,30 @@ const { prediction, t } = Astro.props;
     }
 
     .status-badge {
-        background: rgba(59, 130, 246, 0.2); /* Blue tint */
-        color: #60A5FA;
         padding: 0.25rem 0.5rem;
         border-radius: 9999px;
         font-size: 0.75rem;
         font-weight: 600;
         letter-spacing: 0.05em;
-        border: 1px solid rgba(59, 130, 246, 0.3);
+        border: 1px solid transparent;
+    }
+
+    .status-badge-future {
+        background: rgba(59, 130, 246, 0.2);
+        color: #60A5FA;
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .status-badge-active {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34D399;
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .status-badge-expired {
+        background: rgba(239, 68, 68, 0.2);
+        color: #F87171;
+        border-color: rgba(239, 68, 68, 0.3);
     }
 
     .claim {
