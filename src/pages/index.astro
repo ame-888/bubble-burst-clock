@@ -58,12 +58,6 @@ const latestExpired = expiredPredictions.length > 0 ? expiredPredictions[0] : nu
 const latestClaimDate = latestExpired ? latestExpired.failureDate.toISOString() : null;
 const simulatedServerTime = now.getTime(); // Pass to client
 
-// --- Serial Popper Logic ---
-const creatorCounts = predictions.reduce((acc, p) => {
-    acc[p.creator] = (acc[p.creator] || 0) + 1;
-    return acc;
-}, {});
-
 // --- Benchmark Logic ---
 const processedBenchmarks = benchmarks.models.map(m => {
     const scores = Object.values(m.scores);
@@ -181,12 +175,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
 
         <div class="predictions-grid" id="predictions-grid">
             {processedPredictions.map(p => (
-                <PredictionCard
-                    prediction={p}
-                    t={t}
-                    status={p.status}
-                    isSerialPopper={creatorCounts[p.creator] > 1}
-                />
+                <PredictionCard prediction={p} t={t} status={p.status} />
             ))}
         </div>
 
