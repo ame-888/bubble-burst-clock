@@ -5,5 +5,10 @@
   "future_prediction": "将来の予測",
   "claim_label": "主張",
   "creator_label": "クリエイター",
-  "window_label": "期間"
+  "window_label": "期間",
+  "form_heading": "予測を送信する",
+  "form_description": "AIの破滅予言や誇大広告を見つけましたか？お知らせください！",
+  "name_placeholder": "お名前",
+  "email_placeholder": "メールアドレス",
+  "message_placeholder": "あなたの予測"
 }
