@@ -177,6 +177,11 @@ const bubbles = [
     .content-wrapper {
         position: relative;
         z-index: 1;
+        pointer-events: none; /* Let clicks pass through empty spaces */
+    }
+
+    .content-wrapper > * {
+        pointer-events: auto; /* Re-enable clicks on actual content */
     }
 
     /* Bubbles Background */
