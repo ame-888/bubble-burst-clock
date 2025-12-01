@@ -5,5 +5,10 @@
   "future_prediction": "FUTURE PREDICTION",
   "claim_label": "Claim",
   "creator_label": "Creator",
-  "window_label": "Window"
+  "window_label": "Window",
+  "form_heading": "Submit a Prediction",
+  "form_description": "Found a new AI doomsday prediction or hype bubble claim? Let us know!",
+  "name_placeholder": "Your Name",
+  "email_placeholder": "Your Email",
+  "message_placeholder": "Your Prediction"
 }

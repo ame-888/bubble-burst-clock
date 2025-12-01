@@ -5,5 +5,10 @@
   "future_prediction": "PREVISÃO FUTURA",
   "claim_label": "Alegação",
   "creator_label": "Criador",
-  "window_label": "Janela"
+  "window_label": "Janela",
+  "form_heading": "Enviar uma Previsão",
+  "form_description": "Encontrou uma nova previsão do fim do mundo da IA? Avise-nos!",
+  "name_placeholder": "Seu Nome",
+  "email_placeholder": "Seu Email",
+  "message_placeholder": "Sua Previsão"
 }
