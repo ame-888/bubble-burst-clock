@@ -1,9 +1,7 @@
 {
   "title": "O Relógio do Estouro da Bolha da IA",
   "subtitle": "Uma linha do tempo de previsões que nunca se concretizam.",
-  "submit_prediction": "Enviar Previsão",
-  "form_heading": "Encontrou uma previsão ousada?",
-  "form_description": "Ajude-nos a rastrear a linha do tempo do hype da IA. Envie um link de vídeo e os detalhes da alegação abaixo.",
+  "submit_prediction": "Sabe de uma Previsão? Envie Aqui",
   "future_prediction": "PREVISÃO FUTURA",
   "claim_label": "Alegação",
   "creator_label": "Criador",

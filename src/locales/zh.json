@@ -1,9 +1,7 @@
 {
   "title": "人工智能泡沫破灭时钟",
   "subtitle": "一个永不实现的预测时间表。",
-  "submit_prediction": "提交预测",
-  "form_heading": "发现了大胆的预测？",
-  "form_description": "帮助我们追踪人工智能炒作的时间表。在下方提交视频链接和主张详情。",
+  "submit_prediction": "知道有预测吗？在这里提交",
   "future_prediction": "未来预测",
   "claim_label": "主张",
   "creator_label": "创作者",

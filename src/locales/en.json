@@ -1,9 +1,7 @@
 {
   "title": "The AI Bubble Burst Clock",
   "subtitle": "A timeline of predictions that never come true.",
-  "submit_prediction": "Submit Prediction",
-  "form_heading": "Found a Bold Prediction?",
-  "form_description": "Help us track the timeline of AI hype. Submit a video link and the claim details below.",
+  "submit_prediction": "Know of a Prediction? Submit it Here",
   "future_prediction": "FUTURE PREDICTION",
   "claim_label": "Claim",
   "creator_label": "Creator",

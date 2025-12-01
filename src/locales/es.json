@@ -1,9 +1,7 @@
 {
   "title": "El Reloj del Estallido de la Burbuja de la IA",
   "subtitle": "Una cronología de predicciones que nunca se cumplen.",
-  "submit_prediction": "Enviar Predicción",
-  "form_heading": "¿Encontraste una predicción audaz?",
-  "form_description": "Ayúdanos a rastrear la cronología del hype de la IA. Envía un enlace de video y los detalles de la afirmación a continuación.",
+  "submit_prediction": "¿Conoces alguna predicción? Envíala aquí",
   "future_prediction": "PREDICCIÓN FUTURA",
   "claim_label": "Afirmación",
   "creator_label": "Creador",

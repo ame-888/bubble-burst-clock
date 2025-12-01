@@ -1,9 +1,7 @@
 {
   "title": "AIバブル崩壊時計",
   "subtitle": "実現しない予測のタイムライン",
-  "submit_prediction": "予測を送信",
-  "form_heading": "大胆な予測を見つけましたか？",
-  "form_description": "AIハイプのタイムラインを追跡するのを手伝ってください。動画リンクと主張の詳細を以下に送信してください。",
+  "submit_prediction": "予測を知っていますか？こちらから送信してください",
   "future_prediction": "将来の予測",
   "claim_label": "主張",
   "creator_label": "クリエイター",

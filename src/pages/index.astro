@@ -252,11 +252,11 @@ const t = translations[lang] || en;
             const submitBtn = document.getElementById('submit-prediction-button');
             if (submitBtn) submitBtn.textContent = currentTranslations.submit_prediction;
 
-            const formHeading = document.getElementById('form-heading');
-            if (formHeading) formHeading.textContent = currentTranslations.form_heading;
-
-            const formDescription = document.getElementById('form-description');
-            if (formDescription) formDescription.textContent = currentTranslations.form_description;
+            // Note: Dynamic content like the prediction cards is rendered server-side in Astro
+            // and won't update client-side without full page reload or React/hydration.
+            // Since this is a static site mainly, reloading or server-side pref is fine.
+            // For now, we only update static elements that have IDs.
+            // Future improvement: Use a framework island or re-render logic if needed.
         }
 
         // --- Initial Load ---
