@@ -39,5 +39,9 @@
   "status_expired_title": "EXPIRADO",
   "status_expired_desc": "Falhou",
   "fab_report_bug": "Relatar Bug",
-  "fab_submit_prediction": "Enviar Previsão"
+  "fab_submit_prediction": "Enviar Previsão",
+  "serial_popper_button": "HALL DA FAMA DOS ESTRAGA-PRAZERES",
+  "serial_popper_modal_title": "Hall da Fama dos Estraga-Prazeres",
+  "serial_popper_count_label": "Alegações",
+  "serial_popper_tooltip": "Estraga-prazeres em Série: Múltiplas Alegações"
 }

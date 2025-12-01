@@ -39,5 +39,9 @@
   "status_expired_title": "EXPIRADO",
   "status_expired_desc": "Falló",
   "fab_report_bug": "Reportar Error",
-  "fab_submit_prediction": "Enviar Predicción"
+  "fab_submit_prediction": "Enviar Predicción",
+  "serial_popper_button": "SALÓN DE la FAMA DE REVENTADORES",
+  "serial_popper_modal_title": "Salón de la Fama de Reventadores",
+  "serial_popper_count_label": "Afirmaciones",
+  "serial_popper_tooltip": "Reventador en Serie: Múltiples Afirmaciones"
 }

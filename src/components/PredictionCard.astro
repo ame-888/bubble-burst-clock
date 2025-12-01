@@ -1,5 +1,5 @@
 ---
-const { prediction, t, status } = Astro.props;
+const { prediction, t, status, isSerialPopper } = Astro.props;
 
 // Map status to translation key and style class
 let statusLabel = status;
@@ -42,7 +42,12 @@ if (typeof prediction.claim === 'string') {
     </div>
     <div class="content">
         <div class="header">
-            <span class="creator">{t.creator_label}: {prediction.creator}</span>
+            <div class="creator-wrapper">
+                <span class="creator">{t.creator_label}: {prediction.creator}</span>
+                {isSerialPopper && (
+                    <span class="serial-popper-badge" data-tooltip={t.serial_popper_tooltip}>🍿</span>
+                )}
+            </div>
             <span class={`status-badge ${statusClass}`}>{statusLabel}</span>
         </div>
         <!-- Add data-prediction-id and a class for JS targeting -->
@@ -135,9 +140,38 @@ if (typeof prediction.claim === 'string') {
         font-size: 0.875rem;
     }
 
+    .creator-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
     .creator {
         color: #9CA3AF;
         font-weight: 500;
+    }
+
+    .serial-popper-badge {
+        font-size: 1rem;
+        cursor: help;
+        position: relative;
+    }
+
+    .serial-popper-badge:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 120%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1F2937;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        border: 1px solid rgba(255,255,255,0.1);
+        z-index: 10;
+        pointer-events: none;
     }
 
     .status-badge {
