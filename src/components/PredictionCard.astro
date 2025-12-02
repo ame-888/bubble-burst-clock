@@ -52,6 +52,15 @@ const news = prediction.news;
             </div>
             <span class={`status-badge ${statusClass}`}>{statusLabel}</span>
         </div>
+        <div class="betting-section">
+            <button class="bet-button bet-agree" data-prediction-id={prediction.id} data-vote="agree">
+                <span class="bet-icon">👍</span> <span class="bet-label">{t.bet_agree}</span> <span class="bet-count">{prediction.votesFor || 0}</span>
+            </button>
+            <button class="bet-button bet-disagree" data-prediction-id={prediction.id} data-vote="disagree">
+                <span class="bet-icon">👎</span> <span class="bet-label">{t.bet_disagree}</span> <span class="bet-count">{prediction.votesAgainst || 0}</span>
+            </button>
+        </div>
+
         <!-- Add data-prediction-id and a class for JS targeting -->
         <p class="claim prediction-claim-text" data-prediction-id={prediction.id}>"{claimText}"</p>
 
@@ -247,5 +256,70 @@ const news = prediction.news;
         font-size: 0.875rem;
         font-weight: 500;
         display: block;
+    }
+
+    .betting-section {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .bet-button {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        color: white;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        flex: 1;
+        justify-content: center;
+        z-index: 2; /* Ensure clickable above card link */
+        position: relative; /* Establish stacking context */
+    }
+
+    .bet-button:hover {
+        transform: translateY(-2px);
+    }
+
+    .bet-button:active {
+        transform: translateY(0);
+    }
+
+    .bet-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .bet-agree:hover {
+        background: rgba(16, 185, 129, 0.2);
+        border-color: #10B981;
+    }
+
+    .bet-agree.voted {
+        background: rgba(16, 185, 129, 0.4);
+        border-color: #10B981;
+    }
+
+    .bet-disagree:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: #EF4444;
+    }
+
+    .bet-disagree.voted {
+        background: rgba(239, 68, 68, 0.4);
+        border-color: #EF4444;
+    }
+
+    .bet-count {
+        font-weight: 700;
+        margin-left: 0.25rem;
+        opacity: 0.8;
     }
 </style>
