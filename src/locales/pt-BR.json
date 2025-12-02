@@ -43,5 +43,12 @@
   "serial_popper_button": "HALL DA FAMA DOS ESTRAGA-PRAZERES",
   "serial_popper_modal_title": "Hall da Fama dos Estraga-Prazeres",
   "serial_popper_count_label": "Alegações",
-  "serial_popper_tooltip": "Estraga-prazeres em Série: Múltiplas Alegações"
+  "serial_popper_tooltip": "Estourador em Série: Várias Reivindicações",
+  "bet_agree": "Concordar",
+  "bet_disagree": "Discordar",
+  "bet_heading": "Faça sua Aposta",
+  "bet_vote_label": "Seu Voto:",
+  "bet_agree_label": "Concordo (A Favor)",
+  "bet_disagree_label": "Discordo (Contra)",
+  "bet_submit_button": "Apostar"
 }

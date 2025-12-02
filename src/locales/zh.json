@@ -43,5 +43,12 @@
   "serial_popper_button": "连环泡沫戳破者名人堂",
   "serial_popper_modal_title": "连环泡沫戳破者名人堂",
   "serial_popper_count_label": "主张",
-  "serial_popper_tooltip": "连环泡沫戳破者：多项主张"
+  "serial_popper_tooltip": "连环戳破者：多项主张",
+  "bet_agree": "同意",
+  "bet_disagree": "不同意",
+  "bet_heading": "下注",
+  "bet_vote_label": "你的投票:",
+  "bet_agree_label": "同意 (支持)",
+  "bet_disagree_label": "不同意 (反对)",
+  "bet_submit_button": "下注"
 }

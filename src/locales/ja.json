@@ -46,5 +46,12 @@
   "serial_popper_button": "連続崩壊者殿堂",
   "serial_popper_modal_title": "連続崩壊者殿堂",
   "serial_popper_count_label": "件数",
-  "serial_popper_tooltip": "連続崩壊者：複数の主張"
+  "serial_popper_tooltip": "シリアルポッパー：複数の主張",
+  "bet_agree": "賛成",
+  "bet_disagree": "反対",
+  "bet_heading": "賭けをする",
+  "bet_vote_label": "あなたの投票:",
+  "bet_agree_label": "賛成 (支持)",
+  "bet_disagree_label": "反対 (反対)",
+  "bet_submit_button": "賭ける"
 }

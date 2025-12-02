@@ -46,5 +46,12 @@
   "serial_popper_button": "SERIAL POPPERS HALL OF FAME",
   "serial_popper_modal_title": "Serial Poppers Hall of Fame",
   "serial_popper_count_label": "Claims",
-  "serial_popper_tooltip": "Serial Popper: Multiple Claims"
+  "serial_popper_tooltip": "Serial Popper: Multiple Claims",
+  "bet_agree": "Agree",
+  "bet_disagree": "Disagree",
+  "bet_heading": "Place Your Bet",
+  "bet_vote_label": "Your Vote:",
+  "bet_agree_label": "Agree (In Favor)",
+  "bet_disagree_label": "Disagree (Against)",
+  "bet_submit_button": "Place Bet"
 }
