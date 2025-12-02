@@ -72,7 +72,7 @@
         bottom: 2rem;
         left: 50%;
         transform: translateX(-50%);
-        z-index: 9999; /* Ensure visibility */
+        z-index: 9999; /* Ensure visibility above everything */
         background-color: #1F2937;
         color: #60A5FA;
         border: 2px solid #60A5FA;
@@ -83,6 +83,7 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
+        pointer-events: auto !important; /* Force clickability */
         transition: all 0.2s ease;
         box-shadow: 0 0 15px rgba(96, 165, 250, 0.5);
     }
@@ -565,6 +566,9 @@
         let gameActive = false;
         let isPaused = false;
 
+        // Input State for smooth movement
+        const keysPressed = {};
+
         // Game States
         let snakeState = {};
         let tetrisState = {};
@@ -613,6 +617,8 @@
 
         // Input
         document.addEventListener('keydown', (e) => {
+            keysPressed[e.key] = true;
+
             // Pause Toggle ('P')
             if (['p', 'P'].includes(e.key) && gameActive && ['snake', 'tetris', 'breakout'].includes(currentGame)) {
                 isPaused = !isPaused;
@@ -631,7 +637,12 @@
 
             if (currentGame === 'snake') handleSnakeInput(e);
             if (currentGame === 'tetris') handleTetrisInput(e);
-            if (currentGame === 'breakout') handleBreakoutInput(e);
+            // Breakout now uses keysPressed in the loop, but we keep this empty handler call or remove it if unused.
+            // Keeping previous structure: handleBreakoutInput was event based, now will be state based.
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keysPressed[e.key] = false;
         });
 
         canvas.addEventListener('mousedown', (e) => {
@@ -686,6 +697,9 @@
             canvas.width = 400;
             canvas.height = 400; // Reset size
             isPaused = false;
+
+            // Reset keys
+            for (let k in keysPressed) keysPressed[k] = false;
 
             if (game === 'snake') initSnake();
             else if (game === 'tetris') initTetris();
@@ -1046,7 +1060,7 @@
 
             breakoutState = {
                 paddle: { x: canvas.width / 2 - 40, y: canvas.height - 30, w: 80, h: 10 },
-                ball: { x: canvas.width/2, y: canvas.height/2, r: 6, dx: 4, dy: -4 },
+                ball: { x: canvas.width/2, y: canvas.height/2, r: 6, dx: 3, dy: -3 }, // Reduced speed from 4 to 3
                 bricks: [],
                 score: 0,
                 cleared: false
@@ -1073,20 +1087,20 @@
             loop(lastTime);
         }
 
-        function handleBreakoutInput(e) {
-            const p = breakoutState.paddle;
-            const speed = 25;
-            if (e.key === 'ArrowLeft') {
-                p.x = Math.max(0, p.x - speed);
-            }
-            if (e.key === 'ArrowRight') {
-                p.x = Math.min(canvas.width - p.w, p.x + speed);
-            }
-        }
+        // Removed handleBreakoutInput as we use state polling now
 
         function updateBreakout(dt) {
             const b = breakoutState.ball;
             const p = breakoutState.paddle;
+
+            // --- SMOOTH PADDLE MOVEMENT ---
+            const paddleSpeed = 0.5 * dt; // Adjusted for dt (approx 300px/s at 60fps)
+            if (keysPressed['ArrowLeft']) {
+                p.x = Math.max(0, p.x - paddleSpeed);
+            }
+            if (keysPressed['ArrowRight']) {
+                p.x = Math.min(canvas.width - p.w, p.x + paddleSpeed);
+            }
 
             b.x += b.dx;
             b.y += b.dy;
