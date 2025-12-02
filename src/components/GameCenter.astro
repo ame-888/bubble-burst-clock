@@ -26,6 +26,9 @@
                 <button class="game-select-btn" data-game="snake">
                     <span class="game-icon">🧬</span> Data Stream
                 </button>
+                <button class="game-select-btn" data-game="breakout">
+                    <span class="game-icon">🧱</span> Firewall Breaker
+                </button>
                 <button class="game-select-btn" data-game="tictactoe">
                     <span class="game-icon">🧠</span> Neural Nodes
                 </button>
@@ -53,7 +56,7 @@
 
                 <div class="game-controls-info">
                     <div class="score-display">Score: <span id="current-score">0</span></div>
-                    <button id="game-pause-btn" class="hidden">Pause</button>
+                    <!-- Pause Button Removed: Use 'P' Key -->
                     <p id="controls-hint">Controls Info</p>
                     <button id="back-to-menu-btn" class="menu-back-btn">← Back to Menu</button>
                 </div>
@@ -259,20 +262,6 @@
         margin-bottom: 0.5rem;
     }
 
-    #game-pause-btn {
-        background-color: #F59E0B;
-        color: white;
-        border: none;
-        padding: 0.25rem 0.75rem;
-        border-radius: 0.25rem;
-        font-size: 0.9rem;
-        cursor: pointer;
-        margin-bottom: 0.5rem;
-        display: inline-block;
-    }
-    #game-pause-btn:hover { background-color: #D97706; }
-    #game-pause-btn.hidden { display: none !important; }
-
     #controls-hint {
         color: #9CA3AF;
         font-size: 0.9rem;
@@ -400,24 +389,44 @@
             this.isPlaying = false;
             this.timer = null;
             this.noteIndex = 0;
-            this.tempo = 140;
+            this.tempo = 140; // Default tempo
+            this.currentTrack = null;
 
-            // Jazzy Korobeiniki Sequence (simplified)
-            // {f: freq, d: duration_beats}
-            // Key of E minor
-            this.theme = [
-                // E B C D C B
-                {f: 659.25, d: 1}, {f: 493.88, d: 0.5}, {f: 523.25, d: 0.5}, {f: 587.33, d: 1}, {f: 523.25, d: 0.5}, {f: 493.88, d: 0.5},
-                // A A C E D C
-                {f: 440.00, d: 1}, {f: 440.00, d: 0.5}, {f: 523.25, d: 0.5}, {f: 659.25, d: 1}, {f: 587.33, d: 0.5}, {f: 523.25, d: 0.5},
-                // B C D E
-                {f: 493.88, d: 1.5}, {f: 523.25, d: 0.5}, {f: 587.33, d: 1}, {f: 659.25, d: 1},
-                // C A A
-                {f: 523.25, d: 1}, {f: 440.00, d: 1}, {f: 440.00, d: 2},
-                // Rest
-                {f: 0, d: 0.5},
-                // Repeat variation or continue... let's loop this block
-            ];
+            this.tracks = {
+                // Jazzy Korobeiniki (Tetris) - Extended
+                tetris: {
+                    tempo: 140,
+                    notes: [
+                        // A Section
+                        {f: 659.25, d: 1}, {f: 493.88, d: 0.5}, {f: 523.25, d: 0.5}, {f: 587.33, d: 1}, {f: 523.25, d: 0.5}, {f: 493.88, d: 0.5},
+                        {f: 440.00, d: 1}, {f: 440.00, d: 0.5}, {f: 523.25, d: 0.5}, {f: 659.25, d: 1}, {f: 587.33, d: 0.5}, {f: 523.25, d: 0.5},
+                        {f: 493.88, d: 1.5}, {f: 523.25, d: 0.5}, {f: 587.33, d: 1}, {f: 659.25, d: 1},
+                        {f: 523.25, d: 1}, {f: 440.00, d: 1}, {f: 440.00, d: 2},
+                        // B Section (Jazzy)
+                        {f: 587.33, d: 1.5}, {f: 698.46, d: 0.5}, {f: 880.00, d: 1}, {f: 783.99, d: 0.5}, {f: 698.46, d: 0.5},
+                        {f: 659.25, d: 1.5}, {f: 523.25, d: 0.5}, {f: 659.25, d: 1}, {f: 587.33, d: 0.5}, {f: 523.25, d: 0.5},
+                        {f: 493.88, d: 1}, {f: 493.88, d: 0.5}, {f: 523.25, d: 0.5}, {f: 587.33, d: 1}, {f: 659.25, d: 1},
+                        {f: 523.25, d: 1}, {f: 440.00, d: 1}, {f: 440.00, d: 1}, {f: 0, d: 1}, // Rest
+                        // Improv Bridge (Pentatonic runs)
+                        {f: 329.63, d: 0.25}, {f: 392.00, d: 0.25}, {f: 440.00, d: 0.25}, {f: 493.88, d: 0.25}, {f: 587.33, d: 0.5}, {f: 493.88, d: 0.5},
+                        {f: 440.00, d: 0.5}, {f: 392.00, d: 0.5}, {f: 329.63, d: 1}, {f: 0, d: 1}
+                    ]
+                },
+                // Synthwave (Breakout)
+                breakout: {
+                    tempo: 120,
+                    notes: [
+                        // Rolling Arpeggio (C Minor/Eb Major vibe)
+                        {f: 130.81, d: 0.5}, {f: 196.00, d: 0.5}, {f: 261.63, d: 0.5}, {f: 311.13, d: 0.5},
+                        {f: 261.63, d: 0.5}, {f: 196.00, d: 0.5}, {f: 130.81, d: 0.5}, {f: 0, d: 0.5},
+                        {f: 116.54, d: 0.5}, {f: 174.61, d: 0.5}, {f: 233.08, d: 0.5}, {f: 349.23, d: 0.5},
+                        {f: 233.08, d: 0.5}, {f: 174.61, d: 0.5}, {f: 116.54, d: 0.5}, {f: 0, d: 0.5},
+                        {f: 98.00, d: 0.5}, {f: 146.83, d: 0.5}, {f: 196.00, d: 0.5}, {f: 293.66, d: 0.5},
+                        {f: 196.00, d: 0.5}, {f: 146.83, d: 0.5}, {f: 98.00, d: 0.5}, {f: 0, d: 0.5},
+                        {f: 130.81, d: 0.25}, {f: 261.63, d: 0.25}, {f: 130.81, d: 0.5} // Punchy end
+                    ]
+                }
+            };
         }
 
         init() {
@@ -427,26 +436,28 @@
             if (this.ctx.state === 'suspended') this.ctx.resume();
         }
 
-        start() {
-            if (this.isPlaying) return;
-            this.init();
-            this.isPlaying = true;
-            this.noteIndex = 0;
-            this.playNext();
+        playTrack(trackName) {
+            this.stop();
+            if (this.tracks[trackName]) {
+                this.currentTrack = this.tracks[trackName];
+                this.tempo = this.currentTrack.tempo;
+                this.noteIndex = 0;
+                this.isPlaying = true;
+                this.init();
+                this.playNext();
+            }
         }
 
         stop() {
             this.isPlaying = false;
             if (this.timer) clearTimeout(this.timer);
-            // Also stop any currently playing note if possible, but they are short
+            this.currentTrack = null;
         }
 
         playNext() {
-            if (!this.isPlaying) return;
+            if (!this.isPlaying || !this.currentTrack) return;
 
-            const note = this.theme[this.noteIndex];
-            // Calc duration in ms
-            // 60 / tempo = seconds per beat
+            const note = this.currentTrack.notes[this.noteIndex];
             const beatLen = (60 / this.tempo) * 1000;
             const duration = note.d * beatLen;
 
@@ -454,7 +465,7 @@
                 this.playTone(note.f, duration);
             }
 
-            this.noteIndex = (this.noteIndex + 1) % this.theme.length;
+            this.noteIndex = (this.noteIndex + 1) % this.currentTrack.notes.length;
             this.timer = setTimeout(() => this.playNext(), duration);
         }
 
@@ -462,10 +473,10 @@
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
 
-            osc.type = 'triangle'; // Smooth but clear
+            osc.type = 'triangle';
             osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
-            // Jazzy Envelope
+            // Envelope
             gain.gain.setValueAtTime(0, this.ctx.currentTime);
             gain.gain.linearRampToValueAtTime(0.08, this.ctx.currentTime + 0.05);
             gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur/1000);
@@ -484,10 +495,13 @@
         }
 
         getScores() {
+            const defaults = { tetris: [], snake: [], breakout: [], tictactoe: 0 };
             try {
-                return JSON.parse(localStorage.getItem(this.key)) || { tetris: [], snake: [], tictactoe: 0 };
+                const stored = JSON.parse(localStorage.getItem(this.key));
+                // Safe merge
+                return { ...defaults, ...stored };
             } catch (e) {
-                return { tetris: [], snake: [], tictactoe: 0 };
+                return defaults;
             }
         }
 
@@ -538,7 +552,6 @@
         const leaderboardView = document.getElementById('leaderboard-view');
         const leaderboardContent = document.getElementById('leaderboard-content');
         const backFromLeaderboardBtn = document.getElementById('back-from-leaderboard-btn');
-        const pauseBtn = document.getElementById('game-pause-btn');
 
         // Utils
         const sound = new SoundManager();
@@ -556,6 +569,7 @@
         let snakeState = {};
         let tetrisState = {};
         let tttState = {};
+        let breakoutState = {};
 
         // --- HANDLERS ---
         joystickBtn.addEventListener('click', () => {
@@ -582,17 +596,12 @@
             gameOverlay.classList.add('hidden');
             if (currentGame === 'snake') initSnake();
             else if (currentGame === 'tetris') initTetris();
+            else if (currentGame === 'breakout') initBreakout();
             else if (currentGame === 'tictactoe') initTicTacToe();
         });
 
         leaderboardBtn.addEventListener('click', showLeaderboard);
         backFromLeaderboardBtn.addEventListener('click', showMenu);
-
-        pauseBtn.addEventListener('click', () => {
-            if (!gameActive) return;
-            isPaused = !isPaused;
-            pauseBtn.textContent = isPaused ? "Resume" : "Pause";
-        });
 
         document.querySelectorAll('.game-select-btn').forEach(btn => {
             if (btn.id === 'leaderboard-btn') return;
@@ -604,6 +613,14 @@
 
         // Input
         document.addEventListener('keydown', (e) => {
+            // Pause Toggle ('P')
+            if (['p', 'P'].includes(e.key) && gameActive && ['snake', 'tetris', 'breakout'].includes(currentGame)) {
+                isPaused = !isPaused;
+                // Redraw immediately to show/hide pause overlay
+                loop(performance.now());
+                return;
+            }
+
             if (!gameActive) return;
             if (isPaused) return;
 
@@ -614,6 +631,7 @@
 
             if (currentGame === 'snake') handleSnakeInput(e);
             if (currentGame === 'tetris') handleTetrisInput(e);
+            if (currentGame === 'breakout') handleBreakoutInput(e);
         });
 
         canvas.addEventListener('mousedown', (e) => {
@@ -647,6 +665,11 @@
             data.snake.forEach(s => html += `<li><span>${fmtDate(s.date)}</span><span>${s.score}</span></li>`);
             html += `</ul></div>`;
 
+            // Breakout
+            html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Firewall Breaker</div><ul class="leaderboard-list">`;
+            data.breakout.forEach(s => html += `<li><span>${fmtDate(s.date)}</span><span>${s.score}</span></li>`);
+            html += `</ul></div>`;
+
             // TTT
             html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Neural Nodes (Streak)</div><ul class="leaderboard-list">`;
             html += `<li><span>Best Streak</span><span>${data.tictactoe || 0}</span></li>`;
@@ -663,20 +686,11 @@
             canvas.width = 400;
             canvas.height = 400; // Reset size
             isPaused = false;
-            pauseBtn.textContent = "Pause";
 
-            if (game === 'snake') {
-                pauseBtn.classList.remove('hidden');
-                initSnake();
-            }
-            else if (game === 'tetris') {
-                pauseBtn.classList.remove('hidden');
-                initTetris();
-            }
-            else if (game === 'tictactoe') {
-                pauseBtn.classList.add('hidden'); // No pause for TTT
-                initTicTacToe();
-            }
+            if (game === 'snake') initSnake();
+            else if (game === 'tetris') initTetris();
+            else if (game === 'breakout') initBreakout();
+            else if (game === 'tictactoe') initTicTacToe();
         }
 
         function stopGame() {
@@ -692,7 +706,8 @@
             scores.saveScore(currentGame, score);
 
             gameOverlayTitle.textContent = "System Failure";
-            if (currentGame === 'tictactoe' && score > 0) gameOverlayTitle.textContent = "Victory!"; // Handle TTT differently usually
+            if (currentGame === 'tictactoe' && score > 0) gameOverlayTitle.textContent = "Victory!";
+            if (currentGame === 'breakout' && breakoutState.cleared) gameOverlayTitle.textContent = "Firewall Breached!";
 
             gameOverlayScore.textContent = `Score: ${score}`;
             gameOverlay.classList.remove('hidden');
@@ -707,7 +722,7 @@
 
                 // Draw Pause Overlay
                 ctx.save();
-                ctx.fillStyle = 'rgba(17, 24, 39, 0.1)'; // Subtle trail
+                ctx.fillStyle = 'rgba(17, 24, 39, 0.1)';
                 ctx.fillRect(0,0,canvas.width, canvas.height);
 
                 ctx.fillStyle = '#F59E0B';
@@ -717,6 +732,9 @@
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = 'black';
                 ctx.fillText("PAUSED", canvas.width/2, canvas.height/2);
+                ctx.font = '16px Courier New';
+                ctx.fillStyle = '#9CA3AF';
+                ctx.fillText("Press P to Resume", canvas.width/2, canvas.height/2 + 30);
                 ctx.restore();
 
                 return;
@@ -729,18 +747,14 @@
 
             if (currentGame === 'snake') updateSnake(dt);
             if (currentGame === 'tetris') updateTetris(dt);
+            if (currentGame === 'breakout') updateBreakout(dt);
             if (currentGame === 'tictactoe') drawTicTacToe();
-
-            // Always call draw functions even if no update, to clear/redraw frame?
-            // Actually clearRect wipes it. So we must redraw.
-            // updateTetris/updateSnake handles drawing internally in current logic.
-            // drawTicTacToe handles drawing.
         }
 
         // --- SNAKE: DATA STREAM ---
         function initSnake() {
             document.getElementById('modal-title').textContent = "Data Stream";
-            controlsHintEl.textContent = "Arrow Keys to direct the stream";
+            controlsHintEl.textContent = "Arrow Keys to direct the stream (P to Pause)";
             snakeState = {
                 grid: 20,
                 snake: [{x: 10, y: 10}, {x: 9, y: 10}, {x: 8, y: 10}],
@@ -790,7 +804,6 @@
                 y: snakeState.snake[0].y + snakeState.dir.y
             };
 
-            // Walls (Wrap or Die? Die.)
             const cols = canvas.width / snakeState.grid;
             const rows = canvas.height / snakeState.grid;
 
@@ -808,7 +821,7 @@
                 sound.play('pop');
                 currentScoreEl.textContent = snakeState.score;
                 spawnSnakeFood();
-                snakeState.speed = Math.max(50, snakeState.speed * 0.98); // Speed up
+                snakeState.speed = Math.max(50, snakeState.speed * 0.98);
             } else {
                 snakeState.snake.pop();
             }
@@ -817,10 +830,10 @@
         }
 
         function drawSnake() {
-            // Draw Food (Glowing Orb)
             const g = snakeState.grid;
             const f = snakeState.food;
 
+            // Food
             ctx.shadowBlur = 15;
             ctx.shadowColor = '#F59E0B';
             ctx.fillStyle = '#F59E0B';
@@ -828,7 +841,7 @@
             ctx.arc(f.x * g + g/2, f.y * g + g/2, g/2 - 2, 0, Math.PI * 2);
             ctx.fill();
 
-            // Draw Snake (Data Stream)
+            // Snake
             ctx.shadowBlur = 10;
             ctx.shadowColor = '#60A5FA';
 
@@ -843,19 +856,19 @@
 
         // --- TETRIS: CLUSTER BUILDER ---
         const tetrisShapes = [
-            [[1,1,1,1]], // I
-            [[1,1],[1,1]], // O
-            [[0,1,0],[1,1,1]], // T
-            [[1,0,0],[1,1,1]], // J
-            [[0,0,1],[1,1,1]], // L
-            [[0,1,1],[1,1,0]], // S
-            [[1,1,0],[0,1,1]]  // Z
+            [[1,1,1,1]],
+            [[1,1],[1,1]],
+            [[0,1,0],[1,1,1]],
+            [[1,0,0],[1,1,1]],
+            [[0,0,1],[1,1,1]],
+            [[0,1,1],[1,1,0]],
+            [[1,1,0],[0,1,1]]
         ];
         const tetrisColors = ['#06B6D4', '#F59E0B', '#8B5CF6', '#3B82F6', '#F97316', '#10B981', '#EF4444'];
 
         function initTetris() {
             document.getElementById('modal-title').textContent = "Cluster Builder";
-            controlsHintEl.textContent = "Arrow Keys to Move/Rotate";
+            controlsHintEl.textContent = "Arrow Keys to Move/Rotate (P to Pause)";
             tetrisState = {
                 grid: 20,
                 cols: 10,
@@ -867,7 +880,6 @@
                 piece: null
             };
 
-            // Resize canvas for Tetris specifically
             canvas.width = tetrisState.cols * tetrisState.grid;
             canvas.height = tetrisState.rows * tetrisState.grid;
 
@@ -875,7 +887,7 @@
             currentScoreEl.textContent = 0;
             gameActive = true;
             lastTime = performance.now();
-            music.start(); // Start Retro Music
+            music.playTrack('tetris');
             loop(lastTime);
         }
 
@@ -941,7 +953,6 @@
                 if (!checkTetrisCollide(0, 1)) {
                     tetrisState.piece.y++;
                 } else {
-                    // Lock
                     const p = tetrisState.piece;
                     p.shape.forEach((row, y) => {
                         row.forEach((val, x) => {
@@ -953,14 +964,13 @@
                         });
                     });
 
-                    // Clear lines
                     let lines = 0;
                     for (let y = tetrisState.rows - 1; y >= 0; y--) {
                         if (tetrisState.board[y].every(c => c !== 0)) {
                             tetrisState.board.splice(y, 1);
                             tetrisState.board.unshift(Array(tetrisState.cols).fill(0));
                             lines++;
-                            y++; // Check same row again
+                            y++;
                         }
                     }
                     if (lines > 0) {
@@ -969,7 +979,7 @@
                         sound.play('score');
                         tetrisState.speed *= 0.95;
                     } else {
-                        sound.play('pop'); // Land sound
+                        sound.play('pop');
                     }
 
                     spawnTetrisPiece();
@@ -979,10 +989,7 @@
         }
 
         function drawTetris() {
-            // Draw Board (Existing Bubbles)
             const g = tetrisState.grid;
-
-            // Grid
             ctx.strokeStyle = '#1F2937';
             ctx.lineWidth = 1;
             for(let x=0; x<=canvas.width; x+=g) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
@@ -995,7 +1002,6 @@
                 });
             });
 
-            // Draw Piece
             if (tetrisState.piece) {
                 tetrisState.piece.shape.forEach((row, y) => {
                     row.forEach((val, x) => {
@@ -1016,19 +1022,144 @@
             ctx.fillStyle = color;
             ctx.shadowBlur = active ? 10 : 0;
             ctx.shadowColor = color;
-
             ctx.beginPath();
             ctx.arc(x, y, r, 0, Math.PI * 2);
             ctx.fill();
 
-            // Shine
             ctx.fillStyle = 'rgba(255,255,255,0.5)';
             ctx.beginPath();
             ctx.arc(x - r/3, y - r/3, r/4, 0, Math.PI * 2);
             ctx.fill();
-
             ctx.shadowBlur = 0;
         }
+
+        // --- BREAKOUT: FIREWALL BREAKER ---
+        function initBreakout() {
+            document.getElementById('modal-title').textContent = "Firewall Breaker";
+            controlsHintEl.textContent = "Left/Right to deflect the packet (P to Pause)";
+
+            const cols = 8;
+            const rows = 5;
+            const padding = 10;
+            const w = (canvas.width - padding * (cols + 1)) / cols;
+            const h = 20;
+
+            breakoutState = {
+                paddle: { x: canvas.width / 2 - 40, y: canvas.height - 30, w: 80, h: 10 },
+                ball: { x: canvas.width/2, y: canvas.height/2, r: 6, dx: 4, dy: -4 },
+                bricks: [],
+                score: 0,
+                cleared: false
+            };
+
+            // Init Bricks (Bubbles)
+            const colors = ['#EF4444', '#F97316', '#F59E0B', '#10B981', '#3B82F6'];
+            for(let c=0; c<cols; c++) {
+                for(let r=0; r<rows; r++) {
+                    breakoutState.bricks.push({
+                        x: padding + c * (w + padding),
+                        y: padding + r * (h + padding) + 40,
+                        w: w, h: h,
+                        color: colors[r % colors.length],
+                        active: true
+                    });
+                }
+            }
+
+            currentScoreEl.textContent = 0;
+            gameActive = true;
+            lastTime = performance.now();
+            music.playTrack('breakout');
+            loop(lastTime);
+        }
+
+        function handleBreakoutInput(e) {
+            const p = breakoutState.paddle;
+            const speed = 25;
+            if (e.key === 'ArrowLeft') {
+                p.x = Math.max(0, p.x - speed);
+            }
+            if (e.key === 'ArrowRight') {
+                p.x = Math.min(canvas.width - p.w, p.x + speed);
+            }
+        }
+
+        function updateBreakout(dt) {
+            const b = breakoutState.ball;
+            const p = breakoutState.paddle;
+
+            b.x += b.dx;
+            b.y += b.dy;
+
+            // Walls
+            if (b.x + b.r > canvas.width || b.x - b.r < 0) { b.dx = -b.dx; sound.play('move'); }
+            if (b.y - b.r < 0) { b.dy = -b.dy; sound.play('move'); }
+            if (b.y + b.r > canvas.height) {
+                gameOver(breakoutState.score); // Ball lost
+                return;
+            }
+
+            // Paddle
+            if (b.y + b.r > p.y && b.y - b.r < p.y + p.h && b.x > p.x && b.x < p.x + p.w) {
+                b.dy = -Math.abs(b.dy);
+                // English
+                const center = p.x + p.w / 2;
+                b.dx += (b.x - center) * 0.1;
+                sound.play('move');
+            }
+
+            // Bricks
+            let activeCount = 0;
+            breakoutState.bricks.forEach(brick => {
+                if (!brick.active) return;
+                activeCount++;
+                if (b.x > brick.x && b.x < brick.x + brick.w &&
+                    b.y > brick.y && b.y < brick.y + brick.h) {
+                        brick.active = false;
+                        b.dy = -b.dy;
+                        breakoutState.score += 10;
+                        currentScoreEl.textContent = breakoutState.score;
+                        sound.play('pop');
+                    }
+            });
+
+            if (activeCount === 0) {
+                breakoutState.cleared = true;
+                gameOver(breakoutState.score + 1000); // Win bonus
+            }
+
+            drawBreakout();
+        }
+
+        function drawBreakout() {
+            // Paddle
+            const p = breakoutState.paddle;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#60A5FA';
+            ctx.fillStyle = '#60A5FA';
+            ctx.fillRect(p.x, p.y, p.w, p.h);
+
+            // Ball
+            const b = breakoutState.ball;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Bricks (Bubbles style)
+            breakoutState.bricks.forEach(brick => {
+                if (!brick.active) return;
+                ctx.shadowColor = brick.color;
+                ctx.fillStyle = brick.color;
+
+                // Draw as rounded rects/bubbles
+                ctx.beginPath();
+                ctx.roundRect(brick.x, brick.y, brick.w, brick.h, 5);
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+        }
+
 
         // --- TIC-TAC-TOE: NEURAL NODES ---
         function initTicTacToe() {
@@ -1048,13 +1179,13 @@
         function handleTicTacToeClick(e) {
             if (tttState.winner || tttState.player !== 'X') return;
 
-            // Correctly calculate position relative to canvas internal size
+            // Use offsetX/Y for robust coordinate mapping relative to the element
+            // scaling by internal resolution vs display size
             const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
+            // offsetX is relative to the padding edge of the target node
+            // Since we need to map to 400x400
+            const x = e.offsetX * (canvas.width / rect.width);
+            const y = e.offsetY * (canvas.height / rect.height);
 
             // Grid is 3x3
             const cellW = canvas.width / 3;
@@ -1121,7 +1252,7 @@
                     tttState.winner = null;
                     tttState.player = 'X'; // Player keeps turn
                     drawTicTacToe();
-                }, 1000); // Auto restart for streak
+                }, 1000);
             } else {
                 gameActive = false;
                 gameOver(tttState.streak); // Save streak
