@@ -29,9 +29,11 @@ if (typeof prediction.claim === 'string') {
 } else if (typeof prediction.claim === 'object' && prediction.claim !== null) {
     claimText = prediction.claim['en'] || Object.values(prediction.claim)[0] || '';
 }
+
+const news = prediction.news;
 ---
 
-<a href={prediction.videoUrl} target="_blank" rel="noopener noreferrer" class="card" data-upload-date={prediction.uploadDate} data-status={status}>
+<a href={prediction.videoUrl} target="_blank" rel="noopener noreferrer" class="card" data-upload-date={prediction.uploadDate} data-status={status} data-creator={prediction.creator}>
     <div class="thumbnail-wrapper">
         <img src={prediction.thumbnailUrl} alt={claimText} class="thumbnail" />
         <div class="play-overlay">
@@ -52,6 +54,13 @@ if (typeof prediction.claim === 'string') {
         </div>
         <!-- Add data-prediction-id and a class for JS targeting -->
         <p class="claim prediction-claim-text" data-prediction-id={prediction.id}>"{claimText}"</p>
+
+        {news && (
+            <p class="news-item">
+                <span class="news-icon">📰</span> {news}
+            </p>
+        )}
+
         <div class="footer">
             {prediction.uploadDate && (
                 <span class="date-label">{t.upload_label}: {prediction.uploadDate}</span>
@@ -206,8 +215,22 @@ if (typeof prediction.claim === 'string') {
         line-height: 1.5;
         color: #F3F4F6;
         margin: 0;
-        flex-grow: 1;
         font-style: italic;
+    }
+
+    .news-item {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: #34D399; /* Bright green for contrast/positive news */
+        background: rgba(16, 185, 129, 0.1);
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        margin: 0.25rem 0 0.5rem 0;
+        border-left: 3px solid #10B981;
+    }
+
+    .news-icon {
+        margin-right: 0.25rem;
     }
 
     .footer {
