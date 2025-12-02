@@ -15,7 +15,7 @@ export const predictions = [
         uploadDate: "2025-10-18",
         validityStart: "2028-01-01",
         validityEnd: "2030-12-31",
-        news: "Google implemented the \"Projects\" feature in Google AI Studio."
+        news: "Google launches a way for users to save and reuse system instructions in Google AI Studio."
     },
     {
         id: "37aUuoRyMhM",
@@ -123,7 +123,7 @@ export const predictions = [
         uploadDate: "2024-07-03",
         validityStart: "2024-07-03",
         validityEnd: "2024-07-17",
-        news: "The Guardian publishes an article saying that Our attitudes towards AI reveal how we really feel about human intelligence."
+        news: "The Guardian publishes an article arguing that public attitudes toward AI reveal deep-seated beliefs about human intelligence."
     },
     {
         id: "_L1JbzDnEMk",
