@@ -206,12 +206,17 @@ const processedBenchmarks = benchmarks.models.map(m => {
         </div>
 
         <div class="sort-container">
-            <label for="sort-select" id="sort-label">{t.sort_label}</label>
-            <select id="sort-select">
-                <option value="newest" selected>{t.sort_newest}</option>
-                <option value="oldest">{t.sort_oldest}</option>
-                <option value="status">{t.sort_status}</option>
-            </select>
+            <div class="search-wrapper">
+                <input type="text" id="search-input" placeholder="Search..." class="search-input">
+            </div>
+            <div class="sort-wrapper">
+                <label for="sort-select" id="sort-label">{t.sort_label}</label>
+                <select id="sort-select">
+                    <option value="newest" selected>{t.sort_newest}</option>
+                    <option value="oldest">{t.sort_oldest}</option>
+                    <option value="status">{t.sort_status}</option>
+                </select>
+            </div>
         </div>
 
         <div class="predictions-grid" id="predictions-grid">
@@ -422,7 +427,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
         padding: 0 1rem;
     }
 
-    /* Sort Selector */
+    /* Sort Selector & Search */
     .sort-container {
         display: flex;
         justify-content: flex-end;
@@ -430,6 +435,39 @@ const processedBenchmarks = benchmarks.models.map(m => {
         gap: 1rem;
         margin-bottom: 2rem;
         padding: 0 1rem;
+        flex-wrap: wrap;
+    }
+
+    .search-wrapper {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end; /* Push search input to the right next to sort */
+    }
+
+    .search-input {
+        background: rgba(31, 41, 55, 0.6);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-family: inherit;
+        font-size: 0.9rem;
+        width: 100%;
+        max-width: 300px;
+        transition: all 0.2s;
+    }
+
+    .search-input:focus {
+        border-color: #60A5FA;
+        background-color: rgba(31, 41, 55, 0.9);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+    }
+
+    .sort-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
     #sort-label {
@@ -1095,17 +1133,35 @@ const processedBenchmarks = benchmarks.models.map(m => {
             setInterval(updateClock, 1000);
         }
 
-        // --- Sort Logic ---
-        function setupSort() {
+        // --- Sort and Search Logic ---
+        function setupSortAndSearch() {
             const sortSelect = document.getElementById('sort-select');
+            const searchInput = document.getElementById('search-input');
             const grid = document.getElementById('predictions-grid');
 
-            if (!sortSelect || !grid) return;
+            if (!sortSelect || !grid || !searchInput) return;
 
-            function sortCards() {
+            function filterAndSort() {
                 const criteria = sortSelect.value;
+                const query = searchInput.value.toLowerCase().trim();
                 const cards = Array.from(grid.children);
 
+                // Filter
+                cards.forEach(card => {
+                   const claimText = (card.querySelector('.claim')?.textContent || '').toLowerCase();
+                   const creatorText = (card.getAttribute('data-creator') || '').toLowerCase();
+
+                   // Remove quotes from claim text for cleaner search if needed, but keeping simple
+                   const matches = claimText.includes(query) || creatorText.includes(query);
+
+                   if (matches) {
+                       card.classList.remove('hidden');
+                   } else {
+                       card.classList.add('hidden');
+                   }
+                });
+
+                // Sort (only visible cards matters, but we sort all)
                 cards.sort((a, b) => {
                     const dateA = new Date(a.getAttribute('data-upload-date') || 0);
                     const dateB = new Date(b.getAttribute('data-upload-date') || 0);
@@ -1137,12 +1193,11 @@ const processedBenchmarks = benchmarks.models.map(m => {
                 cards.forEach(card => grid.appendChild(card));
             }
 
-            sortSelect.addEventListener('change', sortCards);
+            sortSelect.addEventListener('change', filterAndSort);
+            searchInput.addEventListener('input', filterAndSort);
 
-            // Initial sort (default is Newest, which should match server render, but good to ensure)
-            // Actually server render might not be sorted by date descending by default unless the data array is.
-            // Let's force a sort on load to match the default selector value.
-            sortCards();
+            // Initial sort
+            filterAndSort();
         }
 
         // --- Initial Load ---
@@ -1161,7 +1216,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
         try {
             updateStaticTranslations();
             startClock();
-            setupSort();
+            setupSortAndSearch();
         } catch (e) {
             console.error('Error updating static translations:', e);
         }
