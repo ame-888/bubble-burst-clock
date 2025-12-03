@@ -178,5 +178,23 @@ export const predictions = [
         validityStart: "2025-12-01",
         validityEnd: "2025-12-15",
         news: "DeepSeek released the open-source models DeepSeek-V3.2 and DeepSeek-V3.2-Speciale"
+    },
+    {
+        id: "gary-marcus-tweet-2024",
+        creator: "Gary Marcus",
+        claim: {
+            "en": "Clearly, I got the year wrong. It’s going to be days or weeks from now, not months.",
+            "pt-BR": "Claramente, eu errei o ano. Vai ser dias ou semanas a partir de agora, não meses.",
+            "es": "Claramente, me equivoqué de año. Serán días o semanas a partir de ahora, no meses.",
+            "ja": "明らかに、私は年を間違えました。数ヶ月ではなく、今から数日か数週間のことでしょう。",
+            "zh": "显然，我把年份搞错了。这将是几天或几周后的事，而不是几个月。"
+        },
+        videoUrl: "https://x.com/GaryMarcus/status/1819525054537126075",
+        thumbnailUrl: "/images/predictions/gary_marcus_tweet.png",
+        dateRange: "5 Weeks",
+        uploadDate: "2024-08-02",
+        validityStart: "2024-08-02",
+        validityEnd: "2024-09-06",
+        news: "Government shelves £1.3bn UK tech and AI plans."
     }
 ];
