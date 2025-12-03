@@ -136,26 +136,6 @@ const processedBenchmarks = benchmarks.models.map(m => {
         </div>
     </div>
 
-    <div id="betting-modal" class="modal hidden">
-        <div class="modal-content betting-theme">
-            <button class="close-modal">&times;</button>
-            <h3 id="bet-heading">{t.bet_heading}</h3>
-            <form action="https://formbold.com/s/3jKWm" method="POST" id="betting-form">
-                <input type="hidden" name="type" value="bet_submission">
-                <input type="hidden" name="prediction_id" id="bet-prediction-id">
-
-                <div class="bet-vote-display">
-                    <span id="bet-vote-label">{t.bet_vote_label}</span>
-                    <span id="bet-vote-value" class="bet-vote-value"></span>
-                    <input type="hidden" name="vote" id="bet-vote-input">
-                </div>
-
-                <input type="email" name="email" placeholder={t.email_placeholder} required>
-                <button type="submit" class="submit-button bet-submit-btn" id="bet-submit-button">{t.bet_submit_button}</button>
-            </form>
-        </div>
-    </div>
-
     <div id="benchmark-modal" class="modal hidden">
         <div class="modal-content benchmark-theme">
             <button class="close-modal">&times;</button>
@@ -639,12 +619,6 @@ const processedBenchmarks = benchmarks.models.map(m => {
         max-width: 500px;
     }
 
-    .modal-content.betting-theme {
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        box-shadow: 0 0 30px rgba(16, 185, 129, 0.1);
-        max-width: 400px;
-    }
-
     .modal-content.about-theme {
         border: 1px solid rgba(96, 165, 250, 0.3);
         box-shadow: 0 0 30px rgba(96, 165, 250, 0.1);
@@ -926,28 +900,6 @@ const processedBenchmarks = benchmarks.models.map(m => {
     .interactive-title:active {
         transform: scale(0.95);
     }
-
-    .bet-vote-display {
-        background: rgba(0,0,0,0.2);
-        padding: 1rem;
-        border-radius: 0.5rem;
-        text-align: center;
-        margin-bottom: 0.5rem;
-    }
-
-    .bet-vote-value {
-        font-weight: 900;
-        font-size: 1.2rem;
-        display: block;
-        margin-top: 0.25rem;
-    }
-
-    .bet-submit-btn {
-        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-    }
-    .bet-submit-btn:hover {
-         box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.5);
-    }
 </style>
 
 <script define:vars={{ lang, t, translations, latestClaimDate, simulatedServerTime, predictions }}>
@@ -959,7 +911,6 @@ const processedBenchmarks = benchmarks.models.map(m => {
         const benchmarkModal = document.getElementById('benchmark-modal');
         const aboutModal = document.getElementById('about-modal');
         const serialPopperModal = document.getElementById('serial-popper-modal');
-        const bettingModal = document.getElementById('betting-modal');
 
         const btnSubmit = document.getElementById('fab-submit');
         const btnBug = document.getElementById('fab-bug');
@@ -982,7 +933,6 @@ const processedBenchmarks = benchmarks.models.map(m => {
             benchmarkModal.classList.add('hidden');
             aboutModal.classList.add('hidden');
             serialPopperModal.classList.add('hidden');
-            bettingModal.classList.add('hidden');
         }
 
         if (btnSubmit) btnSubmit.addEventListener('click', () => openModal(submissionModal));
@@ -993,98 +943,6 @@ const processedBenchmarks = benchmarks.models.map(m => {
         if (overlay) overlay.addEventListener('click', closeModal);
 
         closeButtons.forEach(btn => btn.addEventListener('click', closeModal));
-
-        // --- Betting Logic ---
-        function setupBetting() {
-            const betButtons = document.querySelectorAll('.bet-button');
-            const userBetsKey = 'user_bets';
-
-            // Load user bets
-            let userBets = [];
-            try {
-                userBets = JSON.parse(localStorage.getItem(userBetsKey) || '[]');
-            } catch(e) {}
-
-            function updateButtonState(btn, pid) {
-                 if (userBets.includes(pid)) {
-                     btn.disabled = true;
-                     btn.classList.add('voted');
-                     if (btn.dataset.vote === 'agree') {
-                         btn.title = "You have already voted on this prediction.";
-                     }
-                 }
-            }
-
-            betButtons.forEach(btn => {
-                const pid = btn.dataset.predictionId;
-                const voteType = btn.dataset.vote;
-                updateButtonState(btn, pid);
-
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (btn.disabled) return;
-
-                    if (userBets.includes(pid)) return;
-
-                    // Open Modal
-                    document.getElementById('bet-prediction-id').value = pid;
-                    document.getElementById('bet-vote-input').value = voteType;
-
-                    const label = voteType === 'agree' ? currentTranslations.bet_agree_label : currentTranslations.bet_disagree_label;
-                    const valueEl = document.getElementById('bet-vote-value');
-                    valueEl.textContent = label;
-                    valueEl.style.color = voteType === 'agree' ? '#10B981' : '#EF4444';
-
-                    openModal(bettingModal);
-                });
-            });
-
-            const bettingForm = document.getElementById('betting-form');
-            if (bettingForm) {
-                bettingForm.addEventListener('submit', (e) => {
-                    e.preventDefault(); // Prevent redirect
-
-                    const pid = document.getElementById('bet-prediction-id').value;
-                    const vote = document.getElementById('bet-vote-input').value;
-                    const formData = new FormData(bettingForm);
-
-                    // Send to Formbold via AJAX
-                    fetch(bettingForm.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    }).then(response => {
-                        console.log('Vote submitted');
-                    }).catch(error => {
-                        console.error('Submission error:', error);
-                    });
-
-                    // Update local storage
-                    if (!userBets.includes(pid)) {
-                        userBets.push(pid);
-                        localStorage.setItem(userBetsKey, JSON.stringify(userBets));
-                    }
-
-                    // Update UI immediately (optimistic)
-                    document.querySelectorAll(`.bet-button[data-prediction-id="${pid}"]`).forEach(btn => {
-                        btn.disabled = true;
-                        btn.classList.add('voted');
-                    });
-
-                    // Increment count visually
-                    const countSpan = document.querySelector(`.bet-button[data-prediction-id="${pid}"][data-vote="${vote}"] .bet-count`);
-                    if (countSpan) {
-                        const current = parseInt(countSpan.textContent) || 0;
-                        countSpan.textContent = current + 1;
-                    }
-
-                    closeModal();
-                });
-            }
-        }
-        setupBetting();
 
         // --- Easter Egg Logic ---
         let titleClickCount = 0;
@@ -1180,16 +1038,6 @@ const processedBenchmarks = benchmarks.models.map(m => {
             // Sort
             const sortLabel = document.getElementById('sort-label');
             if (sortLabel) sortLabel.textContent = currentTranslations.sort_label;
-
-            // Betting
-            const betHeading = document.getElementById('bet-heading');
-            if (betHeading) betHeading.textContent = currentTranslations.bet_heading;
-            const betVoteLabel = document.getElementById('bet-vote-label');
-            if (betVoteLabel) betVoteLabel.textContent = currentTranslations.bet_vote_label;
-            const betSubmitBtn = document.getElementById('bet-submit-button');
-            if (betSubmitBtn) betSubmitBtn.textContent = currentTranslations.bet_submit_button;
-            document.querySelectorAll('.bet-agree .bet-label').forEach(el => el.textContent = currentTranslations.bet_agree);
-            document.querySelectorAll('.bet-disagree .bet-label').forEach(el => el.textContent = currentTranslations.bet_disagree);
 
             // Status Legend
             const statusFutureTitle = document.getElementById('status-future-title');
