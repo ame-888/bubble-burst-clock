@@ -15,9 +15,7 @@ export const predictions = [
         uploadDate: "2025-10-18",
         validityStart: "2028-01-01",
         validityEnd: "2030-12-31",
-        news: "Google implemented the \"Projects\" feature in Google AI Studio.",
-        votesFor: 120,
-        votesAgainst: 15
+        news: "Google implemented the \"Projects\" feature in Google AI Studio."
     },
     {
         id: "37aUuoRyMhM",
@@ -35,9 +33,7 @@ export const predictions = [
         uploadDate: "2025-09-21",
         validityStart: "2025-09-21",
         validityEnd: "2025-10-05",
-        news: "xAI launches Grok Imagine with dialogue for web browser.",
-        votesFor: 45,
-        votesAgainst: 30
+        news: "xAI launches Grok Imagine with dialogue for web browser."
     },
     {
         id: "fczLMe5DOPI",
@@ -55,9 +51,7 @@ export const predictions = [
         uploadDate: "2025-11-27",
         validityStart: "2025-11-27",
         validityEnd: "2025-12-11",
-        news: "Google celebrates 5 years of Alpha Fold 2.",
-        votesFor: 88,
-        votesAgainst: 42
+        news: "Google celebrates 5 years of Alpha Fold 2."
     },
     {
         id: "FcKYvzJbTko",
@@ -75,9 +69,7 @@ export const predictions = [
         uploadDate: "2025-10-10",
         validityStart: "2025-10-10",
         validityEnd: "2025-10-24",
-        news: "The Commission announced a major expansion of Europe’s AI infrastructure, with six new AI Factories joining the network of existing AI Factories. This brings the total to 19 AI Factories across 16 Member States.",
-        votesFor: 23,
-        votesAgainst: 10
+        news: "The Commission announced a major expansion of Europe’s AI infrastructure, with six new AI Factories joining the network of existing AI Factories. This brings the total to 19 AI Factories across 16 Member States."
     },
     {
         id: "2FohHLZTHmM",
@@ -95,9 +87,7 @@ export const predictions = [
         uploadDate: "2025-10-19",
         validityStart: "2025-10-19",
         validityEnd: "2025-11-02",
-        news: "Google implemented the \"Projects\" feature in Google AI Studio.",
-        votesFor: 56,
-        votesAgainst: 5
+        news: "Google implemented the \"Projects\" feature in Google AI Studio."
     },
     {
         id: "5os_nalLwvI",
@@ -115,9 +105,7 @@ export const predictions = [
         uploadDate: "2025-09-09",
         validityStart: "2025-09-09",
         validityEnd: "2025-09-23",
-        news: "Google launches Nucleo Bench.",
-        votesFor: 20,
-        votesAgainst: 20
+        news: "Google launches Nucleo Bench."
     },
     {
         id: "T8ByoAt5gCA",
@@ -135,9 +123,7 @@ export const predictions = [
         uploadDate: "2024-07-03",
         validityStart: "2024-07-03",
         validityEnd: "2024-07-17",
-        news: "The Guardian publishes an article saying that Our attitudes towards AI reveal how we really feel about human intelligence.",
-        votesFor: 250,
-        votesAgainst: 12
+        news: "The Guardian publishes an article saying that Our attitudes towards AI reveal how we really feel about human intelligence."
     },
     {
         id: "_L1JbzDnEMk",
@@ -155,9 +141,7 @@ export const predictions = [
         uploadDate: "2025-09-15",
         validityStart: "2025-09-15",
         validityEnd: "2025-09-29",
-        news: "OpenAI launches GPT-5-Codex.",
-        votesFor: 300,
-        votesAgainst: 45
+        news: "OpenAI launches GPT-5-Codex."
     },
     {
         id: "2gTzid5Jl-w",
@@ -175,8 +159,6 @@ export const predictions = [
         uploadDate: "2025-10-04",
         validityStart: "2025-10-04",
         validityEnd: "2025-10-18",
-        news: "Mistral announces Mistral AI Studio.",
-        votesFor: 67,
-        votesAgainst: 8
+        news: "Mistral announces Mistral AI Studio."
     }
 ];

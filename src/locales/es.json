@@ -43,12 +43,5 @@
   "serial_popper_button": "SALÓN DE la FAMA DE REVENTADORES",
   "serial_popper_modal_title": "Salón de la Fama de Reventadores",
   "serial_popper_count_label": "Afirmaciones",
-  "serial_popper_tooltip": "Serial Popper: Múltiples Afirmaciones",
-  "bet_agree": "Acuerdo",
-  "bet_disagree": "Desacuerdo",
-  "bet_heading": "Haga su Apuesta",
-  "bet_vote_label": "Su Voto:",
-  "bet_agree_label": "De Acuerdo (A Favor)",
-  "bet_disagree_label": "En Desacuerdo (En Contra)",
-  "bet_submit_button": "Apostar"
+  "serial_popper_tooltip": "Serial Popper: Múltiples Afirmaciones"
 }
