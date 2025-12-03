@@ -13,13 +13,13 @@
 
     <div id="game-modal" class="hidden">
         <div class="modal-overlay"></div>
-        <div class="modal-content">
+        <div class="modal-content glass-panel">
             <div class="modal-header">
                 <h2 id="modal-title">AI Arcade</h2>
                 <button id="close-modal-btn" aria-label="Close">&times;</button>
             </div>
 
-            <div id="game-menu">
+            <div id="game-menu" class="fade-in">
                 <button class="game-select-btn" data-game="tetris">
                     <span class="game-icon">🧩</span> Cluster Builder
                 </button>
@@ -32,18 +32,18 @@
                 <button class="game-select-btn" data-game="tictactoe">
                     <span class="game-icon">🧠</span> Neural Nodes
                 </button>
-                <button class="game-select-btn" id="leaderboard-btn" style="margin-top: 1rem; border-color: #F59E0B; color: #F59E0B;">
+                <button class="game-select-btn" id="leaderboard-btn">
                     <span class="game-icon">🏆</span> High Scores
                 </button>
             </div>
 
-            <div id="leaderboard-view" class="hidden">
+            <div id="leaderboard-view" class="hidden fade-in">
                 <h3>Top Scores</h3>
                 <div id="leaderboard-content"></div>
                 <button id="back-from-leaderboard-btn" class="menu-back-btn">← Back to Menu</button>
             </div>
 
-            <div id="game-area" class="hidden">
+            <div id="game-area" class="hidden fade-in">
                 <div class="game-canvas-wrapper">
                     <canvas id="game-canvas" width="400" height="400"></canvas>
                     <div id="game-overlay" class="hidden">
@@ -56,7 +56,6 @@
 
                 <div class="game-controls-info">
                     <div class="score-display">Score: <span id="current-score">0</span></div>
-                    <!-- Pause Button Removed: Use 'P' Key -->
                     <p id="controls-hint">Controls Info</p>
                     <button id="back-to-menu-btn" class="menu-back-btn">← Back to Menu</button>
                 </div>
@@ -66,15 +65,15 @@
 </div>
 
 <style>
-    /* --- Styles --- */
+    /* Modern Glassmorphism & Animations */
     #joystick-btn {
         position: fixed;
         bottom: 2rem;
         left: 50%;
         transform: translateX(-50%);
-        z-index: 9999; /* Ensure visibility */
+        z-index: 9999;
         pointer-events: auto;
-        background-color: #1F2937;
+        background: rgba(31, 41, 55, 0.8);
         color: #60A5FA;
         border: 2px solid #60A5FA;
         border-radius: 50%;
@@ -84,14 +83,21 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 0 15px rgba(96, 165, 250, 0.5);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+        backdrop-filter: blur(5px);
     }
 
     #joystick-btn:hover {
-        background-color: #374151;
-        transform: translateX(-50%) scale(1.1);
-        box-shadow: 0 0 25px rgba(96, 165, 250, 0.8);
+        background: rgba(55, 65, 81, 0.9);
+        transform: translateX(-50%) scale(1.15) rotate(10deg);
+        box-shadow: 0 0 30px rgba(96, 165, 250, 0.8);
+        border-color: #93C5FD;
+        color: #93C5FD;
+    }
+
+    #joystick-btn:active {
+        transform: translateX(-50%) scale(0.95);
     }
 
     .joystick-icon {
@@ -100,6 +106,7 @@
         pointer-events: none;
     }
 
+    /* Modal Styling */
     #game-modal {
         position: fixed;
         inset: 0;
@@ -107,167 +114,226 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
     }
 
-    /* Force hide hidden elements */
-    .hidden { display: none !important; }
-
-    #game-modal.hidden {
-        display: none !important;
+    #game-modal:not(.hidden) {
+        opacity: 1;
+        visibility: visible;
     }
 
     .modal-overlay {
         position: absolute;
         inset: 0;
-        background-color: rgba(0, 0, 0, 0.85);
+        background: rgba(3, 7, 18, 0.7); /* Deep dark blue/black */
         backdrop-filter: blur(8px);
     }
 
-    .modal-content {
+    .modal-content.glass-panel {
         position: relative;
-        background-color: #111827;
-        border: 1px solid #374151;
-        border-radius: 1rem;
-        padding: 1.5rem;
+        background: rgba(17, 24, 39, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.05),
+            0 20px 50px rgba(0, 0, 0, 0.7),
+            0 0 100px rgba(96, 165, 250, 0.1); /* Subtle blue glow */
+        backdrop-filter: blur(16px);
+        border-radius: 1.5rem;
+        padding: 2rem;
         width: 95%;
         max-width: 500px;
-        color: white;
-        box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+        color: #F3F4F6;
         display: flex;
         flex-direction: column;
         max-height: 90vh;
         overflow-y: auto;
+        transform: scale(0.95);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    #game-modal:not(.hidden) .modal-content {
+        transform: scale(1);
     }
 
     .modal-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.5rem;
-        border-bottom: 1px solid #374151;
+        margin-bottom: 2rem;
         padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     #modal-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #60A5FA;
+        font-size: 1.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #60A5FA 0%, #A78BFA 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         margin: 0;
-        text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+        letter-spacing: -0.02em;
     }
 
     #close-modal-btn {
-        background: none;
+        background: rgba(255, 255, 255, 0.05);
         border: none;
         color: #9CA3AF;
-        font-size: 2rem;
-        line-height: 1;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        transition: color 0.2s;
+        transition: all 0.2s;
     }
 
-    #close-modal-btn:hover { color: white; }
+    #close-modal-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: rotate(90deg);
+    }
 
+    /* Menu Buttons */
     #game-menu {
         display: flex;
         flex-direction: column;
         gap: 1rem;
-        overflow-y: auto;
     }
 
     .game-select-btn {
-        background-color: #1F2937;
-        border: 1px solid #374151;
-        padding: 1rem;
-        border-radius: 0.75rem;
-        color: white;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 1.25rem;
+        border-radius: 1rem;
+        color: #E5E7EB;
         font-size: 1.1rem;
         font-weight: 600;
         cursor: pointer;
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        transition: all 0.2s;
+        gap: 1rem;
+        transition: all 0.2s ease-out;
     }
 
     .game-select-btn:hover {
-        background-color: #374151;
-        border-color: #60A5FA;
-        transform: translateY(-2px);
+        background: rgba(96, 165, 250, 0.1);
+        border-color: rgba(96, 165, 250, 0.3);
+        transform: translateX(5px);
     }
 
-    #game-area.hidden { display: none !important; }
-    #leaderboard-view.hidden { display: none !important; }
-    #game-menu.hidden { display: none !important; }
+    .game-icon {
+        font-size: 1.5rem;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
 
+    #leaderboard-btn {
+        margin-top: 1rem;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+        border-color: rgba(245, 158, 11, 0.2);
+        color: #FCD34D;
+    }
+
+    #leaderboard-btn:hover {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
+        border-color: rgba(245, 158, 11, 0.5);
+    }
+
+    /* Canvas Area */
     .game-canvas-wrapper {
         position: relative;
         width: 100%;
-        aspect-ratio: 1; /* Keep square mostly */
-        background-color: #030712;
-        border: 2px solid #374151;
-        border-radius: 0.5rem;
+        aspect-ratio: 1;
+        background: #000; /* Deep black for contrast */
+        border: 2px solid rgba(55, 65, 81, 0.5);
+        border-radius: 1rem;
         overflow: hidden;
-        margin-bottom: 1rem;
-        box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        margin-bottom: 1.5rem;
+        box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
     }
 
     canvas {
         width: 100%;
         height: 100%;
         display: block;
+        image-rendering: pixelated; /* Sharp rendering */
     }
 
+    /* Game Overlay */
     #game-overlay {
         position: absolute;
         inset: 0;
-        background-color: rgba(0, 0, 0, 0.8);
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(4px);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 1rem;
-        z-index: 10;
+        gap: 1.5rem;
+        z-index: 20;
+        animation: fadeIn 0.3s;
     }
 
-    #game-overlay.hidden { display: none; }
-
     #game-overlay-title {
-        font-size: 2rem;
+        font-size: 2.5rem;
         color: #F87171;
         margin: 0;
-        font-weight: 800;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        text-shadow: 0 0 20px rgba(248, 113, 113, 0.5);
     }
 
     #game-overlay button {
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
+        padding: 1rem 2rem;
+        border-radius: 0.75rem;
         border: none;
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 1.1rem;
         cursor: pointer;
         width: 80%;
+        transition: transform 0.1s, filter 0.2s;
+        text-transform: uppercase;
     }
 
-    #game-restart-btn { background-color: #10B981; color: white; }
-    #game-restart-btn:hover { background-color: #059669; }
+    #game-restart-btn {
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
 
-    #game-quit-btn { background-color: #4B5563; color: white; margin-top: 0.5rem; }
-    #game-quit-btn:hover { background-color: #374151; }
+    #game-quit-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: #D1D5DB;
+    }
 
-    .game-controls-info { text-align: center; }
+    #game-overlay button:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.1);
+    }
+
+    /* Info Panel */
+    .game-controls-info {
+        text-align: center;
+    }
 
     .score-display {
-        font-size: 1.5rem;
-        font-weight: bold;
+        font-size: 2rem;
+        font-weight: 900;
         color: #60A5FA;
         margin-bottom: 0.5rem;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
     }
 
     #controls-hint {
         color: #9CA3AF;
         font-size: 0.9rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        font-style: italic;
     }
 
     .menu-back-btn {
@@ -276,1047 +342,282 @@
         color: #9CA3AF;
         cursor: pointer;
         font-size: 0.9rem;
-        text-decoration: underline;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        transition: all 0.2s;
     }
-    .menu-back-btn:hover { color: white; }
 
-    /* Leaderboard Styles */
-    #leaderboard-view { text-align: center; }
-    #leaderboard-view h3 { color: #F59E0B; margin-top: 0; }
+    .menu-back-btn:hover {
+        color: white;
+        background: rgba(255,255,255,0.1);
+    }
 
+    /* Leaderboard */
     .leaderboard-game-section {
-        margin-bottom: 1.5rem;
-        border-bottom: 1px solid #374151;
-        padding-bottom: 0.5rem;
-        text-align: left;
+        background: rgba(0,0,0,0.2);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
     }
 
     .leaderboard-game-title {
-        font-weight: bold;
+        font-weight: 700;
         color: #60A5FA;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         text-transform: uppercase;
-        margin-bottom: 0.5rem;
-    }
-
-    .leaderboard-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        padding-bottom: 0.5rem;
     }
 
     .leaderboard-list li {
         display: flex;
         justify-content: space-between;
-        padding: 0.25rem 0;
+        padding: 0.4rem 0;
         color: #D1D5DB;
-        border-bottom: 1px dashed #374151;
+        font-size: 0.9rem;
+        border-bottom: 1px dashed rgba(255,255,255,0.1);
     }
     .leaderboard-list li:last-child { border-bottom: none; }
+
+    /* Utility */
+    .hidden { display: none !important; }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 <script>
-    // --- UTILITIES ---
-    class SoundManager {
-        constructor() {
-            this.ctx = null;
-            this.enabled = true;
+    import { SoundManager, MusicManager, ScoreManager, GameLogic } from '../scripts/GameEngine.js';
+
+    // Initialize Managers
+    const sound = new SoundManager();
+    const music = new MusicManager();
+    const scores = new ScoreManager();
+
+    // Elements
+    let modal, joystickBtn;
+    let canvas, ctx;
+    let gameLoopId;
+    let state = null;
+    let currentGame = null;
+    let lastTime = 0;
+    let isPaused = false;
+    let keys = {};
+
+    function init() {
+        joystickBtn = document.getElementById('joystick-btn');
+        modal = document.getElementById('game-modal');
+        canvas = document.getElementById('game-canvas');
+        if (canvas) ctx = canvas.getContext('2d');
+
+        if (joystickBtn) {
+            joystickBtn.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                showMenu();
+            });
         }
 
-        init() {
-            if (!this.ctx) {
-                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (this.ctx.state === 'suspended') {
-                this.ctx.resume();
-            }
+        const closeBtn = document.getElementById('close-modal-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                stopGame();
+                modal.classList.add('hidden');
+            });
         }
-
-        play(type) {
-            if (!this.enabled) return;
-            this.init();
-
-            const now = this.ctx.currentTime;
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-
-            switch (type) {
-                case 'pop': // Bubble Pop
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(800, now);
-                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    osc.start(now);
-                    osc.stop(now + 0.1);
-                    break;
-                case 'move': // Soft blip
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(300, now);
-                    osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
-                    gain.gain.setValueAtTime(0.05, now);
-                    gain.gain.linearRampToValueAtTime(0, now + 0.05);
-                    osc.start(now);
-                    osc.stop(now + 0.05);
-                    break;
-                case 'score': // High ping
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
-                    gain.gain.setValueAtTime(0.05, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                    osc.start(now);
-                    osc.stop(now + 0.3);
-                    break;
-                case 'gameover': // Deep wobble
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(100, now);
-                    osc.frequency.exponentialRampToValueAtTime(20, now + 1);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.linearRampToValueAtTime(0, now + 1);
-                    osc.start(now);
-                    osc.stop(now + 1);
-                    break;
-            }
-        }
-    }
-
-    class MusicManager {
-        constructor() {
-            this.ctx = null;
-            this.isPlaying = false;
-            this.timer = null;
-            this.noteIndex = 0;
-            this.tempo = 140; // Default tempo
-            this.currentTrack = null;
-
-            this.tracks = {
-                // Jazzy Korobeiniki (Tetris) - Extended
-                tetris: {
-                    tempo: 140,
-                    notes: [
-                        // A Section
-                        {f: 659.25, d: 1}, {f: 493.88, d: 0.5}, {f: 523.25, d: 0.5}, {f: 587.33, d: 1}, {f: 523.25, d: 0.5}, {f: 493.88, d: 0.5},
-                        {f: 440.00, d: 1}, {f: 440.00, d: 0.5}, {f: 523.25, d: 0.5}, {f: 659.25, d: 1}, {f: 587.33, d: 0.5}, {f: 523.25, d: 0.5},
-                        {f: 493.88, d: 1.5}, {f: 523.25, d: 0.5}, {f: 587.33, d: 1}, {f: 659.25, d: 1},
-                        {f: 523.25, d: 1}, {f: 440.00, d: 1}, {f: 440.00, d: 2},
-                        // B Section (Jazzy)
-                        {f: 587.33, d: 1.5}, {f: 698.46, d: 0.5}, {f: 880.00, d: 1}, {f: 783.99, d: 0.5}, {f: 698.46, d: 0.5},
-                        {f: 659.25, d: 1.5}, {f: 523.25, d: 0.5}, {f: 659.25, d: 1}, {f: 587.33, d: 0.5}, {f: 523.25, d: 0.5},
-                        {f: 493.88, d: 1}, {f: 493.88, d: 0.5}, {f: 523.25, d: 0.5}, {f: 587.33, d: 1}, {f: 659.25, d: 1},
-                        {f: 523.25, d: 1}, {f: 440.00, d: 1}, {f: 440.00, d: 1}, {f: 0, d: 1}, // Rest
-                        // Improv Bridge (Pentatonic runs)
-                        {f: 329.63, d: 0.25}, {f: 392.00, d: 0.25}, {f: 440.00, d: 0.25}, {f: 493.88, d: 0.25}, {f: 587.33, d: 0.5}, {f: 493.88, d: 0.5},
-                        {f: 440.00, d: 0.5}, {f: 392.00, d: 0.5}, {f: 329.63, d: 1}, {f: 0, d: 1}
-                    ]
-                },
-                // Synthwave (Breakout)
-                breakout: {
-                    tempo: 120,
-                    notes: [
-                        // Rolling Arpeggio (C Minor/Eb Major vibe)
-                        {f: 130.81, d: 0.5}, {f: 196.00, d: 0.5}, {f: 261.63, d: 0.5}, {f: 311.13, d: 0.5},
-                        {f: 261.63, d: 0.5}, {f: 196.00, d: 0.5}, {f: 130.81, d: 0.5}, {f: 0, d: 0.5},
-                        {f: 116.54, d: 0.5}, {f: 174.61, d: 0.5}, {f: 233.08, d: 0.5}, {f: 349.23, d: 0.5},
-                        {f: 233.08, d: 0.5}, {f: 174.61, d: 0.5}, {f: 116.54, d: 0.5}, {f: 0, d: 0.5},
-                        {f: 98.00, d: 0.5}, {f: 146.83, d: 0.5}, {f: 196.00, d: 0.5}, {f: 293.66, d: 0.5},
-                        {f: 196.00, d: 0.5}, {f: 146.83, d: 0.5}, {f: 98.00, d: 0.5}, {f: 0, d: 0.5},
-                        {f: 130.81, d: 0.25}, {f: 261.63, d: 0.25}, {f: 130.81, d: 0.5} // Punchy end
-                    ]
-                }
-            };
-        }
-
-        init() {
-            if (!this.ctx) {
-                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (this.ctx.state === 'suspended') this.ctx.resume();
-        }
-
-        playTrack(trackName) {
-            this.stop();
-            if (this.tracks[trackName]) {
-                this.currentTrack = this.tracks[trackName];
-                this.tempo = this.currentTrack.tempo;
-                this.noteIndex = 0;
-                this.isPlaying = true;
-                this.init();
-                this.playNext();
-            }
-        }
-
-        stop() {
-            this.isPlaying = false;
-            if (this.timer) clearTimeout(this.timer);
-            this.currentTrack = null;
-        }
-
-        playNext() {
-            if (!this.isPlaying || !this.currentTrack) return;
-
-            const note = this.currentTrack.notes[this.noteIndex];
-            const beatLen = (60 / this.tempo) * 1000;
-            const duration = note.d * beatLen;
-
-            if (note.f > 0) {
-                this.playTone(note.f, duration);
-            }
-
-            this.noteIndex = (this.noteIndex + 1) % this.currentTrack.notes.length;
-            this.timer = setTimeout(() => this.playNext(), duration);
-        }
-
-        playTone(freq, dur) {
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-
-            // Envelope
-            gain.gain.setValueAtTime(0, this.ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.08, this.ctx.currentTime + 0.05);
-            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur/1000);
-
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-
-            osc.start();
-            osc.stop(this.ctx.currentTime + dur/1000);
-        }
-    }
-
-    class ScoreManager {
-        constructor() {
-            this.key = 'ai_arcade_scores';
-        }
-
-        getScores() {
-            const defaults = { tetris: [], snake: [], breakout: [], tictactoe: 0 };
-            try {
-                const stored = JSON.parse(localStorage.getItem(this.key));
-                // Safe merge
-                return { ...defaults, ...stored };
-            } catch (e) {
-                return defaults;
-            }
-        }
-
-        saveScore(game, score) {
-            const scores = this.getScores();
-            let isHigh = false;
-
-            if (game === 'tictactoe') {
-                if (score > (scores.tictactoe || 0)) {
-                    scores.tictactoe = score;
-                    isHigh = true;
-                }
-            } else {
-                if (!scores[game]) scores[game] = [];
-                scores[game].push({ score, date: new Date().toISOString() });
-                scores[game].sort((a, b) => b.score - a.score);
-                scores[game] = scores[game].slice(0, 5);
-                isHigh = scores[game].some(s => s.score === score);
-            }
-
-            try {
-                localStorage.setItem(this.key, JSON.stringify(scores));
-            } catch (e) { console.error('Score save failed', e); }
-
-            return isHigh;
-        }
-    }
-
-    // --- GAME ENGINE ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // Elements
-        const joystickBtn = document.getElementById('joystick-btn');
-        const modal = document.getElementById('game-modal');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const gameMenu = document.getElementById('game-menu');
-        const gameArea = document.getElementById('game-area');
-        const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
-        const backToMenuBtn = document.getElementById('back-to-menu-btn');
-        const currentScoreEl = document.getElementById('current-score');
-        const controlsHintEl = document.getElementById('controls-hint');
-        const gameOverlay = document.getElementById('game-overlay');
-        const gameOverlayTitle = document.getElementById('game-overlay-title');
-        const gameOverlayScore = document.getElementById('game-overlay-score');
-        const gameRestartBtn = document.getElementById('game-restart-btn');
-        const gameQuitBtn = document.getElementById('game-quit-btn');
-        const leaderboardBtn = document.getElementById('leaderboard-btn');
-        const leaderboardView = document.getElementById('leaderboard-view');
-        const leaderboardContent = document.getElementById('leaderboard-content');
-        const backFromLeaderboardBtn = document.getElementById('back-from-leaderboard-btn');
-
-        // Utils
-        const sound = new SoundManager();
-        const music = new MusicManager();
-        const scores = new ScoreManager();
-
-        // State
-        let currentGame = null;
-        let gameLoopId = null;
-        let lastTime = 0;
-        let gameActive = false;
-        let isPaused = false;
-
-        // Input State for smooth movement
-        const keysPressed = {};
-
-        // Game States
-        let snakeState = {};
-        let tetrisState = {};
-        let tttState = {};
-        let breakoutState = {};
-
-        // --- HANDLERS ---
-        joystickBtn.addEventListener('click', () => {
-            modal.classList.remove('hidden');
-            showMenu();
-        });
-
-        closeModalBtn.addEventListener('click', () => {
-            stopGame();
-            modal.classList.add('hidden');
-        });
-
-        backToMenuBtn.addEventListener('click', () => {
-            stopGame();
-            showMenu();
-        });
-
-        gameQuitBtn.addEventListener('click', () => {
-            stopGame();
-            showMenu();
-        });
-
-        gameRestartBtn.addEventListener('click', () => {
-            gameOverlay.classList.add('hidden');
-            if (currentGame === 'snake') initSnake();
-            else if (currentGame === 'tetris') initTetris();
-            else if (currentGame === 'breakout') initBreakout();
-            else if (currentGame === 'tictactoe') initTicTacToe();
-        });
-
-        leaderboardBtn.addEventListener('click', showLeaderboard);
-        backFromLeaderboardBtn.addEventListener('click', showMenu);
 
         document.querySelectorAll('.game-select-btn').forEach(btn => {
-            if (btn.id === 'leaderboard-btn') return;
-            btn.addEventListener('click', () => {
-                const game = btn.dataset.game;
-                startGame(game);
+            btn.addEventListener('click', (e) => {
+                if (btn.id === 'leaderboard-btn') {
+                    showLeaderboard();
+                } else {
+                    startGame(btn.dataset.game);
+                }
             });
         });
 
-        // Input
-        document.addEventListener('keydown', (e) => {
-            keysPressed[e.key] = true;
+        document.getElementById('game-restart-btn')?.addEventListener('click', () => {
+            document.getElementById('game-overlay').classList.add('hidden');
+            startGame(currentGame);
+        });
 
-            // Pause Toggle ('P')
-            if (['p', 'P'].includes(e.key) && gameActive && ['snake', 'tetris', 'breakout'].includes(currentGame)) {
+        document.getElementById('game-quit-btn')?.addEventListener('click', () => {
+            stopGame();
+            showMenu();
+        });
+
+        document.getElementById('back-to-menu-btn')?.addEventListener('click', () => {
+            stopGame();
+            showMenu();
+        });
+
+        document.getElementById('back-from-leaderboard-btn')?.addEventListener('click', showMenu);
+
+        // Input Handling
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key.toLowerCase() === 'p' && currentGame && currentGame !== 'tictactoe') {
                 isPaused = !isPaused;
-                // Redraw immediately to show/hide pause overlay
-                loop(performance.now());
-                return;
             }
-
-            if (!gameActive) return;
-            if (isPaused) return;
-
             // Prevent scrolling
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+            if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key) && !modal.classList.contains('hidden')) {
                 e.preventDefault();
             }
-
-            if (currentGame === 'snake') handleSnakeInput(e);
-            if (currentGame === 'tetris') handleTetrisInput(e);
-            // Breakout now uses keysPressed in the loop, but we keep this empty handler call or remove it if unused.
-            // Keeping previous structure: handleBreakoutInput was event based, now will be state based.
         });
 
-        document.addEventListener('keyup', (e) => {
-            keysPressed[e.key] = false;
-        });
+        window.addEventListener('keyup', (e) => keys[e.key] = false);
 
-        canvas.addEventListener('mousedown', (e) => {
-             if (!gameActive || isPaused || currentGame !== 'tictactoe') return;
-             handleTicTacToeClick(e);
-        });
-
-        function showMenu() {
-            gameMenu.classList.remove('hidden');
-            gameArea.classList.add('hidden');
-            leaderboardView.classList.add('hidden');
-            document.getElementById('modal-title').textContent = "AI Arcade";
+        if (canvas) {
+            canvas.addEventListener('mousedown', (e) => {
+                if (currentGame === 'tictactoe' && state) {
+                    state = GameLogic.tictactoe.handleClick(e, state, canvas, {
+                        playSound: (t) => sound.play(t),
+                        onScore: updateScore,
+                        onGameOver: handleGameOver
+                    });
+                    GameLogic.tictactoe.draw(ctx, state, canvas);
+                }
+            });
         }
+    }
 
-        function showLeaderboard() {
-            gameMenu.classList.add('hidden');
-            leaderboardView.classList.remove('hidden');
-            const data = scores.getScores();
+    function showMenu() {
+        document.getElementById('game-menu').classList.remove('hidden');
+        document.getElementById('game-area').classList.add('hidden');
+        document.getElementById('leaderboard-view').classList.add('hidden');
+        document.getElementById('modal-title').textContent = "AI Arcade";
+    }
 
-            const fmtDate = (d) => new Date(d).toLocaleDateString();
+    function showLeaderboard() {
+        document.getElementById('game-menu').classList.add('hidden');
+        document.getElementById('leaderboard-view').classList.remove('hidden');
 
-            let html = '';
+        const data = scores.getScores();
+        const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        const listHtml = (items) => items.map(s => `<li><span>${fmtDate(s.date)}</span><span>${s.score}</span></li>`).join('');
 
-            // Tetris
-            html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Cluster Builder</div><ul class="leaderboard-list">`;
-            data.tetris.forEach(s => html += `<li><span>${fmtDate(s.date)}</span><span>${s.score}</span></li>`);
-            html += `</ul></div>`;
+        const content = document.getElementById('leaderboard-content');
+        content.innerHTML = `
+            <div class="leaderboard-game-section">
+                <div class="leaderboard-game-title">Cluster Builder</div>
+                <ul class="leaderboard-list">${listHtml(data.tetris)}</ul>
+            </div>
+            <div class="leaderboard-game-section">
+                <div class="leaderboard-game-title">Data Stream</div>
+                <ul class="leaderboard-list">${listHtml(data.snake)}</ul>
+            </div>
+            <div class="leaderboard-game-section">
+                <div class="leaderboard-game-title">Firewall Breaker</div>
+                <ul class="leaderboard-list">${listHtml(data.breakout)}</ul>
+            </div>
+             <div class="leaderboard-game-section">
+                <div class="leaderboard-game-title">Neural Nodes (Streak)</div>
+                <ul class="leaderboard-list"><li><span>Best Streak</span><span>${data.tictactoe || 0}</span></li></ul>
+            </div>
+        `;
+    }
 
-            // Snake
-            html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Data Stream</div><ul class="leaderboard-list">`;
-            data.snake.forEach(s => html += `<li><span>${fmtDate(s.date)}</span><span>${s.score}</span></li>`);
-            html += `</ul></div>`;
+    function startGame(game) {
+        currentGame = game;
+        document.getElementById('game-menu').classList.add('hidden');
+        document.getElementById('game-area').classList.remove('hidden');
+        document.getElementById('game-overlay').classList.add('hidden');
 
-            // Breakout
-            html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Firewall Breaker</div><ul class="leaderboard-list">`;
-            data.breakout.forEach(s => html += `<li><span>${fmtDate(s.date)}</span><span>${s.score}</span></li>`);
-            html += `</ul></div>`;
+        // Titles & Hints
+        const titles = { snake: "Data Stream", tetris: "Cluster Builder", breakout: "Firewall Breaker", tictactoe: "Neural Nodes" };
+        const hints = {
+            snake: "Arrows to Move • P to Pause",
+            tetris: "Arrows to Move/Rotate • P to Pause",
+            breakout: "Left/Right to Deflect • P to Pause",
+            tictactoe: "Click empty nodes to capture"
+        };
+        document.getElementById('modal-title').textContent = titles[game];
+        document.getElementById('controls-hint').textContent = hints[game];
+        document.getElementById('current-score').textContent = "0";
 
-            // TTT
-            html += `<div class="leaderboard-game-section"><div class="leaderboard-game-title">Neural Nodes (Streak)</div><ul class="leaderboard-list">`;
-            html += `<li><span>Best Streak</span><span>${data.tictactoe || 0}</span></li>`;
-            html += `</ul></div>`;
+        // Reset
+        canvas.width = 400; canvas.height = 400;
+        keys = {};
+        isPaused = false;
 
-            leaderboardContent.innerHTML = html;
-        }
+        if (GameLogic[game]) {
+            state = GameLogic[game].init(canvas);
 
-        function startGame(game) {
-            currentGame = game;
-            gameMenu.classList.add('hidden');
-            gameArea.classList.remove('hidden');
-            gameOverlay.classList.add('hidden');
-            canvas.width = 400;
-            canvas.height = 400; // Reset size
-            isPaused = false;
+            // Start Music
+            if (game === 'tetris') music.playTrack('tetris');
+            if (game === 'breakout') music.playTrack('breakout');
 
-            // Reset keys
-            for (let k in keysPressed) keysPressed[k] = false;
-
-            if (game === 'snake') initSnake();
-            else if (game === 'tetris') initTetris();
-            else if (game === 'breakout') initBreakout();
-            else if (game === 'tictactoe') initTicTacToe();
-        }
-
-        function stopGame() {
-            gameActive = false;
-            music.stop();
+            lastTime = performance.now();
             if (gameLoopId) cancelAnimationFrame(gameLoopId);
+            loop(lastTime);
         }
+    }
 
-        function gameOver(score) {
-            gameActive = false;
-            sound.play('gameover');
-            music.stop();
-            scores.saveScore(currentGame, score);
-
-            gameOverlayTitle.textContent = "System Failure";
-            if (currentGame === 'tictactoe' && score > 0) gameOverlayTitle.textContent = "Victory!";
-            if (currentGame === 'breakout' && breakoutState.cleared) gameOverlayTitle.textContent = "Firewall Breached!";
-
-            gameOverlayScore.textContent = `Score: ${score}`;
-            gameOverlay.classList.remove('hidden');
+    function stopGame() {
+        if (gameLoopId) cancelAnimationFrame(gameLoopId);
+        music.stop();
+        // Clear potential CPU timeout in TTT
+        if (currentGame === 'tictactoe' && state && state.cpuTimeout) {
+            clearTimeout(state.cpuTimeout);
         }
+        currentGame = null;
+    }
 
-        function loop(time) {
-            if (!gameActive) return;
-            gameLoopId = requestAnimationFrame(loop);
+    function updateScore(s) {
+        document.getElementById('current-score').textContent = s;
+    }
 
-            if (isPaused) {
-                lastTime = time; // Prevent dt jump
+    function handleGameOver(finalScore) {
+        stopGame();
+        sound.play('gameover');
+        scores.saveScore(currentGame, finalScore);
 
-                // Draw Pause Overlay
-                ctx.save();
-                ctx.fillStyle = 'rgba(17, 24, 39, 0.1)';
-                ctx.fillRect(0,0,canvas.width, canvas.height);
+        document.getElementById('game-overlay-score').textContent = `Score: ${finalScore}`;
+        document.getElementById('game-overlay').classList.remove('hidden');
+    }
 
-                ctx.fillStyle = '#F59E0B';
-                ctx.font = 'bold 40px Courier New';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = 'black';
-                ctx.fillText("PAUSED", canvas.width/2, canvas.height/2);
-                ctx.font = '16px Courier New';
-                ctx.fillStyle = '#9CA3AF';
-                ctx.fillText("Press P to Resume", canvas.width/2, canvas.height/2 + 30);
-                ctx.restore();
+    function loop(time) {
+        if (!currentGame) return;
+        gameLoopId = requestAnimationFrame(loop);
 
-                return;
-            }
-
-            const dt = time - lastTime;
+        if (isPaused) {
             lastTime = time;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if (currentGame === 'snake') updateSnake(dt);
-            if (currentGame === 'tetris') updateTetris(dt);
-            if (currentGame === 'breakout') updateBreakout(dt);
-            if (currentGame === 'tictactoe') drawTicTacToe();
-        }
-
-        // --- SNAKE: DATA STREAM ---
-        function initSnake() {
-            document.getElementById('modal-title').textContent = "Data Stream";
-            controlsHintEl.textContent = "Arrow Keys to direct the stream (P to Pause)";
-            snakeState = {
-                grid: 20,
-                snake: [{x: 10, y: 10}, {x: 9, y: 10}, {x: 8, y: 10}],
-                dir: {x: 1, y: 0},
-                nextDir: {x: 1, y: 0},
-                food: null,
-                score: 0,
-                speed: 100, // ms per move
-                timer: 0
-            };
-            spawnSnakeFood();
-            gameActive = true;
-            lastTime = performance.now();
-            loop(lastTime);
-        }
-
-        function spawnSnakeFood() {
-            const cols = canvas.width / snakeState.grid;
-            const rows = canvas.height / snakeState.grid;
-            snakeState.food = {
-                x: Math.floor(Math.random() * cols),
-                y: Math.floor(Math.random() * rows)
-            };
-        }
-
-        function handleSnakeInput(e) {
-            const { dir } = snakeState;
-            switch(e.key) {
-                case 'ArrowUp': if (dir.y === 0) snakeState.nextDir = {x: 0, y: -1}; break;
-                case 'ArrowDown': if (dir.y === 0) snakeState.nextDir = {x: 0, y: 1}; break;
-                case 'ArrowLeft': if (dir.x === 0) snakeState.nextDir = {x: -1, y: 0}; break;
-                case 'ArrowRight': if (dir.x === 0) snakeState.nextDir = {x: 1, y: 0}; break;
-            }
-        }
-
-        function updateSnake(dt) {
-            snakeState.timer += dt;
-            if (snakeState.timer < snakeState.speed) {
-                drawSnake();
-                return;
-            }
-            snakeState.timer = 0;
-
-            snakeState.dir = snakeState.nextDir;
-            const head = {
-                x: snakeState.snake[0].x + snakeState.dir.x,
-                y: snakeState.snake[0].y + snakeState.dir.y
-            };
-
-            const cols = canvas.width / snakeState.grid;
-            const rows = canvas.height / snakeState.grid;
-
-            if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows ||
-                snakeState.snake.some(s => s.x === head.x && s.y === head.y)) {
-                gameOver(snakeState.score);
-                return;
-            }
-
-            snakeState.snake.unshift(head);
-            sound.play('move');
-
-            if (head.x === snakeState.food.x && head.y === snakeState.food.y) {
-                snakeState.score += 10;
-                sound.play('pop');
-                currentScoreEl.textContent = snakeState.score;
-                spawnSnakeFood();
-                snakeState.speed = Math.max(50, snakeState.speed * 0.98);
-            } else {
-                snakeState.snake.pop();
-            }
-
-            drawSnake();
-        }
-
-        function drawSnake() {
-            const g = snakeState.grid;
-            const f = snakeState.food;
-
-            // Food
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#F59E0B';
+            // Draw Pause
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(0,0,canvas.width, canvas.height);
             ctx.fillStyle = '#F59E0B';
-            ctx.beginPath();
-            ctx.arc(f.x * g + g/2, f.y * g + g/2, g/2 - 2, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Snake
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#60A5FA';
-
-            snakeState.snake.forEach((seg, i) => {
-                ctx.fillStyle = i === 0 ? '#FFFFFF' : '#60A5FA';
-                ctx.beginPath();
-                ctx.arc(seg.x * g + g/2, seg.y * g + g/2, g/2 - 1, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            ctx.shadowBlur = 0;
+            ctx.font = 'bold 30px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText("PAUSED", canvas.width/2, canvas.height/2);
+            return;
         }
 
-        // --- TETRIS: CLUSTER BUILDER ---
-        const tetrisShapes = [
-            [[1,1,1,1]],
-            [[1,1],[1,1]],
-            [[0,1,0],[1,1,1]],
-            [[1,0,0],[1,1,1]],
-            [[0,0,1],[1,1,1]],
-            [[0,1,1],[1,1,0]],
-            [[1,1,0],[0,1,1]]
-        ];
-        const tetrisColors = ['#06B6D4', '#F59E0B', '#8B5CF6', '#3B82F6', '#F97316', '#10B981', '#EF4444'];
+        const dt = time - lastTime;
+        lastTime = time;
 
-        function initTetris() {
-            document.getElementById('modal-title').textContent = "Cluster Builder";
-            controlsHintEl.textContent = "Arrow Keys to Move/Rotate (P to Pause)";
-            tetrisState = {
-                grid: 20,
-                cols: 10,
-                rows: 20,
-                board: Array(20).fill().map(() => Array(10).fill(0)),
-                score: 0,
-                timer: 0,
-                speed: 1000,
-                piece: null
-            };
+        ctx.clearRect(0,0,canvas.width, canvas.height);
 
-            canvas.width = tetrisState.cols * tetrisState.grid;
-            canvas.height = tetrisState.rows * tetrisState.grid;
+        // Update & Draw
+        if (currentGame !== 'tictactoe') { // TTT is event based
+            state = GameLogic[currentGame].update(dt, state, canvas, {
+                playSound: (t) => sound.play(t),
+                onScore: updateScore,
+                onGameOver: handleGameOver
+            }, { keys });
 
-            spawnTetrisPiece();
-            currentScoreEl.textContent = 0;
-            gameActive = true;
-            lastTime = performance.now();
-            music.playTrack('tetris');
-            loop(lastTime);
+            // Check if game over happened inside update
+            if (currentGame) GameLogic[currentGame].draw(ctx, state, canvas);
+        } else {
+             GameLogic.tictactoe.draw(ctx, state, canvas);
         }
+    }
 
-        function spawnTetrisPiece() {
-            const id = Math.floor(Math.random() * tetrisShapes.length);
-            tetrisState.piece = {
-                shape: tetrisShapes[id],
-                color: tetrisColors[id],
-                x: 3,
-                y: 0
-            };
-            if (checkTetrisCollide()) {
-                gameOver(tetrisState.score);
-            }
-        }
+    // Init on load
+    document.addEventListener('DOMContentLoaded', init);
 
-        function checkTetrisCollide(offX = 0, offY = 0, shape = null) {
-            const s = shape || tetrisState.piece.shape;
-            const px = tetrisState.piece.x + offX;
-            const py = tetrisState.piece.y + offY;
-
-            for (let y = 0; y < s.length; y++) {
-                for (let x = 0; x < s[y].length; x++) {
-                    if (s[y][x]) {
-                        const bx = px + x;
-                        const by = py + y;
-                        if (bx < 0 || bx >= tetrisState.cols || by >= tetrisState.rows) return true;
-                        if (by >= 0 && tetrisState.board[by][bx]) return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        function rotateTetrisPiece() {
-            const piece = tetrisState.piece;
-            const newShape = piece.shape[0].map((_, i) => piece.shape.map(row => row[i]).reverse());
-            if (!checkTetrisCollide(0, 0, newShape)) {
-                piece.shape = newShape;
-                sound.play('move');
-            }
-        }
-
-        function handleTetrisInput(e) {
-            if (e.key === 'ArrowLeft') {
-                if (!checkTetrisCollide(-1, 0)) { tetrisState.piece.x--; sound.play('move'); }
-            }
-            if (e.key === 'ArrowRight') {
-                if (!checkTetrisCollide(1, 0)) { tetrisState.piece.x++; sound.play('move'); }
-            }
-            if (e.key === 'ArrowDown') {
-                 if (!checkTetrisCollide(0, 1)) { tetrisState.piece.y++; }
-            }
-            if (e.key === 'ArrowUp') {
-                rotateTetrisPiece();
-            }
-        }
-
-        function updateTetris(dt) {
-            tetrisState.timer += dt;
-            if (tetrisState.timer > tetrisState.speed) {
-                tetrisState.timer = 0;
-                if (!checkTetrisCollide(0, 1)) {
-                    tetrisState.piece.y++;
-                } else {
-                    const p = tetrisState.piece;
-                    p.shape.forEach((row, y) => {
-                        row.forEach((val, x) => {
-                            if (val) {
-                                if (p.y + y >= 0) {
-                                    tetrisState.board[p.y + y][p.x + x] = p.color;
-                                }
-                            }
-                        });
-                    });
-
-                    let lines = 0;
-                    for (let y = tetrisState.rows - 1; y >= 0; y--) {
-                        if (tetrisState.board[y].every(c => c !== 0)) {
-                            tetrisState.board.splice(y, 1);
-                            tetrisState.board.unshift(Array(tetrisState.cols).fill(0));
-                            lines++;
-                            y++;
-                        }
-                    }
-                    if (lines > 0) {
-                        tetrisState.score += lines * 100;
-                        currentScoreEl.textContent = tetrisState.score;
-                        sound.play('score');
-                        tetrisState.speed *= 0.95;
-                    } else {
-                        sound.play('pop');
-                    }
-
-                    spawnTetrisPiece();
-                }
-            }
-            drawTetris();
-        }
-
-        function drawTetris() {
-            const g = tetrisState.grid;
-            ctx.strokeStyle = '#1F2937';
-            ctx.lineWidth = 1;
-            for(let x=0; x<=canvas.width; x+=g) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
-
-            tetrisState.board.forEach((row, y) => {
-                row.forEach((color, x) => {
-                    if (color) {
-                        drawBubble(x, y, color);
-                    }
-                });
-            });
-
-            if (tetrisState.piece) {
-                tetrisState.piece.shape.forEach((row, y) => {
-                    row.forEach((val, x) => {
-                        if (val) {
-                            drawBubble(tetrisState.piece.x + x, tetrisState.piece.y + y, tetrisState.piece.color, true);
-                        }
-                    });
-                });
-            }
-        }
-
-        function drawBubble(gx, gy, color, active=false) {
-            const g = tetrisState.grid;
-            const x = gx * g + g/2;
-            const y = gy * g + g/2;
-            const r = g/2 - 2;
-
-            ctx.fillStyle = color;
-            ctx.shadowBlur = active ? 10 : 0;
-            ctx.shadowColor = color;
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.beginPath();
-            ctx.arc(x - r/3, y - r/3, r/4, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-        }
-
-        // --- BREAKOUT: FIREWALL BREAKER ---
-        function initBreakout() {
-            document.getElementById('modal-title').textContent = "Firewall Breaker";
-            controlsHintEl.textContent = "Left/Right to deflect the packet (P to Pause)";
-
-            const cols = 8;
-            const rows = 5;
-            const padding = 10;
-            const w = (canvas.width - padding * (cols + 1)) / cols;
-            const h = 20;
-
-            breakoutState = {
-                paddle: { x: canvas.width / 2 - 40, y: canvas.height - 30, w: 80, h: 10 },
-                ball: { x: canvas.width/2, y: canvas.height/2, r: 6, dx: 3, dy: -3 }, // Reduced speed from 4 to 3
-                bricks: [],
-                score: 0,
-                cleared: false
-            };
-
-            // Init Bricks (Bubbles)
-            const colors = ['#EF4444', '#F97316', '#F59E0B', '#10B981', '#3B82F6'];
-            for(let c=0; c<cols; c++) {
-                for(let r=0; r<rows; r++) {
-                    breakoutState.bricks.push({
-                        x: padding + c * (w + padding),
-                        y: padding + r * (h + padding) + 40,
-                        w: w, h: h,
-                        color: colors[r % colors.length],
-                        active: true
-                    });
-                }
-            }
-
-            currentScoreEl.textContent = 0;
-            gameActive = true;
-            lastTime = performance.now();
-            music.playTrack('breakout');
-            loop(lastTime);
-        }
-
-        // Removed handleBreakoutInput as we use state polling now
-
-        function updateBreakout(dt) {
-            const b = breakoutState.ball;
-            const p = breakoutState.paddle;
-
-            // --- SMOOTH PADDLE MOVEMENT ---
-            const paddleSpeed = 0.5 * dt; // Adjusted for dt (approx 300px/s at 60fps)
-            if (keysPressed['ArrowLeft']) {
-                p.x = Math.max(0, p.x - paddleSpeed);
-            }
-            if (keysPressed['ArrowRight']) {
-                p.x = Math.min(canvas.width - p.w, p.x + paddleSpeed);
-            }
-
-            b.x += b.dx;
-            b.y += b.dy;
-
-            // Walls
-            if (b.x + b.r > canvas.width || b.x - b.r < 0) { b.dx = -b.dx; sound.play('move'); }
-            if (b.y - b.r < 0) { b.dy = -b.dy; sound.play('move'); }
-            if (b.y + b.r > canvas.height) {
-                gameOver(breakoutState.score); // Ball lost
-                return;
-            }
-
-            // Paddle
-            if (b.y + b.r > p.y && b.y - b.r < p.y + p.h && b.x > p.x && b.x < p.x + p.w) {
-                b.dy = -Math.abs(b.dy);
-                // English
-                const center = p.x + p.w / 2;
-                b.dx += (b.x - center) * 0.1;
-                sound.play('move');
-            }
-
-            // Bricks
-            let activeCount = 0;
-            breakoutState.bricks.forEach(brick => {
-                if (!brick.active) return;
-                activeCount++;
-                if (b.x > brick.x && b.x < brick.x + brick.w &&
-                    b.y > brick.y && b.y < brick.y + brick.h) {
-                        brick.active = false;
-                        b.dy = -b.dy;
-                        breakoutState.score += 10;
-                        currentScoreEl.textContent = breakoutState.score;
-                        sound.play('pop');
-                    }
-            });
-
-            if (activeCount === 0) {
-                breakoutState.cleared = true;
-                gameOver(breakoutState.score + 1000); // Win bonus
-            }
-
-            drawBreakout();
-        }
-
-        function drawBreakout() {
-            // Paddle
-            const p = breakoutState.paddle;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#60A5FA';
-            ctx.fillStyle = '#60A5FA';
-            ctx.fillRect(p.x, p.y, p.w, p.h);
-
-            // Ball
-            const b = breakoutState.ball;
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Bricks (Bubbles style)
-            breakoutState.bricks.forEach(brick => {
-                if (!brick.active) return;
-                ctx.shadowColor = brick.color;
-                ctx.fillStyle = brick.color;
-
-                // Draw as rounded rects/bubbles
-                ctx.beginPath();
-                ctx.roundRect(brick.x, brick.y, brick.w, brick.h, 5);
-                ctx.fill();
-            });
-            ctx.shadowBlur = 0;
-        }
-
-
-        // --- TIC-TAC-TOE: NEURAL NODES ---
-        function initTicTacToe() {
-            document.getElementById('modal-title').textContent = "Neural Nodes";
-            controlsHintEl.textContent = "Click a Node to Capture";
-            tttState = {
-                board: Array(9).fill(null),
-                player: 'X',
-                streak: 0,
-                winner: null
-            };
-            gameActive = true;
-            currentScoreEl.textContent = 0;
-            drawTicTacToe();
-        }
-
-        function handleTicTacToeClick(e) {
-            if (tttState.winner || tttState.player !== 'X') return;
-
-            // Use offsetX/Y for robust coordinate mapping relative to the element
-            // scaling by internal resolution vs display size
-            const rect = canvas.getBoundingClientRect();
-            // offsetX is relative to the padding edge of the target node
-            // Since we need to map to 400x400
-            const x = e.offsetX * (canvas.width / rect.width);
-            const y = e.offsetY * (canvas.height / rect.height);
-
-            // Grid is 3x3
-            const cellW = canvas.width / 3;
-            const cellH = canvas.height / 3;
-
-            const col = Math.floor(x / cellW);
-            const row = Math.floor(y / cellH);
-            const idx = row * 3 + col;
-
-            // Boundary check
-            if (col < 0 || col > 2 || row < 0 || row > 2) return;
-
-            if (tttState.board[idx] === null) {
-                tttState.board[idx] = 'X';
-                sound.play('pop');
-                checkTTTWin();
-                if (!tttState.winner) {
-                    tttState.player = 'O';
-                    drawTicTacToe();
-                    setTimeout(cpuMove, 500);
-                }
-            }
-            drawTicTacToe();
-        }
-
-        function cpuMove() {
-            if (tttState.winner || !gameActive) return;
-            const empty = tttState.board.map((v, i) => v === null ? i : null).filter(v => v !== null);
-            if (empty.length > 0) {
-                const pick = empty[Math.floor(Math.random() * empty.length)];
-                tttState.board[pick] = 'O';
-                sound.play('move');
-                checkTTTWin();
-                if (!tttState.winner) {
-                    tttState.player = 'X';
-                }
-                drawTicTacToe();
-            }
-        }
-
-        function checkTTTWin() {
-            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            for (let w of wins) {
-                const [a,b,c] = w;
-                if (tttState.board[a] && tttState.board[a] === tttState.board[b] && tttState.board[a] === tttState.board[c]) {
-                    tttState.winner = tttState.board[a];
-                    endTTT(tttState.winner);
-                    return;
-                }
-            }
-            if (!tttState.board.includes(null)) {
-                tttState.winner = 'draw';
-                endTTT('draw');
-            }
-        }
-
-        function endTTT(winner) {
-            if (winner === 'X') {
-                tttState.streak++;
-                currentScoreEl.textContent = tttState.streak;
-                sound.play('score');
-                setTimeout(() => {
-                    tttState.board.fill(null);
-                    tttState.winner = null;
-                    tttState.player = 'X'; // Player keeps turn
-                    drawTicTacToe();
-                }, 1000);
-            } else {
-                gameActive = false;
-                gameOver(tttState.streak); // Save streak
-            }
-        }
-
-        function drawTicTacToe() {
-            const w = canvas.width / 3;
-            const h = canvas.height / 3;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Grid Lines
-            ctx.strokeStyle = '#374151';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(w, 0); ctx.lineTo(w, canvas.height);
-            ctx.moveTo(w*2, 0); ctx.lineTo(w*2, canvas.height);
-            ctx.moveTo(0, h); ctx.lineTo(canvas.width, h);
-            ctx.moveTo(0, h*2); ctx.lineTo(canvas.width, h*2);
-            ctx.stroke();
-
-            // Draw Nodes
-            tttState.board.forEach((cell, i) => {
-                if (!cell) return;
-                const col = i % 3;
-                const row = Math.floor(i / 3);
-                const cx = col * w + w/2;
-                const cy = row * h + h/2;
-
-                ctx.shadowBlur = 20;
-
-                if (cell === 'X') {
-                    // Blue Node
-                    ctx.fillStyle = '#3B82F6';
-                    ctx.shadowColor = '#3B82F6';
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, w/3, 0, Math.PI * 2);
-                    ctx.fill();
-                } else {
-                    // Red Node
-                    ctx.fillStyle = '#EF4444';
-                    ctx.shadowColor = '#EF4444';
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, w/3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                ctx.shadowBlur = 0;
-            });
-        }
-    });
 </script>
