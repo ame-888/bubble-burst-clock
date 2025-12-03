@@ -123,7 +123,7 @@ export const predictions = [
         uploadDate: "2024-07-03",
         validityStart: "2024-07-03",
         validityEnd: "2024-07-17",
-        news: "The Guardian publishes an article saying that Our attitudes towards AI reveal how we really feel about human intelligence."
+        news: "The Guardian publishes an article arguing that our attitudes towards AI reveal our true feelings about human intelligence."
     },
     {
         id: "_L1JbzDnEMk",
@@ -165,11 +165,11 @@ export const predictions = [
         id: "4H1OGOBEcyY",
         creator: "Brianne Worth",
         claim: {
-            "en": "The AI Bubble Is About to Burst (They're Building Bunkers for a Reason",
-            "pt-BR": "A bolha da IA está prestes a estourar (eles estão construindo bunkers por um motivo",
-            "es": "La burbuja de la IA está a punto de estallar (están construyendo búnkeres por una razón",
-            "ja": "AIバブルは崩壊寸前だ（彼らがバンカーを建設しているのには理由がある",
-            "zh": "人工智能泡沫即将破裂（他们建造掩体是有原因的"
+            "en": "The AI Bubble Is About to Burst (They're Building Bunkers for a Reason)",
+            "pt-BR": "A bolha da IA está prestes a estourar (eles estão construindo bunkers por um motivo)",
+            "es": "La burbuja de la IA está a punto de estallar (están construyendo búnkeres por una razón)",
+            "ja": "AIバブルは崩壊寸前だ（彼らがバンカーを建設しているのには理由がある）",
+            "zh": "人工智能泡沫即将破裂（他们建造掩体是有原因的）"
         },
         videoUrl: "https://www.youtube.com/watch?v=4H1OGOBEcyY&pp=ygUOYWkgYnViYmxlIHBvcHM%3D",
         thumbnailUrl: "https://img.youtube.com/vi/4H1OGOBEcyY/maxresdefault.jpg",
