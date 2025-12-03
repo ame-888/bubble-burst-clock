@@ -123,7 +123,7 @@ export const predictions = [
         uploadDate: "2024-07-03",
         validityStart: "2024-07-03",
         validityEnd: "2024-07-17",
-        news: "The Guardian publishes an article saying that Our attitudes towards AI reveal how we really feel about human intelligence."
+        news: "The Guardian publishes a piece suggesting our attitudes toward AI reveal our true feelings about human intelligence."
     },
     {
         id: "_L1JbzDnEMk",
@@ -160,5 +160,23 @@ export const predictions = [
         validityStart: "2025-10-04",
         validityEnd: "2025-10-18",
         news: "Mistral announces Mistral AI Studio."
+    },
+    {
+        id: "4H1OGOBEcyY",
+        creator: "Brianne Worth",
+        claim: {
+            "en": "The AI Bubble Is About to Burst (They're Building Bunkers for a Reason)",
+            "pt-BR": "A bolha da IA está prestes a estourar (eles estão construindo bunkers por um motivo)",
+            "es": "La burbuja de la IA está a punto de estallar (están construyendo búnkeres por una razón)",
+            "ja": "AIバブルは崩壊寸前だ（彼らがバンカーを建設しているのには理由がある）",
+            "zh": "人工智能泡沫即将破裂（他们建造掩体是有原因的）"
+        },
+        videoUrl: "https://www.youtube.com/watch?v=4H1OGOBEcyY&pp=ygUOYWkgYnViYmxlIHBvcHM%3D",
+        thumbnailUrl: "https://img.youtube.com/vi/4H1OGOBEcyY/maxresdefault.jpg",
+        dateRange: "2 Weeks",
+        uploadDate: "2025-12-01",
+        validityStart: "2025-12-01",
+        validityEnd: "2025-12-15",
+        news: "DeepSeek released the open-source models DeepSeek-V3.2 and DeepSeek-V3.2-Speciale"
     }
 ];
