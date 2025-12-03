@@ -25,9 +25,9 @@ let lang = 'en'; // Default language
 const t = translations[lang] || en;
 
 // --- Status Logic ---
-// SIMULATED TIME FOR STORY CONTEXT: Dec 1, 2025
+// SIMULATED TIME FOR STORY CONTEXT: Dec 3, 2025
 // In a real app, this would be new Date().
-const now = new Date('2025-12-01T00:00:00Z');
+const now = new Date('2025-12-03T00:00:00Z');
 
 // --- Serial Popper Logic ---
 const creatorCounts: Record<string, number> = {};
@@ -569,6 +569,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
 
     /* Modals */
     .hidden { display: none !important; }
+    :global(.hidden) { display: none !important; }
 
     #modal-overlay {
         position: fixed;
