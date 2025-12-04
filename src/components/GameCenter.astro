@@ -749,7 +749,9 @@
             return;
         }
 
-        const dt = time - lastTime;
+        let dt = time - lastTime;
+        // Cap dt to prevent "spiral of death" or huge jumps after tab switching
+        if (dt > 100) dt = 16.67;
         lastTime = time;
 
         ctx.clearRect(0,0,canvas.width, canvas.height);
