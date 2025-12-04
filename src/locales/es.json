@@ -46,5 +46,9 @@
   "serial_popper_button": "SALÓN DE LA FAMA DE LOS REVENTADORES",
   "serial_popper_modal_title": "Salón de la Fama de los Reventadores en Serie",
   "serial_popper_count_label": "Afirmaciones",
-  "serial_popper_tooltip": "Reventador en Serie: Múltiples Afirmaciones"
+  "serial_popper_tooltip": "Reventador en Serie: Múltiples Afirmaciones",
+  "privacy_policy_button": "POLÍTICA DE PRIVACIDAD",
+  "privacy_policy_title": "Política de Privacidad",
+  "privacy_policy_content": "Este sitio utiliza Google AdSense para mostrar anuncios. Google puede utilizar cookies para mostrar anuncios basados en sus visitas anteriores a este sitio web o a otros sitios web. Puede optar por no recibir publicidad personalizada visitando la Configuración de anuncios.",
+  "site_disclaimer": "Solo para fines satíricos e informativos."
 }

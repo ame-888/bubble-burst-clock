@@ -46,5 +46,9 @@
   "serial_popper_button": "シリアルポッパーの殿堂",
   "serial_popper_modal_title": "シリアルポッパーの殿堂",
   "serial_popper_count_label": "クレーム",
-  "serial_popper_tooltip": "シリアルポッパー：複数のクレーム"
+  "serial_popper_tooltip": "シリアルポッパー：複数のクレーム",
+  "privacy_policy_button": "プライバシーポリシー",
+  "privacy_policy_title": "プライバシーポリシー",
+  "privacy_policy_content": "このサイトでは、Google AdSenseを使用して広告を配信しています。Googleは、Cookieを使用して、このウェブサイトや他のウェブサイトへの過去のアクセスに基づいて広告を配信する場合があります。広告設定にアクセスして、パーソナライズされた広告をオプトアウトできます。",
+  "site_disclaimer": "風刺および情報提供のみを目的としています。"
 }

@@ -86,6 +86,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
     <meta slot="head" name="google-site-verification" content="gi2pzxwjvX7zQtdowKjXbAw1wGHfjs8Cdf2w5ThdNcM" />
 
     <LanguageSwitcher />
+    <button id="btn-privacy" class="privacy-button">{t.privacy_policy_button}</button>
     <button id="btn-about" class="about-button">{t.about_button}</button>
     <div id="game-center-wrapper" class="hidden">
         <GameCenter />
@@ -93,6 +94,16 @@ const processedBenchmarks = benchmarks.models.map(m => {
 
     <!-- Modals -->
     <div id="modal-overlay" class="hidden"></div>
+
+    <div id="privacy-modal" class="modal hidden">
+        <div class="modal-content privacy-theme">
+            <button class="close-modal">&times;</button>
+            <h3 id="privacy-title">{t.privacy_policy_title}</h3>
+            <div class="privacy-content">
+                <p id="privacy-text">{t.privacy_policy_content}</p>
+            </div>
+        </div>
+    </div>
 
     <div id="about-modal" class="modal hidden">
         <div class="modal-content about-theme">
@@ -185,6 +196,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
     </div>
 
     <main>
+        <div id="disclaimer" class="site-disclaimer">{t.site_disclaimer}</div>
         <h1 id="main-title" class="interactive-title">{t.title}</h1>
         <h2 id="subtitle">{t.subtitle}</h2>
 
@@ -694,7 +706,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
     /* About Button */
     .about-button {
         position: absolute;
-        top: 1rem;
+        top: 3.5rem;
         left: 4rem;
         z-index: 10;
         background-color: #374151;
@@ -712,6 +724,48 @@ const processedBenchmarks = benchmarks.models.map(m => {
 
     .about-button:hover {
         background-color: #4B5563;
+    }
+
+    /* Privacy Button */
+    .privacy-button {
+        position: absolute;
+        top: 1rem;
+        left: 4rem;
+        z-index: 10;
+        background-color: #374151;
+        color: white;
+        border: 1px solid #4B5563;
+        border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-size: 0.875rem;
+        font-weight: 600;
+        font-family: inherit;
+        line-height: 1.25rem;
+    }
+
+    .privacy-button:hover {
+        background-color: #4B5563;
+    }
+
+    /* Site Disclaimer */
+    .site-disclaimer {
+        font-size: 0.8rem;
+        color: #FFFFFF;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        opacity: 0.8;
+    }
+
+    .privacy-content {
+        line-height: 1.6;
+        color: #D1D5DB;
+    }
+
+    .modal-content.privacy-theme {
+        border: 1px solid rgba(20, 184, 166, 0.3);
+        box-shadow: 0 0 30px rgba(20, 184, 166, 0.1);
     }
 
     /* Benchmark Styling */
@@ -912,12 +966,14 @@ const processedBenchmarks = benchmarks.models.map(m => {
         const benchmarkModal = document.getElementById('benchmark-modal');
         const aboutModal = document.getElementById('about-modal');
         const serialPopperModal = document.getElementById('serial-popper-modal');
+        const privacyModal = document.getElementById('privacy-modal');
 
         const btnSubmit = document.getElementById('fab-submit');
         const btnBug = document.getElementById('fab-bug');
         const btnBenchmark = document.getElementById('btn-benchmark');
         const btnSerialPopper = document.getElementById('btn-serial-popper');
         const btnAbout = document.getElementById('btn-about');
+        const btnPrivacy = document.getElementById('btn-privacy');
 
         const closeButtons = document.querySelectorAll('.close-modal');
 
@@ -934,6 +990,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
             benchmarkModal.classList.add('hidden');
             aboutModal.classList.add('hidden');
             serialPopperModal.classList.add('hidden');
+            if (privacyModal) privacyModal.classList.add('hidden');
         }
 
         if (btnSubmit) btnSubmit.addEventListener('click', () => openModal(submissionModal));
@@ -967,6 +1024,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
         if (btnBenchmark) btnBenchmark.addEventListener('click', () => openModal(benchmarkModal));
         if (btnSerialPopper) btnSerialPopper.addEventListener('click', () => openModal(serialPopperModal));
         if (btnAbout) btnAbout.addEventListener('click', () => openModal(aboutModal));
+        if (btnPrivacy) btnPrivacy.addEventListener('click', () => openModal(privacyModal));
         if (overlay) overlay.addEventListener('click', closeModal);
 
         closeButtons.forEach(btn => btn.addEventListener('click', closeModal));
@@ -1006,8 +1064,18 @@ const processedBenchmarks = benchmarks.models.map(m => {
             const subtitle = document.getElementById('subtitle');
             if (subtitle) subtitle.textContent = currentTranslations.subtitle;
 
-            // Header
+            // Header & Privacy
             if (btnAbout) btnAbout.textContent = currentTranslations.about_button;
+            if (btnPrivacy) btnPrivacy.textContent = currentTranslations.privacy_policy_button;
+
+            const disclaimer = document.getElementById('disclaimer');
+            if (disclaimer) disclaimer.textContent = currentTranslations.site_disclaimer;
+
+            // Privacy Modal
+            const privacyTitle = document.getElementById('privacy-title');
+            if (privacyTitle) privacyTitle.textContent = currentTranslations.privacy_policy_title;
+            const privacyText = document.getElementById('privacy-text');
+            if (privacyText) privacyText.textContent = currentTranslations.privacy_policy_content;
 
             // About Modal
             const aboutTitle = document.getElementById('about-title');
