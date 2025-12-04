@@ -31,15 +31,47 @@ if (typeof prediction.claim === 'string') {
 }
 
 const news = prediction.news;
+
+// Determine prediction type for visual distinction
+const getPredictionType = (url) => {
+    if (!url) return 'article';
+    const lowerUrl = url.toLowerCase();
+
+    if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be') || lowerUrl.includes('vimeo.com')) {
+        return 'video';
+    }
+
+    if (lowerUrl.includes('x.com') || lowerUrl.includes('twitter.com') || lowerUrl.includes('instagram.com') || lowerUrl.includes('threads.net') || lowerUrl.includes('reddit.com') || lowerUrl.includes('bsky.app')) {
+        return 'social';
+    }
+
+    return 'article';
+};
+
+const predictionType = getPredictionType(prediction.videoUrl);
+const cardTypeClass = `card-${predictionType}`;
 ---
 
-<a href={prediction.videoUrl} target="_blank" rel="noopener noreferrer" class="card" data-upload-date={prediction.uploadDate} data-status={status} data-creator={prediction.creator}>
+<a href={prediction.videoUrl} target="_blank" rel="noopener noreferrer" class={`card ${cardTypeClass}`} data-upload-date={prediction.uploadDate} data-status={status} data-creator={prediction.creator}>
     <div class="thumbnail-wrapper">
         <img src={prediction.thumbnailUrl} alt={claimText} class="thumbnail" />
         <div class="play-overlay">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="play-icon">
-                <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
-            </svg>
+            {predictionType === 'video' && (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="play-icon">
+                    <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+                </svg>
+            )}
+            {predictionType === 'social' && (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="play-icon">
+                    <path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.701 6.18.1.095.192.195.275.295.069.083.081.196.03.296l-1.05 2.053a.75.75 0 00.6 1.09z" clip-rule="evenodd" />
+                </svg>
+            )}
+            {predictionType === 'article' && (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="play-icon">
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                    <path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clip-rule="evenodd" />
+                </svg>
+            )}
         </div>
     </div>
     <div class="content">
@@ -80,12 +112,26 @@ const news = prediction.news;
         background: rgba(31, 41, 55, 0.4);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 1rem;
         overflow: hidden;
         text-decoration: none;
         color: inherit;
         transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
         height: 100%;
+    }
+
+    /* Video cards - Very rounded (Pill-like/Modern Media) */
+    .card-video {
+        border-radius: 1.5rem;
+    }
+
+    /* Social cards - Sharp (Square/Blocky) */
+    .card-social {
+        border-radius: 0;
+    }
+
+    /* Article cards - Standard/Rectangular */
+    .card-article {
+        border-radius: 0.5rem;
     }
 
     .card:hover {
