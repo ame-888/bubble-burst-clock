@@ -195,6 +195,43 @@ const processedBenchmarks = benchmarks.models.map(m => {
         </div>
     </div>
 
+    <div id="hype-dictionary-modal" class="modal hidden">
+        <div class="modal-content hype-theme">
+            <button class="close-modal">&times;</button>
+            <h3 id="hype-title">{t.hype_dictionary_title}</h3>
+            <div class="hype-list">
+                <div class="hype-item">
+                    <dt id="term-agentic">{t.hype_term_agentic}</dt>
+                    <dd id="def-agentic">{t.hype_def_agentic}</dd>
+                </div>
+                <div class="hype-item">
+                    <dt id="term-hallucination">{t.hype_term_hallucination}</dt>
+                    <dd id="def-hallucination">{t.hype_def_hallucination}</dd>
+                </div>
+                <div class="hype-item">
+                    <dt id="term-slop">{t.hype_term_slop}</dt>
+                    <dd id="def-slop">{t.hype_def_slop}</dd>
+                </div>
+                <div class="hype-item">
+                    <dt id="term-collapse">{t.hype_term_collapse}</dt>
+                    <dd id="def-collapse">{t.hype_def_collapse}</dd>
+                </div>
+                <div class="hype-item">
+                    <dt id="term-prompt">{t.hype_term_prompt}</dt>
+                    <dd id="def-prompt">{t.hype_def_prompt}</dd>
+                </div>
+                <div class="hype-item">
+                    <dt id="term-agi">{t.hype_term_agi}</dt>
+                    <dd id="def-agi">{t.hype_def_agi}</dd>
+                </div>
+                <div class="hype-item">
+                    <dt id="term-alignment">{t.hype_term_alignment}</dt>
+                    <dd id="def-alignment">{t.hype_def_alignment}</dd>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <main>
         <div id="disclaimer" class="site-disclaimer">{t.site_disclaimer}</div>
         <h1 id="main-title" class="interactive-title">{t.title}</h1>
@@ -213,6 +250,9 @@ const processedBenchmarks = benchmarks.models.map(m => {
                 </button>
                 <button id="btn-benchmark" class="benchmark-trigger" title="View Benchmarks">
                     <span class="icon">🏆</span> <span id="leaderboard-button">{t.leaderboard_button}</span>
+                </button>
+                <button id="btn-hype-dictionary" class="hype-dictionary-trigger" title="The Hype Dictionary">
+                    <span class="icon">📖</span> <span id="hype-dictionary-button">{t.hype_dictionary_button}</span>
                 </button>
             </div>
         </div>
@@ -264,6 +304,13 @@ const processedBenchmarks = benchmarks.models.map(m => {
     <button id="fab-submit" class="fab fab-right">
         {t.fab_submit_prediction}
     </button>
+
+    <footer class="site-footer">
+        <div class="contact-section">
+           <span id="footer-contact-label">{t.footer_contact}</span>:
+           <a href="mailto:contact@bubbleburstclock.com" class="contact-email">contact@bubbleburstclock.com</a>
+        </div>
+    </footer>
 
 </Layout>
 
@@ -579,6 +626,37 @@ const processedBenchmarks = benchmarks.models.map(m => {
         box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
     }
 
+    .hype-dictionary-trigger {
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        border-radius: 2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        transition: all 0.2s;
+        z-index: 10;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        width: 100%;
+        max-width: 350px;
+        background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+    }
+
+    .hype-dictionary-trigger .icon {
+        font-size: 1.2rem;
+    }
+
+    .hype-dictionary-trigger:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+    }
+
     /* Modals */
     .hidden { display: none !important; }
     :global(.hidden) { display: none !important; }
@@ -630,6 +708,14 @@ const processedBenchmarks = benchmarks.models.map(m => {
         border: 1px solid rgba(248, 113, 113, 0.3);
         box-shadow: 0 0 30px rgba(248, 113, 113, 0.1);
         max-width: 500px;
+    }
+
+    .modal-content.hype-theme {
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        box-shadow: 0 0 30px rgba(139, 92, 246, 0.1);
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
     }
 
     .modal-content.about-theme {
@@ -872,6 +958,61 @@ const processedBenchmarks = benchmarks.models.map(m => {
         font-style: italic;
     }
 
+    /* Hype Dictionary Styling */
+    .hype-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .hype-item {
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .hype-item:last-child { border-bottom: none; }
+
+    .hype-item dt {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #A78BFA;
+        margin-bottom: 0.5rem;
+    }
+
+    .hype-item dd {
+        margin: 0;
+        color: #D1D5DB;
+        line-height: 1.6;
+    }
+
+    /* Footer */
+    .site-footer {
+        text-align: center;
+        padding: 2rem;
+        margin-top: 4rem;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        color: #9CA3AF;
+    }
+
+    .contact-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .contact-email {
+        color: #60A5FA;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+    .contact-email:hover {
+        color: #93C5FD;
+        text-decoration: underline;
+    }
+
     /* Animations */
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideIn { from { transform: translate(-50%, -45%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
@@ -967,11 +1108,13 @@ const processedBenchmarks = benchmarks.models.map(m => {
         const aboutModal = document.getElementById('about-modal');
         const serialPopperModal = document.getElementById('serial-popper-modal');
         const privacyModal = document.getElementById('privacy-modal');
+        const hypeDictionaryModal = document.getElementById('hype-dictionary-modal');
 
         const btnSubmit = document.getElementById('fab-submit');
         const btnBug = document.getElementById('fab-bug');
         const btnBenchmark = document.getElementById('btn-benchmark');
         const btnSerialPopper = document.getElementById('btn-serial-popper');
+        const btnHypeDictionary = document.getElementById('btn-hype-dictionary');
         const btnAbout = document.getElementById('btn-about');
         const btnPrivacy = document.getElementById('btn-privacy');
 
@@ -991,6 +1134,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
             aboutModal.classList.add('hidden');
             serialPopperModal.classList.add('hidden');
             if (privacyModal) privacyModal.classList.add('hidden');
+            if (hypeDictionaryModal) hypeDictionaryModal.classList.add('hidden');
         }
 
         if (btnSubmit) btnSubmit.addEventListener('click', () => openModal(submissionModal));
@@ -1023,6 +1167,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
         });
         if (btnBenchmark) btnBenchmark.addEventListener('click', () => openModal(benchmarkModal));
         if (btnSerialPopper) btnSerialPopper.addEventListener('click', () => openModal(serialPopperModal));
+        if (btnHypeDictionary) btnHypeDictionary.addEventListener('click', () => openModal(hypeDictionaryModal));
         if (btnAbout) btnAbout.addEventListener('click', () => openModal(aboutModal));
         if (btnPrivacy) btnPrivacy.addEventListener('click', () => openModal(privacyModal));
         if (overlay) overlay.addEventListener('click', closeModal);
@@ -1129,6 +1274,23 @@ const processedBenchmarks = benchmarks.models.map(m => {
             if (leaderboardButton) leaderboardButton.textContent = currentTranslations.leaderboard_button;
             const serialPopperButton = document.getElementById('serial-popper-button');
             if (serialPopperButton) serialPopperButton.textContent = currentTranslations.serial_popper_button;
+            const hypeDictionaryButton = document.getElementById('hype-dictionary-button');
+            if (hypeDictionaryButton) hypeDictionaryButton.textContent = currentTranslations.hype_dictionary_button;
+
+            // Hype Dictionary Modal
+            const hypeTitle = document.getElementById('hype-title');
+            if (hypeTitle) hypeTitle.textContent = currentTranslations.hype_dictionary_title;
+            const terms = ['agentic', 'hallucination', 'slop', 'collapse', 'prompt', 'agi', 'alignment'];
+            terms.forEach(term => {
+                const dt = document.getElementById(`term-${term}`);
+                const dd = document.getElementById(`def-${term}`);
+                if (dt) dt.textContent = currentTranslations[`hype_term_${term}`];
+                if (dd) dd.textContent = currentTranslations[`hype_def_${term}`];
+            });
+
+            // Footer
+            const footerContactLabel = document.getElementById('footer-contact-label');
+            if (footerContactLabel) footerContactLabel.textContent = currentTranslations.footer_contact;
 
             // Sort
             const sortLabel = document.getElementById('sort-label');
