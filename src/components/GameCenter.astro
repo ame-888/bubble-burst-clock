@@ -23,25 +23,78 @@
 
             <div id="game-menu" class="fade-in">
                 <button class="game-select-btn" data-game="pool">
-                    <span class="game-icon">🎱</span> Neural Pool
+                    <div class="game-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10"/>
+                            <circle cx="12" cy="12" r="4" fill="#000"/>
+                            <text x="12" y="14" text-anchor="middle" fill="#FFF" font-size="6" font-weight="bold">8</text>
+                        </svg>
+                    </div>
+                    Neural Pool
                 </button>
                 <button class="game-select-btn" data-game="idle">
-                    <span class="game-icon">🫧</span> Idle Bubble
+                     <div class="game-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="8"/>
+                            <path d="M12 4v16"/>
+                            <path d="M4 12h16"/>
+                            <circle cx="16" cy="8" r="2" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    Idle Bubble
                 </button>
                 <button class="game-select-btn" data-game="tetris">
-                    <span class="game-icon">🧩</span> Cluster Builder
+                     <div class="game-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="4" y="12" width="8" height="8" rx="1"/>
+                            <rect x="12" y="12" width="8" height="8" rx="1"/>
+                            <rect x="12" y="4" width="8" height="8" rx="1"/>
+                        </svg>
+                    </div>
+                    Cluster Builder
                 </button>
                 <button class="game-select-btn" data-game="snake">
-                    <span class="game-icon">🧬</span> Data Stream
+                     <div class="game-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="4" width="16" height="16" rx="4"/>
+                            <path d="M9 9h6v6h-3"/>
+                        </svg>
+                    </div>
+                    Data Stream
                 </button>
                 <button class="game-select-btn" data-game="breakout">
-                    <span class="game-icon">🧱</span> Firewall Breaker
+                     <div class="game-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="4" y="4" width="4" height="2"/>
+                            <rect x="10" y="4" width="4" height="2"/>
+                            <rect x="16" y="4" width="4" height="2"/>
+                            <rect x="7" y="8" width="4" height="2"/>
+                            <rect x="13" y="8" width="4" height="2"/>
+                            <rect x="8" y="18" width="8" height="2"/>
+                            <circle cx="12" cy="14" r="2"/>
+                        </svg>
+                    </div>
+                    Firewall Breaker
                 </button>
                 <button class="game-select-btn" data-game="tictactoe">
-                    <span class="game-icon">🧠</span> Neural Nodes
+                     <div class="game-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4l16 16"/>
+                            <path d="M20 4L4 20"/>
+                        </svg>
+                    </div>
+                    Neural Nodes
                 </button>
                 <button class="game-select-btn" id="leaderboard-btn">
-                    <span class="game-icon">🏆</span> High Scores
+                     <div class="game-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M4 6h16v2H4z"/>
+                            <path d="M4 10h12v2H4z"/>
+                            <path d="M4 14h8v2H4z"/>
+                            <path d="M18 10l4 4-4 4"/>
+                        </svg>
+                    </div>
+                    High Scores
                 </button>
             </div>
 
@@ -231,47 +284,73 @@
 
     /* Menu Buttons */
     #game-menu {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 1rem;
+        width: 100%;
     }
 
     .game-select-btn {
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        padding: 1.25rem;
+        padding: 1.5rem 1rem;
         border-radius: 1rem;
         color: #E5E7EB;
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 600;
         cursor: pointer;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 1rem;
-        transition: all 0.2s ease-out;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+        aspect-ratio: 1;
     }
 
     .game-select-btn:hover {
         background: rgba(96, 165, 250, 0.1);
         border-color: rgba(96, 165, 250, 0.3);
-        transform: translateX(5px);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
     }
 
     .game-icon {
-        font-size: 1.5rem;
+        width: 3rem;
+        height: 3rem;
+        color: #60A5FA;
+        margin-bottom: 0.25rem;
+    }
+
+    .game-icon svg {
+        width: 100%;
+        height: 100%;
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
 
     #leaderboard-btn {
-        margin-top: 1rem;
+        grid-column: span 2;
+        aspect-ratio: auto;
+        flex-direction: row;
+        padding: 1rem;
+        margin-top: 0.5rem;
         background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
         border-color: rgba(245, 158, 11, 0.2);
+        color: #FCD34D;
+    }
+
+    #leaderboard-btn .game-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-bottom: 0;
         color: #FCD34D;
     }
 
     #leaderboard-btn:hover {
         background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
         border-color: rgba(245, 158, 11, 0.5);
+        transform: translateY(-2px);
     }
 
     /* Canvas Area */
@@ -580,6 +659,12 @@
                     GameLogic.tictactoe.draw(ctx, state, canvas);
                 } else if (currentGame === 'pool' && state) {
                      state = GameLogic.pool.handleMouseDown(e, state, canvas);
+                } else if (currentGame === 'idle' && state) {
+                     state = GameLogic.idle.handleClick(e, state, canvas, {
+                        playSound: (t) => sound.play(t),
+                        onScore: updateScore,
+                        onGameOver: handleGameOver
+                     });
                 }
             });
 
