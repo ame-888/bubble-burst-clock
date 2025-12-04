@@ -32,7 +32,7 @@ export class SoundManager {
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(800, now);
                 osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.setValueAtTime(0.05, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
                 osc.start(now);
                 osc.stop(now + 0.1);
@@ -41,7 +41,7 @@ export class SoundManager {
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(300, now);
                 osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
-                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.setValueAtTime(0.02, now);
                 gain.gain.linearRampToValueAtTime(0, now + 0.05);
                 osc.start(now);
                 osc.stop(now + 0.05);
@@ -50,7 +50,7 @@ export class SoundManager {
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(600, now);
                 osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
-                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.setValueAtTime(0.02, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
                 osc.start(now);
                 osc.stop(now + 0.3);
@@ -59,7 +59,7 @@ export class SoundManager {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(100, now);
                 osc.frequency.exponentialRampToValueAtTime(20, now + 1);
-                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.setValueAtTime(0.05, now);
                 gain.gain.linearRampToValueAtTime(0, now + 1);
                 osc.start(now);
                 osc.stop(now + 1);
@@ -859,7 +859,7 @@ export const GameLogic = {
                 const dy = my - state.cueBall.y;
                 state.angle = Math.atan2(dy, dx);
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                state.power = Math.min(dist, 150) / 10; // Max power 15
+                state.power = Math.min(dist, 200) / 4; // Max power 50
             }
             return state;
         },
@@ -1026,14 +1026,25 @@ export const GameLogic = {
             ctx.fillRect(0,0,canvas.width, canvas.height);
 
             // Pockets
-            ctx.fillStyle = '#000';
-            const pocketR = 25;
+            const pocketR = 15;
             const corners = [
                  {x:0, y:0}, {x:canvas.width/2, y:0}, {x:canvas.width, y:0},
                  {x:0, y:canvas.height}, {x:canvas.width/2, y:canvas.height}, {x:canvas.width, y:canvas.height}
              ];
              corners.forEach(p => {
-                 ctx.beginPath(); ctx.arc(p.x, p.y, pocketR, 0, Math.PI*2); ctx.fill();
+                 // Radial gradient for depth
+                 const grad = ctx.createRadialGradient(p.x, p.y, pocketR * 0.2, p.x, p.y, pocketR);
+                 grad.addColorStop(0, '#000');
+                 grad.addColorStop(1, '#333');
+                 ctx.fillStyle = grad;
+                 ctx.beginPath();
+                 ctx.arc(p.x, p.y, pocketR, 0, Math.PI*2);
+                 ctx.fill();
+
+                 // Rim
+                 ctx.strokeStyle = '#4B5563';
+                 ctx.lineWidth = 1;
+                 ctx.stroke();
              });
 
              // Balls
@@ -1051,6 +1062,16 @@ export const GameLogic = {
                  ctx.arc(b.x - b.r/3, b.y - b.r/3, b.r/3, 0, Math.PI*2);
                  ctx.fill();
                  ctx.shadowBlur = 0;
+
+                 // Numbers
+                 if (typeof b.id !== 'undefined') {
+                     ctx.fillStyle = '#FFFFFF';
+                     ctx.font = 'bold 10px Inter, sans-serif';
+                     ctx.textAlign = 'center';
+                     ctx.textBaseline = 'middle';
+                     // +1 because ids start at 0
+                     ctx.fillText(b.id + 1, b.x, b.y);
+                 }
              });
 
              // Aim Line
@@ -1060,17 +1081,12 @@ export const GameLogic = {
                  ctx.setLineDash([5, 5]);
                  ctx.beginPath();
                  ctx.moveTo(state.cueBall.x, state.cueBall.y);
-                 const aimX = state.cueBall.x + Math.cos(state.angle + Math.PI) * 100; // Visual guide
-                 const aimY = state.cueBall.y + Math.sin(state.angle + Math.PI) * 100;
+                 const aimLength = 50 + state.power * 5; // Dynamic length based on power
+                 const aimX = state.cueBall.x + Math.cos(state.angle + Math.PI) * aimLength;
+                 const aimY = state.cueBall.y + Math.sin(state.angle + Math.PI) * aimLength;
                  ctx.lineTo(aimX, aimY);
                  ctx.stroke();
                  ctx.setLineDash([]);
-
-                 // Power Bar on cue ball
-                 /*
-                 ctx.fillStyle = state.power > 10 ? 'red' : 'yellow';
-                 ctx.fillRect(state.cueBall.x - 20, state.cueBall.y + 20, state.power * 3, 5);
-                 */
              }
         }
     }

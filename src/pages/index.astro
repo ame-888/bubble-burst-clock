@@ -579,7 +579,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
         height: 100%;
         background: rgba(0, 0, 0, 0.8);
         backdrop-filter: blur(5px);
-        z-index: 100;
+        z-index: 20000;
         animation: fadeIn 0.3s;
     }
 
@@ -588,7 +588,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        z-index: 101;
+        z-index: 20001;
         width: 90%;
         max-width: 600px;
         animation: slideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
@@ -937,7 +937,33 @@ const processedBenchmarks = benchmarks.models.map(m => {
         }
 
         if (btnSubmit) btnSubmit.addEventListener('click', () => openModal(submissionModal));
-        if (btnBug) btnBug.addEventListener('click', () => openModal(bugModal));
+        if (btnBug) {
+            btnBug.addEventListener('click', () => {
+                const title = document.getElementById('report-bug-title');
+                const btn = document.getElementById('report-bug-button');
+                const inputType = document.querySelector('input[name="type"]');
+                if (title) title.textContent = currentTranslations.report_bug_title;
+                if (btn) btn.textContent = currentTranslations.report_bug_button;
+                if (inputType) inputType.value = "bug_report";
+                openModal(bugModal);
+            });
+        }
+
+        window.addEventListener('open-game-suggestion', () => {
+            const title = document.getElementById('report-bug-title');
+            const btn = document.getElementById('report-bug-button');
+            const inputType = document.querySelector('input[name="type"]');
+
+            // Use localized strings if available, fallback to hardcoded (added to en.json)
+            const suggestionTitle = currentTranslations.suggest_game_title || "Suggest a Game";
+            const suggestionBtn = currentTranslations.suggest_game_button || "Suggest Game";
+
+            if (title) title.textContent = suggestionTitle;
+            if (btn) btn.textContent = suggestionBtn;
+            if (inputType) inputType.value = "game_suggestion";
+
+            openModal(bugModal);
+        });
         if (btnBenchmark) btnBenchmark.addEventListener('click', () => openModal(benchmarkModal));
         if (btnSerialPopper) btnSerialPopper.addEventListener('click', () => openModal(serialPopperModal));
         if (btnAbout) btnAbout.addEventListener('click', () => openModal(aboutModal));
