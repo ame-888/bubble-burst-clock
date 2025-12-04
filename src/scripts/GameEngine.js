@@ -221,6 +221,17 @@ export const GameLogic = {
                 y: Math.floor(Math.random() * rows)
             };
         },
+        onKeyDown: (e, state, callbacks) => {
+            const keys = { 'ArrowUp': {x:0,y:-1}, 'ArrowDown': {x:0,y:1}, 'ArrowLeft': {x:-1,y:0}, 'ArrowRight': {x:1,y:0} };
+            const newDir = keys[e.key];
+            if (newDir) {
+                // Prevent 180 reverse
+                if (newDir.x !== -state.dir.x && newDir.y !== -state.dir.y) {
+                    state.nextDir = newDir;
+                }
+            }
+            return state;
+        },
         update: (dt, state, canvas, callbacks) => {
              state.timer += dt;
              if (state.timer < state.speed) return state;
@@ -313,6 +324,18 @@ export const GameLogic = {
                  y: 0
              };
         },
+        rotate: (piece) => {
+            const shape = piece.shape;
+            const N = shape.length;
+            const M = shape[0].length;
+            const newShape = Array(M).fill().map(() => Array(N).fill(0));
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < M; x++) {
+                    newShape[x][N - 1 - y] = shape[y][x];
+                }
+            }
+            return { ...piece, shape: newShape };
+        },
         checkCollide: (state, offX=0, offY=0, shape=null) => {
             const s = shape || state.piece.shape;
             const px = state.piece.x + offX;
@@ -329,6 +352,33 @@ export const GameLogic = {
                 }
             }
             return false;
+        },
+        onKeyDown: (e, state, callbacks) => {
+            if (!state.piece) return state;
+
+            if (e.key === 'ArrowLeft') {
+                if (!GameLogic.tetris.checkCollide(state, -1, 0)) {
+                    state.piece.x--;
+                    callbacks.playSound('move');
+                }
+            } else if (e.key === 'ArrowRight') {
+                if (!GameLogic.tetris.checkCollide(state, 1, 0)) {
+                    state.piece.x++;
+                    callbacks.playSound('move');
+                }
+            } else if (e.key === 'ArrowDown') {
+                 if (!GameLogic.tetris.checkCollide(state, 0, 1)) {
+                    state.piece.y++;
+                    callbacks.playSound('move');
+                }
+            } else if (e.key === 'ArrowUp') {
+                const rotated = GameLogic.tetris.rotate(state.piece);
+                if (!GameLogic.tetris.checkCollide(state, 0, 0, rotated.shape)) {
+                    state.piece = rotated;
+                    callbacks.playSound('move');
+                }
+            }
+            return state;
         },
         update: (dt, state, canvas, callbacks) => {
             state.timer += dt;
@@ -519,7 +569,8 @@ export const GameLogic = {
                 board: Array(9).fill(null),
                 player: 'X',
                 streak: 0,
-                winner: null
+                winner: null,
+                hardMode: false
             };
         },
         handleClick: (e, state, canvas, callbacks) => {
@@ -556,14 +607,111 @@ export const GameLogic = {
         },
         cpuMove: (state, callbacks) => {
              if (state.winner) return;
-             const empty = state.board.map((v, i) => v === null ? i : null).filter(v => v !== null);
-             if (empty.length > 0) {
-                 const pick = empty[Math.floor(Math.random() * empty.length)];
-                 state.board[pick] = 'O';
+
+             let move = -1;
+
+             // Invincible Mode (Minimax)
+             if (state.hardMode) {
+                move = GameLogic.tictactoe.minimax(state.board, 'O').index;
+             } else {
+                // Challenging Mode
+                // 1. Can CPU win?
+                const winMove = GameLogic.tictactoe.findBestMove(state.board, 'O');
+                if (winMove !== -1) {
+                    move = winMove;
+                } else {
+                    // 2. Can Player win? Block it.
+                    const blockMove = GameLogic.tictactoe.findBestMove(state.board, 'X');
+                    if (blockMove !== -1) {
+                        // 20% chance to make a mistake and not block
+                        if (Math.random() > 0.2) move = blockMove;
+                    }
+                }
+                // 3. Random if no immediate threat/win
+                if (move === -1) {
+                    const empty = state.board.map((v, i) => v === null ? i : null).filter(v => v !== null);
+                    if (empty.length > 0) {
+                        move = empty[Math.floor(Math.random() * empty.length)];
+                    }
+                }
+             }
+
+             if (move !== -1) {
+                 state.board[move] = 'O';
                  callbacks.playSound('move');
                  GameLogic.tictactoe.checkWin(state, callbacks);
                  if (!state.winner) state.player = 'X';
              }
+        },
+        findBestMove: (board, player) => {
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === null) {
+                    board[i] = player;
+                    let win = false;
+                    for(let w of wins) {
+                        const [a,b,c] = w;
+                        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                            win = true;
+                            break;
+                        }
+                    }
+                    board[i] = null; // Backtrack
+                    if (win) return i;
+                }
+            }
+            return -1;
+        },
+        minimax: (board, player) => {
+            const empty = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
+
+            // Check Terminal States
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for (let w of wins) {
+                const [a,b,c] = w;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return { score: board[a] === 'O' ? 10 : -10 };
+                }
+            }
+            if (empty.length === 0) return { score: 0 };
+
+            const moves = [];
+            for (let i = 0; i < empty.length; i++) {
+                const idx = empty[i];
+                const move = {};
+                move.index = idx;
+                board[idx] = player;
+
+                if (player === 'O') {
+                    const result = GameLogic.tictactoe.minimax(board, 'X');
+                    move.score = result.score;
+                } else {
+                    const result = GameLogic.tictactoe.minimax(board, 'O');
+                    move.score = result.score;
+                }
+                board[idx] = null;
+                moves.push(move);
+            }
+
+            let bestMove;
+            if (player === 'O') {
+                let bestScore = -10000;
+                for(let i=0; i<moves.length; i++) {
+                    if (moves[i].score > bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            } else {
+                let bestScore = 10000;
+                for(let i=0; i<moves.length; i++) {
+                    if (moves[i].score < bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            }
+            return moves[bestMove];
         },
         checkWin: (state, callbacks) => {
              const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
@@ -575,19 +723,27 @@ export const GameLogic = {
                         state.streak++;
                         callbacks.onScore(state.streak);
                         callbacks.playSound('score');
+
+                        // Check for Streak 7 Trigger
+                        if (state.streak === 7 && !state.hardMode) {
+                            state.hardMode = true;
+                            if (callbacks.onCutscene) callbacks.onCutscene();
+                        }
+
                         setTimeout(() => {
                             state.board.fill(null);
                             state.winner = null;
                             state.player = 'X';
                         }, 1000);
                     } else {
+                        // AI Wins - Reset Streak
                         callbacks.onGameOver(state.streak);
                     }
                     return;
                 }
              }
              if (!state.board.includes(null)) {
-                 // Draw
+                 // Draw - Continue Streak
                  state.winner = 'draw';
                  setTimeout(() => {
                     state.board.fill(null);
@@ -600,7 +756,7 @@ export const GameLogic = {
             const w = canvas.width / 3;
             const h = canvas.height / 3;
             ctx.clearRect(0,0,canvas.width, canvas.height);
-            ctx.strokeStyle = '#374151';
+            ctx.strokeStyle = state.hardMode ? '#EF4444' : '#374151'; // Red border in hard mode
             ctx.lineWidth = 4;
             ctx.beginPath();
             ctx.moveTo(w, 0); ctx.lineTo(w, canvas.height);
