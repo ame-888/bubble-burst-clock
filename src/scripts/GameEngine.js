@@ -50,10 +50,10 @@ export class SoundManager {
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(600, now);
                 osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                gain.gain.setValueAtTime(0.02, now); // Reduced volume
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2); // Shorter duration
                 osc.start(now);
-                osc.stop(now + 0.3);
+                osc.stop(now + 0.2);
                 break;
             case 'gameover': // Deep wobble
                 osc.type = 'sawtooth';
@@ -161,7 +161,7 @@ export class ScoreManager {
     }
 
     getScores() {
-        const defaults = { tetris: [], snake: [], breakout: [], tictactoe: 0 };
+        const defaults = { tetris: [], snake: [], breakout: [], tictactoe: 0, pool: [] };
         try {
             const stored = JSON.parse(localStorage.getItem(this.key));
             return { ...defaults, ...stored };
@@ -784,6 +784,306 @@ export const GameLogic = {
                 ctx.fill();
                 ctx.shadowBlur = 0;
             });
+        }
+    },
+
+    // Pool
+    pool: {
+        init: (canvas) => {
+            const w = canvas.width;
+            const h = canvas.height;
+            // 15 balls + cue ball
+            const balls = [];
+            const r = 10;
+            const startX = w * 0.75;
+            const startY = h / 2;
+
+            // Rack of 15
+            let count = 0;
+            for(let col=0; col<5; col++) {
+                for(let row=0; row<=col; row++) {
+                    const x = startX + col * (r * 2 * 0.866);
+                    const y = startY - (col * r) + (row * r * 2);
+                    // Color logic: 1-7 solid, 8 black, 9-15 stripe
+                    // Simplification: Just different colors
+                    balls.push({
+                        x: x, y: y, vx: 0, vy: 0, r: r,
+                        color: count === 4 ? '#111827' : (count % 2 === 0 ? '#EF4444' : '#3B82F6'), // 8-ball black, others Red/Blue
+                        id: count,
+                        active: true
+                    });
+                    count++;
+                }
+            }
+
+            return {
+                balls: balls,
+                cueBall: { x: w * 0.25, y: h/2, vx: 0, vy: 0, r: r, color: '#FFFFFF', active: true },
+                dragging: false,
+                power: 0,
+                angle: 0,
+                turn: 'player', // or 'ai'
+                vsAI: false, // toggled via UI
+                stopped: true,
+                score: 0,
+                shots: 0,
+                gameOver: false
+            };
+        },
+        handleMouseDown: (e, state, canvas) => {
+            if (!state.stopped || (state.turn === 'ai' && state.vsAI) || state.gameOver) return state;
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mx = e.offsetX * scaleX;
+            const my = e.offsetY * scaleY;
+
+            // Check if clicking near cue ball
+            const dx = mx - state.cueBall.x;
+            const dy = my - state.cueBall.y;
+            if (dx*dx + dy*dy < 2000) { // Reasonable radius
+                state.dragging = true;
+            }
+            return state;
+        },
+        handleMouseMove: (e, state, canvas) => {
+            if (state.dragging) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mx = e.offsetX * scaleX;
+                const my = e.offsetY * scaleY;
+
+                const dx = mx - state.cueBall.x;
+                const dy = my - state.cueBall.y;
+                state.angle = Math.atan2(dy, dx);
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                // Increased max power range and scaling for better control
+                // Previously max was 15 (150/10). Now max is 30 (300/10)
+                state.power = Math.min(dist, 300) / 10;
+            }
+            return state;
+        },
+        handleMouseUp: (e, state, canvas, callbacks) => {
+            if (state.dragging) {
+                state.dragging = false;
+                // Shoot
+                const speed = state.power; // multiplier
+                state.cueBall.vx = Math.cos(state.angle + Math.PI) * speed; // Pull back to shoot forward
+                state.cueBall.vy = Math.sin(state.angle + Math.PI) * speed;
+                state.stopped = false;
+                state.shots++;
+                callbacks.playSound('move');
+
+                // If vs AI, next turn will be AI after stop
+            }
+            return state;
+        },
+        update: (dt, state, canvas, callbacks, input) => {
+             if (state.gameOver) return state;
+
+             // Physics Sub-steps for stability
+             const steps = 4;
+             const subDt = 1 / steps;
+
+             let movement = false;
+             const friction = 0.985;
+             const wallBounce = 0.8;
+
+             const allBalls = [state.cueBall, ...state.balls];
+
+             for(let s=0; s<steps; s++) {
+                 for(let b of allBalls) {
+                     if (!b.active && b !== state.cueBall) continue;
+
+                     if (Math.abs(b.vx) > 0.05 || Math.abs(b.vy) > 0.05) {
+                         b.x += b.vx * subDt;
+                         b.y += b.vy * subDt;
+                         b.vx *= friction;
+                         b.vy *= friction;
+                         movement = true;
+                     } else {
+                         b.vx = 0; b.vy = 0;
+                     }
+
+                     // Walls
+                     if (b.x < b.r) { b.x = b.r; b.vx = -b.vx * wallBounce; }
+                     if (b.x > canvas.width - b.r) { b.x = canvas.width - b.r; b.vx = -b.vx * wallBounce; }
+                     if (b.y < b.r) { b.y = b.r; b.vy = -b.vy * wallBounce; }
+                     if (b.y > canvas.height - b.r) { b.y = canvas.height - b.r; b.vy = -b.vy * wallBounce; }
+
+                     // Pockets (Simple corners)
+                     // If close to corner, pot it
+                     const corners = [
+                         {x:0, y:0}, {x:canvas.width/2, y:0}, {x:canvas.width, y:0},
+                         {x:0, y:canvas.height}, {x:canvas.width/2, y:canvas.height}, {x:canvas.width, y:canvas.height}
+                     ];
+                     const pocketR = 25;
+
+                     for(let p of corners) {
+                         const dx = b.x - p.x;
+                         const dy = b.y - p.y;
+                         if (dx*dx + dy*dy < pocketR*pocketR) {
+                             if (b === state.cueBall) {
+                                 // Scratch
+                                 b.x = canvas.width * 0.25;
+                                 b.y = canvas.height / 2;
+                                 b.vx = 0; b.vy = 0;
+                                 callbacks.playSound('gameover'); // Bad sound
+                             } else {
+                                 b.active = false; // Potted
+                                 // Remove from array or mark inactive
+                                 const idx = state.balls.indexOf(b);
+                                 if (idx > -1) state.balls.splice(idx, 1);
+                                 state.score += 100;
+                                 callbacks.onScore(state.score);
+                                 callbacks.playSound('pop');
+                             }
+                         }
+                     }
+                 }
+
+                 // Collisions
+                 for(let i=0; i<allBalls.length; i++) {
+                     for(let j=i+1; j<allBalls.length; j++) {
+                         const b1 = allBalls[i];
+                         const b2 = allBalls[j];
+                         // Skip if ball removed
+                         if (state.balls.indexOf(b1) === -1 && b1 !== state.cueBall) continue;
+                         if (state.balls.indexOf(b2) === -1 && b2 !== state.cueBall) continue;
+
+                         const dx = b2.x - b1.x;
+                         const dy = b2.y - b1.y;
+                         const dist = Math.sqrt(dx*dx + dy*dy);
+
+                         if (dist < b1.r + b2.r) {
+                             // Collision Response
+                             const angle = Math.atan2(dy, dx);
+                             const sin = Math.sin(angle);
+                             const cos = Math.cos(angle);
+
+                             // Rotate velocity
+                             const vx1 = b1.vx * cos + b1.vy * sin;
+                             const vy1 = b1.vy * cos - b1.vx * sin;
+                             const vx2 = b2.vx * cos + b2.vy * sin;
+                             const vy2 = b2.vy * cos - b2.vx * sin;
+
+                             // Swap velocity (elastic)
+                             const vx1Final = vx2;
+                             const vx2Final = vx1;
+
+                             // Update velocity
+                             b1.vx = vx1Final * cos - vy1 * sin;
+                             b1.vy = vy1 * cos + vx1Final * sin;
+                             b2.vx = vx2Final * cos - vy2 * sin;
+                             b2.vy = vy2 * cos + vx2Final * sin;
+
+                             // Separate balls
+                             const overlap = (b1.r + b2.r - dist) / 2;
+                             b1.x -= overlap * Math.cos(angle);
+                             b1.y -= overlap * Math.sin(angle);
+                             b2.x += overlap * Math.cos(angle);
+                             b2.y += overlap * Math.sin(angle);
+
+                             callbacks.playSound('score'); // clack sound
+                         }
+                     }
+                 }
+             }
+
+             if (!movement && !state.stopped) {
+                 state.stopped = true;
+                 if (state.vsAI && state.turn === 'player') {
+                     state.turn = 'ai';
+                     setTimeout(() => GameLogic.pool.aiTurn(state, callbacks), 500);
+                 } else if (state.vsAI && state.turn === 'ai') {
+                     state.turn = 'player';
+                 }
+
+                 if (state.balls.length === 0) {
+                     state.gameOver = true;
+                     callbacks.onGameOver(state.score);
+                 }
+             }
+
+             return state;
+        },
+        aiTurn: (state, callbacks) => {
+            // Simple AI: Find a target ball and shoot
+            if (state.balls.length === 0) return;
+            const target = state.balls[Math.floor(Math.random() * state.balls.length)];
+            const dx = target.x - state.cueBall.x;
+            const dy = target.y - state.cueBall.y;
+            const angle = Math.atan2(dy, dx);
+
+            state.cueBall.vx = Math.cos(angle) * 12; // Fixed power
+            state.cueBall.vy = Math.sin(angle) * 12;
+            state.stopped = false;
+            callbacks.playSound('move');
+        },
+        draw: (ctx, state, canvas) => {
+            // Felt
+            ctx.fillStyle = '#064E3B'; // Dark Green
+            ctx.fillRect(0,0,canvas.width, canvas.height);
+
+            // Pockets
+            ctx.fillStyle = '#000';
+            const pocketR = 25;
+            const corners = [
+                 {x:0, y:0}, {x:canvas.width/2, y:0}, {x:canvas.width, y:0},
+                 {x:0, y:canvas.height}, {x:canvas.width/2, y:canvas.height}, {x:canvas.width, y:canvas.height}
+             ];
+             corners.forEach(p => {
+                 ctx.beginPath(); ctx.arc(p.x, p.y, pocketR, 0, Math.PI*2); ctx.fill();
+             });
+
+             // Balls
+             [...state.balls, state.cueBall].forEach(b => {
+                 ctx.shadowBlur = 5;
+                 ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                 ctx.fillStyle = b.color;
+                 ctx.beginPath();
+                 ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+                 ctx.fill();
+
+                 // Shine
+                 ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                 ctx.beginPath();
+                 ctx.arc(b.x - b.r/3, b.y - b.r/3, b.r/3, 0, Math.PI*2);
+                 ctx.fill();
+                 ctx.shadowBlur = 0;
+             });
+
+             // Aim Line
+             if (state.dragging && state.stopped && (state.turn === 'player' || !state.vsAI)) {
+                 ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                 ctx.lineWidth = 2;
+                 ctx.setLineDash([5, 5]);
+                 ctx.beginPath();
+                 ctx.moveTo(state.cueBall.x, state.cueBall.y);
+                 const aimX = state.cueBall.x + Math.cos(state.angle + Math.PI) * 100; // Visual guide
+                 const aimY = state.cueBall.y + Math.sin(state.angle + Math.PI) * 100;
+                 ctx.lineTo(aimX, aimY);
+                 ctx.stroke();
+                 ctx.setLineDash([]);
+
+                 // Power Bar on cue ball (Visual Feedback)
+                 const powerPercent = state.power / 30; // 0 to 1 based on max power 30
+                 const barW = 40;
+                 const barH = 6;
+                 const bx = state.cueBall.x - barW/2;
+                 const by = state.cueBall.y + 25;
+
+                 // Background
+                 ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                 ctx.fillRect(bx, by, barW, barH);
+
+                 // Fill
+                 const hue = (1 - powerPercent) * 120; // Green to Red
+                 ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                 ctx.fillRect(bx, by, barW * powerPercent, barH);
+             }
         }
     }
 };

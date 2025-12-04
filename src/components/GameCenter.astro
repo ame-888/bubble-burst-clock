@@ -17,10 +17,18 @@
             <div class="modal-header">
                 <button id="header-back-btn" class="hidden" aria-label="Back to Menu">←</button>
                 <h2 id="modal-title">AI Arcade</h2>
+                <button id="suggest-game-btn" aria-label="Suggest a Game" title="Suggest a Game">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </button>
                 <button id="close-modal-btn" aria-label="Close">&times;</button>
             </div>
 
             <div id="game-menu" class="fade-in">
+                <button class="game-select-btn" data-game="pool">
+                    <span class="game-icon">🎱</span> Neural Pool
+                </button>
                 <button class="game-select-btn" data-game="tetris">
                     <span class="game-icon">🧩</span> Cluster Builder
                 </button>
@@ -44,6 +52,9 @@
             </div>
 
             <div id="game-area" class="hidden fade-in">
+                <div id="pool-controls" class="hidden" style="margin-bottom: 0.5rem; display: flex; justify-content: center; gap: 1rem;">
+                    <button id="pool-mode-btn" style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: #374151; color: white; border: none; cursor: pointer;">Switch to VS AI</button>
+                </div>
                 <div class="game-canvas-wrapper">
                     <canvas id="game-canvas" width="400" height="400"></canvas>
                     <div id="game-overlay" class="hidden">
@@ -166,7 +177,8 @@
 
     .modal-header {
         display: grid;
-        grid-template-columns: 2.5rem 1fr 2.5rem;
+        grid-template-columns: 2.5rem 1fr 2.5rem 2.5rem;
+        gap: 0.5rem;
         align-items: center;
         margin-bottom: 2rem;
         padding-bottom: 1rem;
@@ -184,7 +196,13 @@
         text-align: center;
     }
 
-    #header-back-btn, #close-modal-btn {
+    /* Fix for Title Display Error: preserve space when hidden */
+    #header-back-btn.hidden {
+        display: block !important;
+        visibility: hidden;
+    }
+
+    #header-back-btn, #close-modal-btn, #suggest-game-btn {
         background: rgba(255, 255, 255, 0.05);
         border: none;
         color: #9CA3AF;
@@ -199,9 +217,13 @@
         transition: all 0.2s;
     }
 
-    #header-back-btn:hover, #close-modal-btn:hover {
+    #header-back-btn:hover, #close-modal-btn:hover, #suggest-game-btn:hover {
         background: rgba(255, 255, 255, 0.1);
         color: white;
+    }
+
+    #suggest-game-btn {
+        font-size: 1.2rem;
     }
 
     #close-modal-btn:hover {
@@ -478,6 +500,14 @@
             });
         }
 
+        const suggestBtn = document.getElementById('suggest-game-btn');
+        if (suggestBtn) {
+            suggestBtn.addEventListener('click', () => {
+                // Using window.open as it's sometimes more reliable for mailto in restrictive contexts
+                window.open("mailto:?subject=Game%20Suggestion%20for%20AI%20Arcade&body=I%20have%20a%20great%20idea%20for%20a%20new%20game...", "_blank");
+            });
+        }
+
         document.querySelectorAll('.game-select-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 if (btn.id === 'leaderboard-btn') {
@@ -504,10 +534,24 @@
             showMenu();
         });
 
+        const poolModeBtn = document.getElementById('pool-mode-btn');
+        if (poolModeBtn) {
+            poolModeBtn.addEventListener('click', () => {
+                if (currentGame === 'pool' && state) {
+                    const targetMode = !state.vsAI;
+                    // Reset game on mode switch
+                    startGame('pool');
+                    // Restore/Set mode on new state
+                    if (state) state.vsAI = targetMode;
+                    poolModeBtn.textContent = state.vsAI ? "Switch to Solo" : "Switch to VS AI";
+                }
+            });
+        }
+
         // Input Handling
         window.addEventListener('keydown', (e) => {
             keys[e.key] = true;
-            if (e.key.toLowerCase() === 'p' && currentGame && currentGame !== 'tictactoe') {
+            if (e.key.toLowerCase() === 'p' && currentGame && currentGame !== 'tictactoe' && currentGame !== 'pool') {
                 isPaused = !isPaused;
             }
             // Prevent scrolling
@@ -536,6 +580,24 @@
                         onCutscene: triggerCutscene
                     });
                     GameLogic.tictactoe.draw(ctx, state, canvas);
+                } else if (currentGame === 'pool' && state) {
+                     state = GameLogic.pool.handleMouseDown(e, state, canvas);
+                }
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (currentGame === 'pool' && state) {
+                    state = GameLogic.pool.handleMouseMove(e, state, canvas);
+                }
+            });
+
+            canvas.addEventListener('mouseup', (e) => {
+                if (currentGame === 'pool' && state) {
+                    state = GameLogic.pool.handleMouseUp(e, state, canvas, {
+                        playSound: (t) => sound.play(t),
+                        onScore: updateScore,
+                        onGameOver: handleGameOver
+                    });
                 }
             });
         }
@@ -546,6 +608,7 @@
         document.getElementById('game-area').classList.add('hidden');
         document.getElementById('leaderboard-view').classList.add('hidden');
         document.getElementById('header-back-btn').classList.add('hidden'); // Hide back button on menu
+        document.getElementById('suggest-game-btn').classList.remove('hidden'); // Show suggest button
         document.getElementById('modal-title').textContent = "AI Arcade";
     }
 
@@ -553,6 +616,7 @@
         document.getElementById('game-menu').classList.add('hidden');
         document.getElementById('leaderboard-view').classList.remove('hidden');
         document.getElementById('header-back-btn').classList.remove('hidden'); // Show back button
+        document.getElementById('suggest-game-btn').classList.add('hidden'); // Hide suggest on leaderboard
         document.getElementById('modal-title').textContent = "High Scores";
 
         const data = scores.getScores();
@@ -561,6 +625,10 @@
 
         const content = document.getElementById('leaderboard-content');
         content.innerHTML = `
+             <div class="leaderboard-game-section">
+                <div class="leaderboard-game-title">Neural Pool</div>
+                <ul class="leaderboard-list">${listHtml(data.pool || [])}</ul>
+            </div>
             <div class="leaderboard-game-section">
                 <div class="leaderboard-game-title">Cluster Builder</div>
                 <ul class="leaderboard-list">${listHtml(data.tetris)}</ul>
@@ -586,17 +654,33 @@
         document.getElementById('game-area').classList.remove('hidden');
         document.getElementById('game-overlay').classList.add('hidden');
         document.getElementById('header-back-btn').classList.remove('hidden'); // Show back button
+        document.getElementById('suggest-game-btn').classList.add('hidden'); // Hide suggest button in game
+
+        // Pool controls
+        const poolControls = document.getElementById('pool-controls');
+        if (game === 'pool') {
+            poolControls.classList.remove('hidden');
+        } else {
+            poolControls.classList.add('hidden');
+        }
 
         // Titles & Hints
-        const titles = { snake: "Data Stream", tetris: "Cluster Builder", breakout: "Firewall Breaker", tictactoe: "Neural Nodes" };
+        const titles = {
+            snake: "Data Stream",
+            tetris: "Cluster Builder",
+            breakout: "Firewall Breaker",
+            tictactoe: "Neural Nodes",
+            pool: "Neural Pool"
+        };
         const hints = {
             snake: "Arrows to Move • P to Pause",
             tetris: "Arrows to Move/Rotate • P to Pause",
             breakout: "Left/Right to Deflect • P to Pause",
-            tictactoe: "Click empty nodes to capture"
+            tictactoe: "Click empty nodes to capture",
+            pool: "Drag/Hold to aim & shoot • Click button to switch mode"
         };
-        document.getElementById('modal-title').textContent = titles[game];
-        document.getElementById('controls-hint').textContent = hints[game];
+        document.getElementById('modal-title').textContent = titles[game] || "Game";
+        document.getElementById('controls-hint').textContent = hints[game] || "";
         document.getElementById('current-score').textContent = "0";
 
         // Reset
@@ -607,6 +691,12 @@
 
         if (GameLogic[game]) {
             state = GameLogic[game].init(canvas);
+
+            // Sync button state for pool
+            if (game === 'pool') {
+                const btn = document.getElementById('pool-mode-btn');
+                if (btn) btn.textContent = state.vsAI ? "Switch to Solo" : "Switch to VS AI";
+            }
 
             // Start Music
             if (game === 'tetris') music.playTrack('tetris');
