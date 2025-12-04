@@ -499,7 +499,7 @@
         const suggestBtn = document.getElementById('suggest-game-btn');
         if (suggestBtn) {
             suggestBtn.addEventListener('click', () => {
-                window.location.href = "mailto:?subject=Game%20Suggestion%20for%20AI%20Arcade&body=I%20have%20a%20great%20idea%20for%20a%20new%20game...";
+                window.dispatchEvent(new CustomEvent('open-game-suggestion'));
             });
         }
 
