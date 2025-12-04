@@ -1098,5 +1098,302 @@ export const GameLogic = {
                  ctx.setLineDash([]);
              }
         }
+    },
+
+    // Idle Bubble
+    idle: {
+        config: {
+            companies: [
+                { id: 'google', cost: 15, gen: 0.5, color: '#4285F4' },
+                { id: 'openai', cost: 100, gen: 3, color: '#10A37F' },
+                { id: 'anthropic', cost: 500, gen: 10, color: '#D7CEBE' },
+                { id: 'meta', cost: 2000, gen: 30, color: '#0668E1' },
+                { id: 'xai', cost: 8000, gen: 100, color: '#FFFFFF' },
+                { id: 'mistral', cost: 25000, gen: 250, color: '#FDBA74' },
+                { id: 'deepseek', cost: 100000, gen: 1000, color: '#3B82F6' }
+            ],
+            upgrades: [
+                { id: 'h100', cost: 500, type: 'click', mult: 5, icon: '⚡' }, // Click x5
+                { id: 'quant', cost: 5000, type: 'global', mult: 1.5, icon: '📉' }, // Global x1.5
+                { id: 'flash', cost: 20000, type: 'click', mult: 10, icon: '⚡' },
+                { id: 'moe', cost: 100000, type: 'global', mult: 2.0, icon: '🧠' }
+            ]
+        },
+        init: (canvas) => {
+            const defaults = {
+                compute: 0,
+                companies: { google: 0, openai: 0, anthropic: 0, meta: 0, xai: 0, mistral: 0, deepseek: 0 },
+                upgrades: { h100: false, quant: false, flash: false, moe: false },
+                lastSave: Date.now()
+            };
+
+            let stored = defaults;
+            try {
+                const s = localStorage.getItem('idle_bubble_save');
+                if (s) stored = { ...defaults, ...JSON.parse(s) };
+            } catch(e) {}
+
+            return {
+                ...stored,
+                particles: [], // visual effects
+                bubbleScale: 1.0,
+                lastUpdate: Date.now()
+            };
+        },
+        getGenRate: (state) => {
+            let rate = 0;
+            GameLogic.idle.config.companies.forEach(c => {
+                rate += (state.companies[c.id] || 0) * c.gen;
+            });
+            // Apply global multipliers
+            if (state.upgrades.quant) rate *= 1.5;
+            if (state.upgrades.moe) rate *= 2.0;
+            return rate;
+        },
+        getClickPower: (state) => {
+            let power = 1;
+            if (state.upgrades.h100) power *= 5;
+            if (state.upgrades.flash) power *= 10;
+            return power;
+        },
+        save: (state) => {
+            try {
+                const data = {
+                    compute: state.compute,
+                    companies: state.companies,
+                    upgrades: state.upgrades,
+                    lastSave: Date.now()
+                };
+                localStorage.setItem('idle_bubble_save', JSON.stringify(data));
+            } catch(e) {}
+        },
+        handleClick: (e, state, canvas, callbacks) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = e.offsetX * scaleX;
+            const y = e.offsetY * scaleY;
+
+            // Big Bubble Hitbox (Left Side)
+            const cx = canvas.width * 0.25;
+            const cy = canvas.height * 0.5;
+            const r = 80;
+
+            const dx = x - cx;
+            const dy = y - cy;
+
+            if (dx*dx + dy*dy < r*r) {
+                // Click Bubble
+                const gain = GameLogic.idle.getClickPower(state);
+                state.compute += gain;
+                state.bubbleScale = 0.9; // Squash effect
+                callbacks.playSound('pop');
+
+                // Spawn particle text
+                state.particles.push({
+                    x: x, y: y, text: `+${gain.toFixed(1)}`, life: 1.0, vy: -1
+                });
+                return state;
+            }
+
+            // Shop Hitbox (Right Side)
+            // Rendered as list. Check coordinates.
+            const listX = canvas.width * 0.55;
+            const listY = 60;
+            const itemH = 40;
+
+            // Companies
+            GameLogic.idle.config.companies.forEach((c, i) => {
+                const by = listY + i * (itemH + 5);
+                if (x > listX && x < canvas.width - 20 && y > by && y < by + itemH) {
+                    const currentCost = Math.floor(c.cost * Math.pow(1.15, state.companies[c.id]));
+                    if (state.compute >= currentCost) {
+                        state.compute -= currentCost;
+                        state.companies[c.id]++;
+                        callbacks.playSound('score');
+                    } else {
+                        // callbacks.playSound('error'); // optional
+                    }
+                }
+            });
+
+            // Upgrades (Below companies)
+            const upgradeY = listY + GameLogic.idle.config.companies.length * (itemH + 5) + 20;
+            const upgSize = 40;
+            GameLogic.idle.config.upgrades.forEach((u, i) => {
+                const ux = listX + i * (upgSize + 10);
+                if (x > ux && x < ux + upgSize && y > upgradeY && y < upgradeY + upgSize) {
+                    if (!state.upgrades[u.id] && state.compute >= u.cost) {
+                        state.compute -= u.cost;
+                        state.upgrades[u.id] = true;
+                        callbacks.playSound('score');
+                    }
+                }
+            });
+
+            return state;
+        },
+        update: (dt, state, canvas, callbacks) => {
+            const now = Date.now();
+            // dt is in ms from GameCenter loop? No, usually s or ms.
+            // GameCenter passes delta in ms.
+            const sec = dt / 1000;
+
+            const gen = GameLogic.idle.getGenRate(state);
+            state.compute += gen * sec;
+
+            // Auto-save every 5 sec
+            if (now - state.lastSave > 5000) {
+                GameLogic.idle.save(state);
+                state.lastSave = now;
+            }
+
+            // Visuals
+            state.bubbleScale += (1.0 - state.bubbleScale) * 5 * sec;
+
+            state.particles.forEach(p => {
+                p.y += p.vy;
+                p.life -= sec;
+            });
+            state.particles = state.particles.filter(p => p.life > 0);
+
+            return state;
+        },
+        draw: (ctx, state, canvas) => {
+             // Bg
+             ctx.fillStyle = '#111827';
+             ctx.fillRect(0,0,canvas.width, canvas.height);
+
+             // Divider
+             ctx.strokeStyle = '#374151';
+             ctx.beginPath();
+             ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height);
+             ctx.stroke();
+
+             // LEFT SIDE: Bubble & Compute
+             const cx = canvas.width * 0.25;
+             const cy = canvas.height * 0.5;
+             const r = 80 * state.bubbleScale;
+
+             // Compute Text
+             ctx.fillStyle = '#FFFFFF';
+             ctx.font = 'bold 32px Inter, sans-serif';
+             ctx.textAlign = 'center';
+             ctx.fillText(Math.floor(state.compute).toLocaleString(), cx, 60);
+             ctx.font = '14px Inter, sans-serif';
+             ctx.fillStyle = '#9CA3AF';
+             const rate = GameLogic.idle.getGenRate(state);
+             ctx.fillText(`${rate.toFixed(1)} / sec`, cx, 85);
+
+             // The Bubble
+             const gradient = ctx.createRadialGradient(cx, cy, r*0.3, cx, cy, r);
+             gradient.addColorStop(0, 'rgba(96, 165, 250, 0.2)');
+             gradient.addColorStop(1, 'rgba(37, 99, 235, 0.8)');
+
+             ctx.shadowBlur = 20;
+             ctx.shadowColor = '#3B82F6';
+             ctx.fillStyle = gradient;
+             ctx.beginPath();
+             ctx.arc(cx, cy, r, 0, Math.PI * 2);
+             ctx.fill();
+
+             // Rim
+             ctx.strokeStyle = '#93C5FD';
+             ctx.lineWidth = 2;
+             ctx.stroke();
+             ctx.shadowBlur = 0;
+
+             // Particles
+             state.particles.forEach(p => {
+                 ctx.globalAlpha = p.life;
+                 ctx.fillStyle = '#F59E0B';
+                 ctx.font = 'bold 16px Inter, sans-serif';
+                 ctx.fillText(p.text, p.x, p.y);
+                 ctx.globalAlpha = 1.0;
+             });
+
+             // RIGHT SIDE: Shop
+             const listX = canvas.width * 0.55;
+             const listY = 60;
+             const itemH = 40;
+             const itemW = canvas.width * 0.40;
+
+             ctx.textAlign = 'left';
+
+             // Header
+             ctx.fillStyle = '#FFFFFF';
+             ctx.font = 'bold 16px Inter, sans-serif';
+             ctx.fillText("COMPANIES", listX, 40);
+
+             GameLogic.idle.config.companies.forEach((c, i) => {
+                 const by = listY + i * (itemH + 5);
+                 const count = state.companies[c.id];
+                 const cost = Math.floor(c.cost * Math.pow(1.15, count));
+                 const affordable = state.compute >= cost;
+
+                 // Button Bg
+                 ctx.fillStyle = affordable ? '#1F2937' : '#111827';
+                 ctx.strokeStyle = affordable ? c.color : '#374151';
+                 ctx.lineWidth = 1;
+
+                 ctx.beginPath();
+                 ctx.roundRect(listX, by, itemW, itemH, 5);
+                 ctx.fill();
+                 ctx.stroke();
+
+                 // Info
+                 ctx.fillStyle = affordable ? '#FFFFFF' : '#6B7280';
+                 ctx.font = 'bold 12px Inter, sans-serif';
+                 // Map ID to Name roughly or use ID
+                 const displayName = c.id.charAt(0).toUpperCase() + c.id.slice(1);
+                 ctx.fillText(displayName, listX + 10, by + 16);
+
+                 ctx.font = '10px Inter, sans-serif';
+                 ctx.fillStyle = '#9CA3AF';
+                 ctx.fillText(`Cost: ${cost.toLocaleString()}`, listX + 10, by + 30);
+
+                 // Count Badge
+                 ctx.fillStyle = c.color;
+                 ctx.beginPath();
+                 ctx.arc(listX + itemW - 20, by + itemH/2, 12, 0, Math.PI*2);
+                 ctx.fill();
+                 ctx.fillStyle = '#000'; // or dark contrast
+                 ctx.textAlign = 'center';
+                 ctx.fillText(count, listX + itemW - 20, by + itemH/2 + 3);
+                 ctx.textAlign = 'left';
+             });
+
+             // Upgrades
+             const upgradeY = listY + GameLogic.idle.config.companies.length * (itemH + 5) + 20;
+             ctx.fillStyle = '#FFFFFF';
+             ctx.font = 'bold 16px Inter, sans-serif';
+             ctx.fillText("UPGRADES", listX, upgradeY - 10);
+
+             const upgSize = 40;
+             GameLogic.idle.config.upgrades.forEach((u, i) => {
+                 const ux = listX + i * (upgSize + 10);
+                 const owned = state.upgrades[u.id];
+                 const affordable = state.compute >= u.cost;
+
+                 ctx.fillStyle = owned ? '#10B981' : (affordable ? '#1F2937' : '#111827');
+                 ctx.strokeStyle = owned ? '#10B981' : (affordable ? '#F59E0B' : '#374151');
+
+                 ctx.beginPath();
+                 ctx.roundRect(ux, upgradeY, upgSize, upgSize, 5);
+                 ctx.fill();
+                 ctx.stroke();
+
+                 ctx.textAlign = 'center';
+                 ctx.font = '20px Inter, sans-serif';
+                 ctx.fillStyle = '#FFF';
+                 ctx.fillText(u.icon, ux + upgSize/2, upgradeY + upgSize/2 + 7);
+
+                 if (!owned) {
+                     // Cost tooltip/subtext? Space is tight.
+                     // Just show outline color as affordable indicator
+                 }
+                 ctx.textAlign = 'left';
+             });
+        }
     }
 };

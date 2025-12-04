@@ -25,6 +25,9 @@
                 <button class="game-select-btn" data-game="pool">
                     <span class="game-icon">🎱</span> Neural Pool
                 </button>
+                <button class="game-select-btn" data-game="idle">
+                    <span class="game-icon">🫧</span> Idle Bubble
+                </button>
                 <button class="game-select-btn" data-game="tetris">
                     <span class="game-icon">🧩</span> Cluster Builder
                 </button>
@@ -665,14 +668,16 @@
             tetris: "Cluster Builder",
             breakout: "Firewall Breaker",
             tictactoe: "Neural Nodes",
-            pool: "Neural Pool"
+            pool: "Neural Pool",
+            idle: "Idle Bubble"
         };
         const hints = {
             snake: "Arrows to Move • P to Pause",
             tetris: "Arrows to Move/Rotate • P to Pause",
             breakout: "Left/Right to Deflect • P to Pause",
             tictactoe: "Click empty nodes to capture",
-            pool: "Drag/Hold to aim & shoot • Click button to switch mode"
+            pool: "Drag/Hold to aim & shoot • Click button to switch mode",
+            idle: "Click Bubble to generate • Buy Companies/Upgrades to automate"
         };
         document.getElementById('modal-title').textContent = titles[game] || "Game";
         document.getElementById('controls-hint').textContent = hints[game] || "";
