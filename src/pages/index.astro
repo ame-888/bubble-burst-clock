@@ -79,6 +79,69 @@ const processedBenchmarks = benchmarks.models.map(m => {
     return { ...m, avg };
 }).sort((a, b) => b.avg - a.avg);
 
+// --- Player Cards Logic ---
+const creatorsData = {};
+// We need to process predictions to calculate stats per creator
+processedPredictions.forEach(p => {
+    if (!creatorsData[p.creator]) {
+        creatorsData[p.creator] = {
+            name: p.creator,
+            total: 0,
+            failures: 0,
+            pending: 0,
+            successes: 0,
+            predictions: []
+        };
+    }
+    creatorsData[p.creator].total++;
+    creatorsData[p.creator].predictions.push(p);
+
+    if (p.status === 'EXPIRED') {
+        creatorsData[p.creator].failures++;
+    } else if (p.status === 'ACTIVE' || p.status === 'FUTURE PREDICTION') {
+        creatorsData[p.creator].pending++;
+    } else {
+        creatorsData[p.creator].successes++;
+    }
+});
+
+// Deterministic RPG Stats Generator
+function getRPGStats(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const rng = (seed) => {
+        const x = Math.sin(seed) * 10000;
+        return Math.floor((Math.abs(x - Math.floor(x))) * 100); // 0-99
+    };
+    // Ensure we don't get 0 stats, scale them 10-99
+    const scale = (val) => 10 + Math.floor(val * 0.89);
+
+    return {
+        STR: scale(rng(hash)),
+        INT: scale(rng(hash + 1)),
+        CHA: scale(rng(hash + 2)),
+        LUCK: scale(rng(hash + 3))
+    };
+}
+
+const players = Object.values(creatorsData).map(c => {
+    const stats = getRPGStats(c.name);
+    // Success Rate: (Success / (Success + Failure)) * 100. If 0 completed, 0%.
+    const completed = c.successes + c.failures;
+    const successRate = completed > 0 ? ((c.successes / completed) * 100).toFixed(0) : 0;
+
+    // Assign a "Class" based on stats or name
+    let rpgClass = "Doomer"; // Default
+    if (stats.INT > 85) rpgClass = "Technomancer";
+    else if (stats.CHA > 85) rpgClass = "Cult Leader";
+    else if (stats.STR > 85) rpgClass = "Bubble Burster";
+    else if (stats.LUCK > 85) rpgClass = "Oracle";
+
+    return { ...c, stats, successRate, rpgClass };
+}).sort((a, b) => b.total - a.total);
+
 ---
 
 <Layout lang={lang} title={t.title}>
@@ -232,6 +295,81 @@ const processedBenchmarks = benchmarks.models.map(m => {
         </div>
     </div>
 
+    <div id="player-cards-modal" class="modal hidden">
+        <div class="modal-content player-cards-theme">
+            <button class="close-modal">&times;</button>
+
+            <!-- Grid View -->
+            <div id="player-grid-view" class="">
+                <h3 id="player-cards-title">{t.player_cards_title}</h3>
+                <div class="player-grid">
+                    {players.map(player => (
+                        <div class="player-card-mini" data-player-name={player.name}>
+                            <div class="player-avatar-mini">{player.name.substring(0, 2).toUpperCase()}</div>
+                            <div class="player-info-mini">
+                                <div class="player-name-mini">{player.name}</div>
+                                <div class="player-class-mini">{player.rpgClass}</div>
+                            </div>
+                            <div class="player-stats-mini">
+                                <div class="stat-badge">LVL {player.total}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <!-- Detail View -->
+            <div id="player-detail-view" class="hidden">
+                <button id="back-to-grid" class="back-button">← Back</button>
+                <div class="rpg-card">
+                    <div class="rpg-header">
+                        <div class="rpg-avatar" id="detail-avatar"></div>
+                        <div class="rpg-title-block">
+                            <h2 id="detail-name">Player Name</h2>
+                            <div class="rpg-class" id="detail-class">Class</div>
+                        </div>
+                        <div class="rpg-badge">
+                            <span id="detail-success-rate">0%</span>
+                            <span class="badge-label">{t.success_rate}</span>
+                        </div>
+                    </div>
+
+                    <div class="rpg-body">
+                        <div class="rpg-stats-container">
+                            <div class="stat-row">
+                                <label>{t.stat_str}</label>
+                                <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-str" style="width: 50%"></div></div>
+                                <span class="stat-val" id="val-str">50</span>
+                            </div>
+                            <div class="stat-row">
+                                <label>{t.stat_int}</label>
+                                <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-int" style="width: 50%"></div></div>
+                                <span class="stat-val" id="val-int">50</span>
+                            </div>
+                            <div class="stat-row">
+                                <label>{t.stat_cha}</label>
+                                <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-cha" style="width: 50%"></div></div>
+                                <span class="stat-val" id="val-cha">50</span>
+                            </div>
+                            <div class="stat-row">
+                                <label>{t.stat_luck}</label>
+                                <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-luck" style="width: 50%"></div></div>
+                                <span class="stat-val" id="val-luck">50</span>
+                            </div>
+                        </div>
+
+                        <div class="rpg-predictions">
+                            <h4>{t.total_predictions}: <span id="detail-total">0</span></h4>
+                            <ul id="detail-predictions-list">
+                                <!-- Populated by JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <main>
         <div id="disclaimer" class="site-disclaimer">{t.site_disclaimer}</div>
         <h1 id="main-title" class="interactive-title">{t.title}</h1>
@@ -243,6 +381,11 @@ const processedBenchmarks = benchmarks.models.map(m => {
                 <div class="clock-label" id="clock-label">{t.clock_label}</div>
                 <div id="big-clock">00d 00h 00m 00s</div>
                 <p id="clock-explanation" class="explanation-text">{t.clock_explanation}</p>
+
+                <button id="btn-player-cards" class="player-cards-trigger" title={t.player_cards_title}>
+                    <span class="player-icon">👾</span>
+                    <span class="player-label">{t.player_cards_button}</span>
+                </button>
             </div>
             <div class="button-group">
                 <button id="btn-serial-popper" class="serial-popper-trigger" title="View Serial Poppers">
@@ -1096,9 +1239,341 @@ const processedBenchmarks = benchmarks.models.map(m => {
     .interactive-title:active {
         transform: scale(0.95);
     }
+
+    /* Player Cards Styling */
+    .player-cards-trigger {
+        position: absolute;
+        right: -80px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #10B981, #059669);
+        border: 2px solid #34D399;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        transition: all 0.3s;
+        z-index: 20;
+    }
+
+    @media (max-width: 800px) {
+        .player-cards-trigger {
+            position: static;
+            width: 100%;
+            height: auto;
+            border-radius: 2rem;
+            padding: 0.75rem;
+            flex-direction: row;
+            gap: 0.5rem;
+            transform: none;
+            margin-top: 1rem;
+            max-width: 350px;
+        }
+    }
+
+    .player-cards-trigger:hover {
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.7);
+    }
+
+    @media (max-width: 800px) {
+        .player-cards-trigger:hover {
+            transform: scale(1.05);
+        }
+    }
+
+    .player-icon {
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .player-label {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-top: 2px;
+        text-align: center;
+    }
+
+    @media (max-width: 800px) {
+        .player-label {
+            font-size: 1rem;
+            margin-top: 0;
+        }
+    }
+
+    /* Player Cards Modal Theme */
+    .modal-content.player-cards-theme {
+        border: 1px solid rgba(16, 185, 129, 0.5);
+        box-shadow: 0 0 40px rgba(16, 185, 129, 0.2);
+        max-width: 800px;
+        background: #111827;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    /* Grid View */
+    .player-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .player-card-mini {
+        background: rgba(31, 41, 55, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .player-card-mini:hover {
+        background: rgba(55, 65, 81, 0.8);
+        border-color: #10B981;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .player-card-mini::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #10B981, #3B82F6);
+        opacity: 0.5;
+    }
+
+    .player-avatar-mini {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #1F2937;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 1.2rem;
+        color: #10B981;
+        margin-bottom: 0.5rem;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .player-info-mini {
+        margin-bottom: 0.5rem;
+    }
+
+    .player-name-mini {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: white;
+        margin-bottom: 0.2rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 120px;
+    }
+
+    .player-class-mini {
+        font-size: 0.7rem;
+        color: #9CA3AF;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-badge {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34D399;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 1rem;
+        font-weight: 600;
+    }
+
+    /* Detail View (RPG Card) */
+    .back-button {
+        background: none;
+        border: none;
+        color: #9CA3AF;
+        cursor: pointer;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        transition: color 0.2s;
+    }
+    .back-button:hover { color: white; }
+
+    .rpg-card {
+        background: linear-gradient(180deg, #1F2937 0%, #111827 100%);
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+    }
+
+    .rpg-header {
+        background: #111827;
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+    }
+
+    .rpg-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 1rem;
+        background: #374151;
+        border: 2px solid #10B981;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 900;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .rpg-title-block h2 {
+        font-size: 1.75rem;
+        margin: 0;
+        background: linear-gradient(to right, #fff, #9CA3AF);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .rpg-class {
+        color: #10B981;
+        font-family: 'Courier New', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    .rpg-badge {
+        margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    #detail-success-rate {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #EF4444; /* Default to red since 0% */
+    }
+
+    .badge-label {
+        font-size: 0.7rem;
+        color: #6B7280;
+        text-transform: uppercase;
+    }
+
+    .rpg-body {
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    @media (max-width: 700px) {
+        .rpg-body { grid-template-columns: 1fr; }
+        .rpg-header { flex-direction: column; text-align: center; }
+        .rpg-badge { margin-left: 0; align-items: center; margin-top: 1rem; }
+    }
+
+    .stat-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-row label {
+        width: 40px;
+        font-weight: 700;
+        color: #9CA3AF;
+        font-size: 0.9rem;
+    }
+
+    .stat-bar-bg {
+        flex: 1;
+        height: 10px;
+        background: #374151;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .stat-bar-fill {
+        height: 100%;
+        background: #10B981;
+        width: 0%;
+        transition: width 1s ease-out;
+    }
+
+    .stat-val {
+        width: 30px;
+        text-align: right;
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        color: white;
+    }
+
+    .rpg-predictions h4 {
+        margin-top: 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    #detail-predictions-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    #detail-predictions-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed rgba(255,255,255,0.1);
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .pred-status {
+        font-size: 0.7rem;
+        padding: 0.1rem 0.4rem;
+        border-radius: 0.25rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .pred-status.expired { background: rgba(239, 68, 68, 0.2); color: #EF4444; }
+    .pred-status.active { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+    .pred-status.future { background: rgba(59, 130, 246, 0.2); color: #60A5FA; }
+
 </style>
 
-<script define:vars={{ lang, t, translations, latestClaimDate, simulatedServerTime, predictions }}>
+<script define:vars={{ lang, t, translations, latestClaimDate, simulatedServerTime, predictions, players }}>
     function init() {
         // --- Modal Logic ---
         const overlay = document.getElementById('modal-overlay');
@@ -1109,6 +1584,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
         const serialPopperModal = document.getElementById('serial-popper-modal');
         const privacyModal = document.getElementById('privacy-modal');
         const hypeDictionaryModal = document.getElementById('hype-dictionary-modal');
+        const playerCardsModal = document.getElementById('player-cards-modal');
 
         const btnSubmit = document.getElementById('fab-submit');
         const btnBug = document.getElementById('fab-bug');
@@ -1117,6 +1593,7 @@ const processedBenchmarks = benchmarks.models.map(m => {
         const btnHypeDictionary = document.getElementById('btn-hype-dictionary');
         const btnAbout = document.getElementById('btn-about');
         const btnPrivacy = document.getElementById('btn-privacy');
+        const btnPlayerCards = document.getElementById('btn-player-cards');
 
         const closeButtons = document.querySelectorAll('.close-modal');
 
@@ -1135,6 +1612,12 @@ const processedBenchmarks = benchmarks.models.map(m => {
             serialPopperModal.classList.add('hidden');
             if (privacyModal) privacyModal.classList.add('hidden');
             if (hypeDictionaryModal) hypeDictionaryModal.classList.add('hidden');
+            if (playerCardsModal) {
+                 playerCardsModal.classList.add('hidden');
+                 // Reset to grid view when closing
+                 document.getElementById('player-grid-view').classList.remove('hidden');
+                 document.getElementById('player-detail-view').classList.add('hidden');
+            }
         }
 
         if (btnSubmit) btnSubmit.addEventListener('click', () => openModal(submissionModal));
@@ -1170,9 +1653,90 @@ const processedBenchmarks = benchmarks.models.map(m => {
         if (btnHypeDictionary) btnHypeDictionary.addEventListener('click', () => openModal(hypeDictionaryModal));
         if (btnAbout) btnAbout.addEventListener('click', () => openModal(aboutModal));
         if (btnPrivacy) btnPrivacy.addEventListener('click', () => openModal(privacyModal));
+        if (btnPlayerCards) btnPlayerCards.addEventListener('click', () => openModal(playerCardsModal));
         if (overlay) overlay.addEventListener('click', closeModal);
 
         closeButtons.forEach(btn => btn.addEventListener('click', closeModal));
+
+        // --- Player Cards Logic ---
+        const gridCards = document.querySelectorAll('.player-card-mini');
+        const gridView = document.getElementById('player-grid-view');
+        const detailView = document.getElementById('player-detail-view');
+        const backBtn = document.getElementById('back-to-grid');
+
+        if (backBtn && gridView && detailView) {
+            backBtn.addEventListener('click', () => {
+                detailView.classList.add('hidden');
+                gridView.classList.remove('hidden');
+            });
+        }
+
+        gridCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const name = card.getAttribute('data-player-name');
+                const player = players.find(p => p.name === name);
+
+                if (player) {
+                    // Populate Detail View
+                    document.getElementById('detail-name').textContent = player.name;
+                    document.getElementById('detail-class').textContent = player.rpgClass;
+                    document.getElementById('detail-avatar').textContent = player.name.substring(0, 2).toUpperCase();
+                    document.getElementById('detail-success-rate').textContent = player.successRate + '%';
+                    document.getElementById('detail-total').textContent = player.total;
+
+                    // Animate Bars (need small timeout for transition)
+                    document.getElementById('val-str').textContent = player.stats.STR;
+                    document.getElementById('val-int').textContent = player.stats.INT;
+                    document.getElementById('val-cha').textContent = player.stats.CHA;
+                    document.getElementById('val-luck').textContent = player.stats.LUCK;
+
+                    // Reset widths first
+                    ['str', 'int', 'cha', 'luck'].forEach(s => {
+                         document.getElementById(`bar-${s}`).style.width = '0%';
+                    });
+
+                    // Update Lists
+                    const list = document.getElementById('detail-predictions-list');
+                    list.innerHTML = '';
+                    player.predictions.forEach(p => {
+                        const li = document.createElement('li');
+
+                        // Localize claim if object
+                        let claimText = '';
+                        // Use local scope currentLang if defined, otherwise fallback to lang (passed from server)
+                        // In this scope, we can access the outer currentLang from init()
+                        // but let's be safe and access it directly or use fallback
+                        const selectedLang = (typeof currentLang !== 'undefined') ? currentLang : lang;
+
+                        if (typeof p.claim === 'string') claimText = p.claim;
+                        else if (typeof p.claim === 'object') claimText = p.claim[selectedLang] || p.claim['en'];
+
+                        // Truncate
+                        if (claimText.length > 50) claimText = claimText.substring(0, 50) + '...';
+
+                        const statusClass = p.status === 'FUTURE PREDICTION' ? 'future' : p.status.toLowerCase();
+                        // Map status to simpler text
+                        let statusText = p.status;
+                        if (p.status === 'FUTURE PREDICTION') statusText = 'FUTURE';
+
+                        li.innerHTML = `<span>${claimText}</span> <span class="pred-status ${statusClass}">${statusText}</span>`;
+                        list.appendChild(li);
+                    });
+
+                    // Show Detail View
+                    gridView.classList.add('hidden');
+                    detailView.classList.remove('hidden');
+
+                    // Trigger animation
+                    setTimeout(() => {
+                        document.getElementById('bar-str').style.width = player.stats.STR + '%';
+                        document.getElementById('bar-int').style.width = player.stats.INT + '%';
+                        document.getElementById('bar-cha').style.width = player.stats.CHA + '%';
+                        document.getElementById('bar-luck').style.width = player.stats.LUCK + '%';
+                    }, 50);
+                }
+            });
+        });
 
         // --- Easter Egg Logic ---
         let titleClickCount = 0;
