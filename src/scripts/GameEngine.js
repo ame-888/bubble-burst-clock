@@ -5,6 +5,7 @@ export class SoundManager {
     constructor() {
         this.ctx = null;
         this.enabled = true;
+        this.lastPlayed = {};
     }
 
     init() {
@@ -21,6 +22,13 @@ export class SoundManager {
         this.init();
 
         const now = this.ctx.currentTime;
+
+        // Throttle check
+        if (this.lastPlayed[type] && (now - this.lastPlayed[type] < 0.05)) {
+            return;
+        }
+        this.lastPlayed[type] = now;
+
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
@@ -802,8 +810,9 @@ export const GameLogic = {
             let count = 0;
             for(let col=0; col<5; col++) {
                 for(let row=0; row<=col; row++) {
-                    const x = startX + col * (r * 2 * 0.866);
-                    const y = startY - (col * r) + (row * r * 2);
+                    // Slight gap added (r * 2.1 instead of r * 2) to prevent instant collision on spawn
+                    const x = startX + col * (r * 2.1 * 0.866);
+                    const y = startY - (col * r * 1.05) + (row * r * 2.1);
                     // Color logic: 1-7 solid, 8 black, 9-15 stripe
                     // Simplification: Just different colors
                     balls.push({
