@@ -48,5 +48,9 @@
   "serial_popper_count_label": "Claims",
   "serial_popper_tooltip": "Serial Popper: Multiple Claims",
   "suggest_game_title": "Suggest a Game",
-  "suggest_game_button": "Suggest Game"
+  "suggest_game_button": "Suggest Game",
+  "privacy_policy_button": "PRIVACY POLICY",
+  "privacy_policy_title": "Privacy Policy",
+  "privacy_policy_content": "This site uses Google AdSense to serve ads. Google may use cookies to serve ads based on your prior visits to this website or other websites. You may opt out of personalized advertising by visiting Ads Settings.",
+  "site_disclaimer": "For satirical and informational purposes only."
 }

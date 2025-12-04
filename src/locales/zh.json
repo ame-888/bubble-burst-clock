@@ -46,5 +46,9 @@
   "serial_popper_button": "连环戳破者名人堂",
   "serial_popper_modal_title": "连环戳破者名人堂",
   "serial_popper_count_label": "主张",
-  "serial_popper_tooltip": "连环戳破者：多项主张"
+  "serial_popper_tooltip": "连环戳破者：多项主张",
+  "privacy_policy_button": "隐私政策",
+  "privacy_policy_title": "隐私政策",
+  "privacy_policy_content": "本网站使用 Google AdSense 展示广告。Google 可能使用 Cookie 根据您之前访问本网站或其他网站的记录展示广告。您可以访问广告设置选择退出个性化广告。",
+  "site_disclaimer": "仅用于讽刺和信息目的。"
 }

@@ -46,5 +46,9 @@
   "serial_popper_button": "HALL DA FAMA DOS ESTOURADORES",
   "serial_popper_modal_title": "Hall da Fama dos Estouradores em Série",
   "serial_popper_count_label": "Alegações",
-  "serial_popper_tooltip": "Estourador em Série: Múltiplas Alegações"
+  "serial_popper_tooltip": "Estourador em Série: Múltiplas Alegações",
+  "privacy_policy_button": "POLÍTICA DE PRIVACIDADE",
+  "privacy_policy_title": "Política de Privacidade",
+  "privacy_policy_content": "Este site usa o Google AdSense para exibir anúncios. O Google pode usar cookies para exibir anúncios com base em suas visitas anteriores a este site ou a outros sites. Você pode optar por não receber publicidade personalizada visitando as Configurações de Anúncios.",
+  "site_disclaimer": "Apenas para fins satíricos e informativos."
 }
