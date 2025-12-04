@@ -1261,13 +1261,14 @@ export const GameLogic = {
         },
         draw: (ctx, state, canvas) => {
              // Bg
-             ctx.fillStyle = '#111827';
+             ctx.fillStyle = '#0F172A'; // Darker Slate
              ctx.fillRect(0,0,canvas.width, canvas.height);
 
              // Divider
-             ctx.strokeStyle = '#374151';
+             ctx.strokeStyle = 'rgba(55, 65, 81, 0.5)';
+             ctx.lineWidth = 2;
              ctx.beginPath();
-             ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height);
+             ctx.moveTo(canvas.width/2, 20); ctx.lineTo(canvas.width/2, canvas.height - 20);
              ctx.stroke();
 
              // LEFT SIDE: Bubble & Compute
@@ -1277,38 +1278,63 @@ export const GameLogic = {
 
              // Compute Text
              ctx.fillStyle = '#FFFFFF';
-             ctx.font = 'bold 32px Inter, sans-serif';
+             ctx.font = 'bold 36px Inter, sans-serif';
              ctx.textAlign = 'center';
+             ctx.shadowColor = 'rgba(96, 165, 250, 0.5)';
+             ctx.shadowBlur = 10;
              ctx.fillText(Math.floor(state.compute).toLocaleString(), cx, 60);
-             ctx.font = '14px Inter, sans-serif';
-             ctx.fillStyle = '#9CA3AF';
+             ctx.shadowBlur = 0;
+
+             ctx.font = '600 14px Inter, sans-serif';
+             ctx.fillStyle = '#94A3B8';
              const rate = GameLogic.idle.getGenRate(state);
              ctx.fillText(`${rate.toFixed(1)} / sec`, cx, 85);
 
-             // The Bubble
-             const gradient = ctx.createRadialGradient(cx, cy, r*0.3, cx, cy, r);
-             gradient.addColorStop(0, 'rgba(96, 165, 250, 0.2)');
-             gradient.addColorStop(1, 'rgba(37, 99, 235, 0.8)');
+             // The Bubble (Polished)
+             // Outer Glow
+             ctx.shadowBlur = 30 + (Math.sin(Date.now() / 500) * 10);
+             ctx.shadowColor = 'rgba(59, 130, 246, 0.6)';
 
-             ctx.shadowBlur = 20;
-             ctx.shadowColor = '#3B82F6';
+             // Gradient Fill
+             const gradient = ctx.createRadialGradient(cx, cy - 20, 10, cx, cy, r);
+             gradient.addColorStop(0, '#93C5FD'); // Light Blue Highlight
+             gradient.addColorStop(0.2, '#3B82F6'); // Blue Body
+             gradient.addColorStop(1, '#1E3A8A'); // Dark Blue Edge
+
              ctx.fillStyle = gradient;
              ctx.beginPath();
              ctx.arc(cx, cy, r, 0, Math.PI * 2);
              ctx.fill();
 
+             // Shine Reflection
+             ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+             ctx.beginPath();
+             ctx.ellipse(cx - r*0.3, cy - r*0.3, r*0.2, r*0.1, Math.PI / 4, 0, Math.PI * 2);
+             ctx.fill();
+
              // Rim
-             ctx.strokeStyle = '#93C5FD';
-             ctx.lineWidth = 2;
-             ctx.stroke();
              ctx.shadowBlur = 0;
+             ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+             ctx.lineWidth = 3;
+             ctx.stroke();
+
+             // Pulse Rings (Visual only)
+             const pulseR = r + (Math.sin(Date.now() / 1000) * 5) + 5;
+             ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
+             ctx.lineWidth = 2;
+             ctx.beginPath();
+             ctx.arc(cx, cy, pulseR, 0, Math.PI * 2);
+             ctx.stroke();
 
              // Particles
              state.particles.forEach(p => {
                  ctx.globalAlpha = p.life;
-                 ctx.fillStyle = '#F59E0B';
-                 ctx.font = 'bold 16px Inter, sans-serif';
+                 ctx.fillStyle = '#FBBF24'; // Amber
+                 ctx.font = 'bold 18px Inter, sans-serif';
+                 ctx.shadowColor = 'black';
+                 ctx.shadowBlur = 4;
                  ctx.fillText(p.text, p.x, p.y);
+                 ctx.shadowBlur = 0;
                  ctx.globalAlpha = 1.0;
              });
 
@@ -1321,8 +1347,8 @@ export const GameLogic = {
              ctx.textAlign = 'left';
 
              // Header
-             ctx.fillStyle = '#FFFFFF';
-             ctx.font = 'bold 16px Inter, sans-serif';
+             ctx.fillStyle = '#E2E8F0';
+             ctx.font = 'bold 14px Inter, sans-serif';
              ctx.fillText("COMPANIES", listX, 40);
 
              GameLogic.idle.config.companies.forEach((c, i) => {
@@ -1332,41 +1358,49 @@ export const GameLogic = {
                  const affordable = state.compute >= cost;
 
                  // Button Bg
-                 ctx.fillStyle = affordable ? '#1F2937' : '#111827';
-                 ctx.strokeStyle = affordable ? c.color : '#374151';
-                 ctx.lineWidth = 1;
+                 ctx.fillStyle = affordable ? 'rgba(31, 41, 55, 0.9)' : 'rgba(17, 24, 39, 0.5)';
+                 ctx.strokeStyle = affordable ? c.color : 'rgba(55, 65, 81, 0.5)';
+                 ctx.lineWidth = affordable ? 2 : 1;
+
+                 if (affordable) {
+                    ctx.shadowColor = c.color;
+                    ctx.shadowBlur = 5;
+                 }
 
                  ctx.beginPath();
-                 ctx.roundRect(listX, by, itemW, itemH, 5);
+                 ctx.roundRect(listX, by, itemW, itemH, 8);
                  ctx.fill();
+                 ctx.shadowBlur = 0;
                  ctx.stroke();
 
                  // Info
-                 ctx.fillStyle = affordable ? '#FFFFFF' : '#6B7280';
+                 ctx.fillStyle = affordable ? '#F8FAFC' : '#64748B';
                  ctx.font = 'bold 12px Inter, sans-serif';
-                 // Map ID to Name roughly or use ID
                  const displayName = c.id.charAt(0).toUpperCase() + c.id.slice(1);
                  ctx.fillText(displayName, listX + 10, by + 16);
 
                  ctx.font = '10px Inter, sans-serif';
-                 ctx.fillStyle = '#9CA3AF';
+                 ctx.fillStyle = affordable ? '#94A3B8' : '#475569';
                  ctx.fillText(`Cost: ${cost.toLocaleString()}`, listX + 10, by + 30);
 
                  // Count Badge
                  ctx.fillStyle = c.color;
                  ctx.beginPath();
-                 ctx.arc(listX + itemW - 20, by + itemH/2, 12, 0, Math.PI*2);
+                 ctx.arc(listX + itemW - 15, by + itemH/2, 10, 0, Math.PI*2);
                  ctx.fill();
                  ctx.fillStyle = '#000'; // or dark contrast
+                 ctx.font = 'bold 10px Inter, sans-serif';
                  ctx.textAlign = 'center';
-                 ctx.fillText(count, listX + itemW - 20, by + itemH/2 + 3);
+                 ctx.textBaseline = 'middle';
+                 ctx.fillText(count, listX + itemW - 15, by + itemH/2 + 1);
                  ctx.textAlign = 'left';
+                 ctx.textBaseline = 'alphabetic';
              });
 
              // Upgrades
              const upgradeY = listY + GameLogic.idle.config.companies.length * (itemH + 5) + 20;
-             ctx.fillStyle = '#FFFFFF';
-             ctx.font = 'bold 16px Inter, sans-serif';
+             ctx.fillStyle = '#E2E8F0';
+             ctx.font = 'bold 14px Inter, sans-serif';
              ctx.fillText("UPGRADES", listX, upgradeY - 10);
 
              const upgSize = 40;
@@ -1375,23 +1409,27 @@ export const GameLogic = {
                  const owned = state.upgrades[u.id];
                  const affordable = state.compute >= u.cost;
 
-                 ctx.fillStyle = owned ? '#10B981' : (affordable ? '#1F2937' : '#111827');
-                 ctx.strokeStyle = owned ? '#10B981' : (affordable ? '#F59E0B' : '#374151');
+                 ctx.fillStyle = owned ? 'rgba(16, 185, 129, 0.2)' : (affordable ? 'rgba(31, 41, 55, 0.9)' : 'rgba(17, 24, 39, 0.5)');
+                 ctx.strokeStyle = owned ? '#10B981' : (affordable ? '#F59E0B' : 'rgba(55, 65, 81, 0.5)');
+                 ctx.lineWidth = (owned || affordable) ? 2 : 1;
+
+                 if (affordable && !owned) {
+                     ctx.shadowColor = '#F59E0B';
+                     ctx.shadowBlur = 5;
+                 }
 
                  ctx.beginPath();
-                 ctx.roundRect(ux, upgradeY, upgSize, upgSize, 5);
+                 ctx.roundRect(ux, upgradeY, upgSize, upgSize, 8);
                  ctx.fill();
+                 ctx.shadowBlur = 0;
                  ctx.stroke();
 
                  ctx.textAlign = 'center';
+                 ctx.textBaseline = 'middle';
                  ctx.font = '20px Inter, sans-serif';
                  ctx.fillStyle = '#FFF';
-                 ctx.fillText(u.icon, ux + upgSize/2, upgradeY + upgSize/2 + 7);
-
-                 if (!owned) {
-                     // Cost tooltip/subtext? Space is tight.
-                     // Just show outline color as affordable indicator
-                 }
+                 ctx.fillText(u.icon, ux + upgSize/2, upgradeY + upgSize/2 + 2);
+                 ctx.textBaseline = 'alphabetic';
                  ctx.textAlign = 'left';
              });
         }
