@@ -15,6 +15,7 @@
         <div class="modal-overlay"></div>
         <div class="modal-content glass-panel">
             <div class="modal-header">
+                <button id="header-back-btn" class="hidden" aria-label="Back to Menu">←</button>
                 <h2 id="modal-title">AI Arcade</h2>
                 <button id="close-modal-btn" aria-label="Close">&times;</button>
             </div>
@@ -40,7 +41,6 @@
             <div id="leaderboard-view" class="hidden fade-in">
                 <h3>Top Scores</h3>
                 <div id="leaderboard-content"></div>
-                <button id="back-from-leaderboard-btn" class="menu-back-btn">← Back to Menu</button>
             </div>
 
             <div id="game-area" class="hidden fade-in">
@@ -52,12 +52,19 @@
                         <button id="game-restart-btn">Play Again</button>
                         <button id="game-quit-btn">Quit to Menu</button>
                     </div>
+                    <!-- Cutscene Overlay -->
+                    <div id="cutscene-overlay" class="hidden">
+                        <div class="cutscene-content">
+                            <div class="glitch-text" data-text="WARNING">WARNING</div>
+                            <p class="cutscene-msg">UNAUTHORIZED WIN STREAK DETECTED</p>
+                            <p class="cutscene-sub">ENGAGING MAX DIFFICULTY PROTOCOL...</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="game-controls-info">
                     <div class="score-display">Score: <span id="current-score">0</span></div>
                     <p id="controls-hint">Controls Info</p>
-                    <button id="back-to-menu-btn" class="menu-back-btn">← Back to Menu</button>
                 </div>
             </div>
         </div>
@@ -158,8 +165,8 @@
     }
 
     .modal-header {
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: 2.5rem 1fr 2.5rem;
         align-items: center;
         margin-bottom: 2rem;
         padding-bottom: 1rem;
@@ -174,9 +181,10 @@
         -webkit-text-fill-color: transparent;
         margin: 0;
         letter-spacing: -0.02em;
+        text-align: center;
     }
 
-    #close-modal-btn {
+    #header-back-btn, #close-modal-btn {
         background: rgba(255, 255, 255, 0.05);
         border: none;
         color: #9CA3AF;
@@ -191,9 +199,12 @@
         transition: all 0.2s;
     }
 
-    #close-modal-btn:hover {
+    #header-back-btn:hover, #close-modal-btn:hover {
         background: rgba(255, 255, 255, 0.1);
         color: white;
+    }
+
+    #close-modal-btn:hover {
         transform: rotate(90deg);
     }
 
@@ -260,6 +271,58 @@
         height: 100%;
         display: block;
         image-rendering: pixelated; /* Sharp rendering */
+    }
+
+    /* Cutscene Overlay */
+    #cutscene-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(220, 38, 38, 0.2);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 30;
+        animation: flashRed 1s infinite alternate;
+    }
+
+    .cutscene-content {
+        background: #000;
+        border: 2px solid #EF4444;
+        padding: 2rem;
+        text-align: center;
+        color: #EF4444;
+        box-shadow: 0 0 50px rgba(239, 68, 68, 0.5);
+        transform: rotate(-2deg);
+    }
+
+    .glitch-text {
+        font-size: 3rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        position: relative;
+        animation: glitch 1s infinite;
+    }
+
+    .cutscene-msg {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin: 1rem 0;
+    }
+
+    .cutscene-sub {
+        font-size: 0.9rem;
+        color: #FECACA;
+        animation: blink 0.5s infinite;
+    }
+
+    @keyframes flashRed {
+        from { background: rgba(220, 38, 38, 0.1); }
+        to { background: rgba(220, 38, 38, 0.3); }
+    }
+
+    @keyframes blink {
+        50% { opacity: 0; }
     }
 
     /* Game Overlay */
@@ -336,23 +399,6 @@
         font-style: italic;
     }
 
-    .menu-back-btn {
-        background: none;
-        border: none;
-        color: #9CA3AF;
-        cursor: pointer;
-        font-size: 0.9rem;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-        border-radius: 2rem;
-        transition: all 0.2s;
-    }
-
-    .menu-back-btn:hover {
-        color: white;
-        background: rgba(255,255,255,0.1);
-    }
-
     /* Leaderboard */
     .leaderboard-game-section {
         background: rgba(0,0,0,0.2);
@@ -426,7 +472,8 @@
         const closeBtn = document.getElementById('close-modal-btn');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
-                stopGame();
+                // Fully quit the game
+                stopGame(true);
                 modal.classList.add('hidden');
             });
         }
@@ -443,20 +490,19 @@
 
         document.getElementById('game-restart-btn')?.addEventListener('click', () => {
             document.getElementById('game-overlay').classList.add('hidden');
+            // currentGame is still set, so we can just restart
             startGame(currentGame);
         });
 
         document.getElementById('game-quit-btn')?.addEventListener('click', () => {
-            stopGame();
+            stopGame(true);
             showMenu();
         });
 
-        document.getElementById('back-to-menu-btn')?.addEventListener('click', () => {
-            stopGame();
+        document.getElementById('header-back-btn')?.addEventListener('click', () => {
+            stopGame(true);
             showMenu();
         });
-
-        document.getElementById('back-from-leaderboard-btn')?.addEventListener('click', showMenu);
 
         // Input Handling
         window.addEventListener('keydown', (e) => {
@@ -468,6 +514,14 @@
             if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key) && !modal.classList.contains('hidden')) {
                 e.preventDefault();
             }
+
+            // Direct Input Handling
+            if (currentGame && GameLogic[currentGame] && GameLogic[currentGame].onKeyDown) {
+                 // Pass full context for modification
+                 state = GameLogic[currentGame].onKeyDown(e, state, {
+                    playSound: (t) => sound.play(t)
+                 });
+            }
         });
 
         window.addEventListener('keyup', (e) => keys[e.key] = false);
@@ -478,7 +532,8 @@
                     state = GameLogic.tictactoe.handleClick(e, state, canvas, {
                         playSound: (t) => sound.play(t),
                         onScore: updateScore,
-                        onGameOver: handleGameOver
+                        onGameOver: handleGameOver,
+                        onCutscene: triggerCutscene
                     });
                     GameLogic.tictactoe.draw(ctx, state, canvas);
                 }
@@ -490,12 +545,15 @@
         document.getElementById('game-menu').classList.remove('hidden');
         document.getElementById('game-area').classList.add('hidden');
         document.getElementById('leaderboard-view').classList.add('hidden');
+        document.getElementById('header-back-btn').classList.add('hidden'); // Hide back button on menu
         document.getElementById('modal-title').textContent = "AI Arcade";
     }
 
     function showLeaderboard() {
         document.getElementById('game-menu').classList.add('hidden');
         document.getElementById('leaderboard-view').classList.remove('hidden');
+        document.getElementById('header-back-btn').classList.remove('hidden'); // Show back button
+        document.getElementById('modal-title').textContent = "High Scores";
 
         const data = scores.getScores();
         const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -527,6 +585,7 @@
         document.getElementById('game-menu').classList.add('hidden');
         document.getElementById('game-area').classList.remove('hidden');
         document.getElementById('game-overlay').classList.add('hidden');
+        document.getElementById('header-back-btn').classList.remove('hidden'); // Show back button
 
         // Titles & Hints
         const titles = { snake: "Data Stream", tetris: "Cluster Builder", breakout: "Firewall Breaker", tictactoe: "Neural Nodes" };
@@ -544,6 +603,7 @@
         canvas.width = 400; canvas.height = 400;
         keys = {};
         isPaused = false;
+        document.getElementById('cutscene-overlay').classList.add('hidden');
 
         if (GameLogic[game]) {
             state = GameLogic[game].init(canvas);
@@ -558,10 +618,12 @@
         }
     }
 
-    function stopGame() {
+    function stopGame(fullQuit = false) {
         if (gameLoopId) cancelAnimationFrame(gameLoopId);
         music.stop();
-        currentGame = null;
+        if (fullQuit) {
+            currentGame = null;
+        }
     }
 
     function updateScore(s) {
@@ -569,12 +631,21 @@
     }
 
     function handleGameOver(finalScore) {
-        stopGame();
+        stopGame(); // Stop the loop, but keep currentGame for restart
         sound.play('gameover');
         scores.saveScore(currentGame, finalScore);
 
         document.getElementById('game-overlay-score').textContent = `Score: ${finalScore}`;
         document.getElementById('game-overlay').classList.remove('hidden');
+    }
+
+    function triggerCutscene() {
+        sound.play('gameover'); // Deep sound
+        const overlay = document.getElementById('cutscene-overlay');
+        overlay.classList.remove('hidden');
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 4000);
     }
 
     function loop(time) {
