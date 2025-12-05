@@ -51,7 +51,7 @@
     "suggest_game_button": "建议游戏",
     "privacy_policy_button": "隐私政策",
     "privacy_policy_title": "隐私政策",
-    "privacy_policy_content": "本网站使用 Google AdSense 投放广告。Google 可能会使用 Cookie 根据您以前访问本网站或其他网站的情况投放广告。您可以访问广告设置选择退出个性化广告。",
+    "privacy_policy_content": "本网站使用 Google AdSense 投放广告。Google 可能会使用 Cookie 根据您以前访问本网站或其他网站的情况投放广告。您可以访问<a href=\"https://www.google.com/settings/ads\" target=\"_blank\">广告设置</a>选择退出个性化广告。",
     "site_disclaimer": "仅用于讽刺和信息目的。",
     "hype_dictionary_button": "炒作词典",
     "hype_dictionary_title": "炒作词典",
