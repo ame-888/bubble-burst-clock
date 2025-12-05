@@ -51,7 +51,7 @@
     "suggest_game_button": "Sugerir Jogo",
     "privacy_policy_button": "POLÍTICA DE PRIVACIDADE",
     "privacy_policy_title": "Política de Privacidade",
-    "privacy_policy_content": "Este site usa Google AdSense para exibir anúncios. O Google pode usar cookies para exibir anúncios com base em suas visitas anteriores a este site ou a outros sites. Você pode optar por não receber publicidade personalizada visitando as Configurações de Anúncios.",
+    "privacy_policy_content": "Este site usa Google AdSense para exibir anúncios. O Google pode usar cookies para exibir anúncios com base em suas visitas anteriores a este site ou a outros sites. Você pode optar por não receber publicidade personalizada visitando as <a href=\"https://www.google.com/settings/ads\" target=\"_blank\">Configurações de Anúncios</a>.",
     "site_disclaimer": "Apenas para fins satíricos e informativos.",
     "hype_dictionary_button": "O DICIONÁRIO DO HYPE",
     "hype_dictionary_title": "O Dicionário do Hype",

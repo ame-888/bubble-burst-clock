@@ -197,7 +197,7 @@ const players = Object.values(creatorsData).map(c => {
             <button class="close-modal">&times;</button>
             <h3 id="privacy-title">{t.privacy_policy_title}</h3>
             <div class="privacy-content">
-                <p id="privacy-text">{t.privacy_policy_content}</p>
+                <p id="privacy-text" set:html={t.privacy_policy_content}></p>
             </div>
         </div>
     </div>
@@ -1852,7 +1852,7 @@ const players = Object.values(creatorsData).map(c => {
             const privacyTitle = document.getElementById('privacy-title');
             if (privacyTitle) privacyTitle.textContent = currentTranslations.privacy_policy_title;
             const privacyText = document.getElementById('privacy-text');
-            if (privacyText) privacyText.textContent = currentTranslations.privacy_policy_content;
+            if (privacyText) privacyText.innerHTML = currentTranslations.privacy_policy_content;
 
             // About Modal
             const aboutTitle = document.getElementById('about-title');

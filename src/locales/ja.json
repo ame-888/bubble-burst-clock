@@ -51,7 +51,7 @@
     "suggest_game_button": "ゲームを提案",
     "privacy_policy_button": "プライバシーポリシー",
     "privacy_policy_title": "プライバシーポリシー",
-    "privacy_policy_content": "このサイトはGoogle AdSenseを使用して広告を配信しています。Googleは、このWebサイトや他のWebサイトへの過去のアクセスに基づいて広告を配信するためにCookieを使用する場合があります。広告設定にアクセスして、パーソナライズされた広告をオプトアウトできます。",
+    "privacy_policy_content": "このサイトはGoogle AdSenseを使用して広告を配信しています。Googleは、このWebサイトや他のWebサイトへの過去のアクセスに基づいて広告を配信するためにCookieを使用する場合があります。<a href=\"https://www.google.com/settings/ads\" target=\"_blank\">広告設定</a>にアクセスして、パーソナライズされた広告をオプトアウトできます。",
     "site_disclaimer": "風刺および情報提供のみを目的としています。",
     "hype_dictionary_button": "ハイプ辞書",
     "hype_dictionary_title": "ハイプ辞書",
