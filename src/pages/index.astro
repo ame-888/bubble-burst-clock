@@ -134,6 +134,8 @@ const simulatedServerTime = now.getTime(); // Pass to client
                     <option value="newest" selected>{t.sort_newest}</option>
                     <option value="oldest">{t.sort_oldest}</option>
                     <option value="status">{t.sort_status}</option>
+                    <option value="creator_asc">Creator (A-Z)</option>
+                    <option value="creator_desc">Creator (Z-A)</option>
                 </select>
             </div>
         </div>
@@ -682,6 +684,8 @@ const simulatedServerTime = now.getTime(); // Pass to client
                 if (btn) btn.textContent = currentTranslations.report_bug_button;
                 if (inputType) inputType.value = "bug_report";
                 openModal(bugModal);
+                // Achievement: Open Bug Report
+                window.dispatchEvent(new CustomEvent('bug-report-opened'));
             });
         }
 
@@ -715,6 +719,9 @@ const simulatedServerTime = now.getTime(); // Pass to client
                 titleClickCount++;
                 if (titleClickCount === 5) {
                     gameCenterWrapper.classList.remove('hidden');
+                    // Achievement: Open Game Center
+                    window.dispatchEvent(new CustomEvent('game-center-opened'));
+
                     console.log('Game Center Unlocked! 🎮');
                     mainTitle.style.color = '#F59E0B'; // Turn title gold temporarily
                     setTimeout(() => {
@@ -839,6 +846,11 @@ const simulatedServerTime = now.getTime(); // Pass to client
             const clockElement = document.getElementById('big-clock');
             if (!clockElement || !latestClaimDate) return;
 
+            // Achievement: Click Clock
+            clockElement.addEventListener('click', () => {
+                window.dispatchEvent(new CustomEvent('clock-clicked'));
+            });
+
             const startDate = new Date(latestClaimDate);
 
             // Calculate time offset: Simulated Server Time - Client Real Time
@@ -906,6 +918,9 @@ const simulatedServerTime = now.getTime(); // Pass to client
                     const dateB = new Date(b.getAttribute('data-upload-date') || 0);
                     const statusA = a.getAttribute('data-status');
                     const statusB = b.getAttribute('data-status');
+                    const creatorA = (a.getAttribute('data-creator') || '').toLowerCase();
+                    const creatorB = (b.getAttribute('data-creator') || '').toLowerCase();
+
 
                     if (criteria === 'newest') {
                         return dateB - dateA;
@@ -924,6 +939,10 @@ const simulatedServerTime = now.getTime(); // Pass to client
 
                         if (pA !== pB) return pA - pB;
                         return dateB - dateA; // Fallback to newest
+                    } else if (criteria === 'creator_asc') {
+                        return creatorA.localeCompare(creatorB);
+                    } else if (criteria === 'creator_desc') {
+                        return creatorB.localeCompare(creatorA);
                     }
                     return 0;
                 });

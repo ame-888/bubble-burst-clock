@@ -107,5 +107,6 @@
     "stat_luck": "LUCK",
     "total_predictions": "Total Predictions",
     "success_rate": "Success Rate",
-    "class_label": "Class"
+    "class_label": "Class",
+    "achievements_button": "ACHIEVEMENTS"
 }
