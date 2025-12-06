@@ -8,6 +8,7 @@ class AchievementManager {
             languageChanges: 0,
             startTime: Date.now()
         };
+        this.audioContext = null;
         this.init();
     }
 
@@ -32,6 +33,9 @@ class AchievementManager {
         // Start time tracker
         setInterval(() => this.checkTime(), 30000); // Check every 30s
 
+        // Start Lottery
+        this.startLottery();
+
         // Attach global listeners
         this.attachListeners();
     }
@@ -46,10 +50,33 @@ class AchievementManager {
         window.addEventListener('bug-report-opened', () => this.unlock('bug_hunter'));
     }
 
+    startLottery() {
+        // 1/666 chance every 60 seconds
+        setInterval(() => {
+            if (Math.random() < (1 / 666)) {
+                this.unlock('lucky_devil');
+            }
+        }, 60000);
+    }
+
     handleGlobalClick(e) {
         this.sessionData.clicks++;
         if (this.sessionData.clicks >= 50) {
             this.unlock('serial_clicker');
+        }
+
+        // Initialize AudioContext on first interaction
+        if (!this.audioContext) {
+            try {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.error("Web Audio API not supported", e);
+            }
+        }
+
+        // Resume if suspended (common browser policy)
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
         }
     }
 
@@ -67,6 +94,35 @@ class AchievementManager {
         }
     }
 
+    playUnlockSound() {
+        if (!this.audioContext) return;
+        if (this.audioContext.state === 'suspended') {
+            // Can't play if suspended and not in a user event, but we try.
+            this.audioContext.resume().catch(() => {});
+        }
+
+        try {
+            const osc = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+
+            osc.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+
+            // "Nice popping sound" - High pitch short burst
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, this.audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, this.audioContext.currentTime + 0.1);
+
+            gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+
+            osc.start();
+            osc.stop(this.audioContext.currentTime + 0.15);
+        } catch (e) {
+            console.error("Error playing sound", e);
+        }
+    }
+
     unlock(id) {
         if (this.unlocked.has(id)) return;
 
@@ -75,6 +131,7 @@ class AchievementManager {
 
         this.unlocked.add(id);
         this.save();
+        this.playUnlockSound();
         this.showNotification(achievement);
         this.checkCompletionist();
     }

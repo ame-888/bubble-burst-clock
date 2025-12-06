@@ -315,7 +315,7 @@ const bubblesConfig = [
     .bubble {
         position: absolute;
         /* Positioning handled by JS transform */
-        top: 0;
+        /* top: 0; Removed to prevent initial flash at top-left */
         left: 0;
         background-color: var(--bubble-color, rgba(255, 255, 255, 0.1));
         border-radius: 50%;

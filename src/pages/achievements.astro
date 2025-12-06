@@ -52,10 +52,28 @@ const t = translations[lang];
             ))}
         </div>
 
+        <!-- Danger Zone -->
+        <div class="danger-zone">
+            <h2 data-i18n-key="reset_zone_title">{t.reset_zone_title}</h2>
+            <button id="reset-achievements-btn" class="reset-btn" data-i18n-key="reset_btn">{t.reset_btn}</button>
+        </div>
+
         <div class="secret-input-container">
             <input type="text" id="secret-input" class="secret-input" placeholder="Enter password..." autocomplete="off">
         </div>
     </main>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="modal-title" data-i18n-key="reset_modal_title">{t.reset_modal_title}</h2>
+            <p class="modal-msg" data-i18n-key="reset_modal_msg">{t.reset_modal_msg}</p>
+            <div class="modal-actions">
+                <button id="cancel-reset-btn" class="modal-btn cancel" data-i18n-key="reset_modal_cancel">{t.reset_modal_cancel}</button>
+                <button id="confirm-reset-btn" class="modal-btn confirm" data-i18n-key="reset_modal_confirm">{t.reset_modal_confirm}</button>
+            </div>
+        </div>
+    </div>
 </Layout>
 
 <style>
@@ -196,6 +214,117 @@ const t = translations[lang];
         border-color: #10B981;
         box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
     }
+
+    /* Danger Zone */
+    .danger-zone {
+        margin-top: 6rem;
+        padding: 2rem;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 1rem;
+        background: rgba(239, 68, 68, 0.05);
+        text-align: center;
+    }
+
+    .danger-zone h2 {
+        color: #EF4444;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .reset-btn {
+        background-color: #B91C1C;
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        font-weight: 700;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        text-transform: uppercase;
+    }
+
+    .reset-btn:hover {
+        background-color: #DC2626;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        background: #1F2937;
+        border: 2px solid #EF4444;
+        padding: 2.5rem;
+        border-radius: 1rem;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 0 50px rgba(239, 68, 68, 0.3);
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes shake {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
+    .modal-title {
+        color: #EF4444;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .modal-msg {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        font-weight: 600;
+        line-height: 1.6;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .modal-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        font-size: 1rem;
+    }
+
+    .modal-btn.cancel {
+        background: #374151;
+        color: white;
+    }
+
+    .modal-btn.confirm {
+        background: #DC2626;
+        color: white;
+    }
+
+    .modal-btn:hover {
+        opacity: 0.9;
+    }
 </style>
 
 <script>
@@ -240,6 +369,40 @@ const t = translations[lang];
 
                     // Reload to update UI state properly (easiest way)
                     location.reload();
+                }
+            });
+        }
+
+        // Reset Button Logic
+        const resetBtn = document.getElementById('reset-achievements-btn');
+        const modal = document.getElementById('reset-modal');
+        const cancelBtn = document.getElementById('cancel-reset-btn');
+        const confirmBtn = document.getElementById('confirm-reset-btn');
+
+        if (resetBtn && modal) {
+            resetBtn.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+
+            confirmBtn.addEventListener('click', () => {
+                try {
+                    localStorage.removeItem('achievements_unlocked');
+                    // We don't remove other data like clicks/time, just the unlocked status
+                    // Reload to reflect changes
+                    location.reload();
+                } catch (e) {
+                    console.error("Error resetting achievements", e);
+                }
+            });
+
+            // Close on click outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
                 }
             });
         }
@@ -290,5 +453,28 @@ const t = translations[lang];
             card.querySelector('.achievement-card-title').textContent = title;
             card.querySelector('.achievement-desc').textContent = desc;
         }
+    }
+</script>
+
+<script define:vars={{ translations, lang }}>
+    // Client-side translation update for static text
+    function updateTranslations() {
+        let currentLang = lang;
+        try {
+            currentLang = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+        } catch (e) {}
+
+        const t = translations[currentLang] || translations['en'];
+
+        document.querySelectorAll('[data-i18n-key]').forEach(el => {
+            const key = el.getAttribute('data-i18n-key');
+            if (t[key]) el.textContent = t[key];
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', updateTranslations);
+    } else {
+        updateTranslations();
     }
 </script>

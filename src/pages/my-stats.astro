@@ -203,6 +203,11 @@ const t = translations[lang] || en;
             twitterBtn.addEventListener('click', () => {
                 const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
                 window.open(url, '_blank');
+
+                // Unlock Achievement
+                if (window.AchievementManager) {
+                    window.AchievementManager.unlock('social_spread');
+                }
             });
         }
 
