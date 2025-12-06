@@ -18,6 +18,23 @@ const lang = 'en';
 const t = translations[lang];
 
 const terms = ['agentic', 'agi', 'alignment', 'asi', 'chain_of_thought', 'collapse', 'hallucination', 'multimodality', 'prompt', 'reasoning_model', 'singularity', 'slop', 'ubi', 'world_model'];
+
+// Hint logic: Wraps a specific letter in a span with 'secret-char' class
+// "TRUTH"
+// T: prompT (last)
+// R: Reasoning_model (first)
+// U: Ubi (first)
+// T: thoughT (last in chain_of_thought)
+// H: Hallucination (first)
+
+// Map term to { index: i, char: 'X' } where index is character index in the string
+const secretMap = {
+    'prompt': { char: 't', pos: 'last' },
+    'reasoning_model': { char: 'R', pos: 0 },
+    'ubi': { char: 'U', pos: 0 },
+    'chain_of_thought': { char: 't', pos: 'last' },
+    'hallucination': { char: 'H', pos: 0 }
+};
 ---
 
 <Layout lang={lang} title={`${t.hype_dictionary_title} - ${t.title}`}>
@@ -27,7 +44,7 @@ const terms = ['agentic', 'agi', 'alignment', 'asi', 'chain_of_thought', 'collap
             <dl class="hype-list">
                 {terms.map(term => (
                     <div class="hype-item">
-                        <dt id={`term-${term}`}>{t[`hype_term_${term}`]}</dt>
+                        <dt id={`term-${term}`} class="term-dt">{t[`hype_term_${term}`]}</dt>
                         <dd id={`def-${term}`}>{t[`hype_def_${term}`]}</dd>
                     </div>
                 ))}
@@ -89,9 +106,16 @@ const terms = ['agentic', 'agi', 'alignment', 'asi', 'chain_of_thought', 'collap
         line-height: 1.6;
         font-size: 1.05rem;
     }
+
+    /* Secret Character Style */
+    :global(.secret-char) {
+        color: #C4B5FD; /* Slightly lighter purple */
+        text-shadow: 0 0 2px #fff;
+        font-weight: 900;
+    }
 </style>
 
-<script define:vars={{ translations, lang, terms }}>
+<script define:vars={{ translations, lang, terms, secretMap }}>
     function updateTranslations() {
         let currentLang = lang;
         try {
@@ -105,11 +129,57 @@ const terms = ['agentic', 'agi', 'alignment', 'asi', 'chain_of_thought', 'collap
         const title = document.getElementById('hype-title');
         if (title) title.textContent = t.hype_dictionary_title;
 
+        // Check achievement
+        if (window.AchievementManager) {
+            window.AchievementManager.unlock('scholar');
+        } else {
+             // Fallback if manager not loaded yet
+             window.addEventListener('load', () => {
+                 if (window.AchievementManager) window.AchievementManager.unlock('scholar');
+             });
+        }
+
         terms.forEach(term => {
             const dt = document.getElementById(`term-${term}`);
             const dd = document.getElementById(`def-${term}`);
-            if (dt) dt.textContent = t[`hype_term_${term}`];
-            if (dd) dd.textContent = t[`hype_def_${term}`];
+
+            let termText = t[`hype_term_${term}`];
+            const defText = t[`hype_def_${term}`];
+
+            // Apply Hints
+            if (dt && secretMap[term]) {
+                // We need to carefully wrap the letter if it matches roughly
+                // This is tricky with localization.
+                // We only do this trick for English or if the letter exists in the translated term.
+
+                // Simplified: Just highlight if found
+                // T = prompt, R = reasoning, U = ubi, T = thought, H = hallucination
+
+                // Logic: Find the character and wrap it
+                const map = secretMap[term];
+                let charToFind = map.char.toLowerCase();
+
+                // Case insensitive search
+                let idx = -1;
+                if (map.pos === 'last') {
+                    idx = termText.toLowerCase().lastIndexOf(charToFind);
+                } else {
+                    idx = termText.toLowerCase().indexOf(charToFind);
+                }
+
+                if (idx !== -1) {
+                    const before = termText.substring(0, idx);
+                    const match = termText.substring(idx, idx+1);
+                    const after = termText.substring(idx+1);
+                    dt.innerHTML = `${before}<span class="secret-char">${match}</span>${after}`;
+                } else {
+                    dt.textContent = termText;
+                }
+            } else if (dt) {
+                dt.textContent = termText;
+            }
+
+            if (dd) dd.textContent = defText;
         });
     }
 

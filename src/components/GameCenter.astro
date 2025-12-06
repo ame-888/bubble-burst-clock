@@ -806,12 +806,28 @@
 
     function updateScore(s) {
         document.getElementById('current-score').textContent = s;
+
+        // Check Achievements
+        if (window.AchievementManager) {
+            if (currentGame === 'snake' && s >= 500) window.AchievementManager.unlock('snake_charmer');
+            if (currentGame === 'tetris' && s >= 1000) window.AchievementManager.unlock('tetris_master');
+            if (currentGame === 'breakout' && s >= 500) window.AchievementManager.unlock('breakout_artist'); // fallback score check
+            if (currentGame === 'pool' && s >= 100) {/* handled in game over usually but pool score accumulates */}
+        }
     }
 
     function handleGameOver(finalScore) {
         stopGame(); // Stop the loop, but keep currentGame for restart
         sound.play('gameover');
         scores.saveScore(currentGame, finalScore);
+
+        // Check Achievements
+        if (window.AchievementManager) {
+            if (currentGame === 'snake' && finalScore >= 500) window.AchievementManager.unlock('snake_charmer');
+            if (currentGame === 'tetris' && finalScore >= 1000) window.AchievementManager.unlock('tetris_master');
+            if (currentGame === 'pool' && finalScore > 0) window.AchievementManager.unlock('pool_shark'); // Win/Play
+            if (currentGame === 'breakout' && finalScore >= 500) window.AchievementManager.unlock('breakout_artist');
+        }
 
         document.getElementById('game-overlay-score').textContent = `Score: ${finalScore}`;
         document.getElementById('game-overlay').classList.remove('hidden');

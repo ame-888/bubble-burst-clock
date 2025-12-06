@@ -18,15 +18,14 @@ const translations = {
 // We default to 'en' for SSR; client will hydrate correctly
 const lang = 'en';
 const t = translations[lang];
-
-// For SSR rendering, we don't know what's unlocked, so we render a skeleton or generic state.
-// The client script will reveal the truth.
 ---
 
 <Layout lang={lang} title={`Achievements - ${t.title}`}>
     <main>
         <h1 id="achievements-title">Achievements</h1>
         <p class="subtitle" id="achievements-subtitle">Uncover the secrets of the Bubble Burst Clock.</p>
+
+        <!-- The key is hidden in the dictionary -->
 
         <div class="achievements-grid" id="achievements-grid">
             {achievements.map(achievement => (
@@ -51,6 +50,10 @@ const t = translations[lang];
                     </template>
                 </div>
             ))}
+        </div>
+
+        <div class="secret-input-container">
+            <input type="text" id="secret-input" class="secret-input" placeholder="Enter password..." autocomplete="off">
         </div>
     </main>
 </Layout>
@@ -113,6 +116,13 @@ const t = translations[lang];
         transform: translateY(-2px);
     }
 
+    /* Revealed but locked state */
+    .achievement-card.revealed {
+        filter: grayscale(0.8);
+        opacity: 0.9;
+        border-color: #4B5563;
+    }
+
     .achievement-icon-wrapper {
         width: 60px;
         height: 60px;
@@ -159,6 +169,33 @@ const t = translations[lang];
     .hidden {
         display: none !important;
     }
+
+    .secret-input-container {
+        margin-top: 4rem;
+        display: flex;
+        justify-content: center;
+        opacity: 0.2;
+        transition: opacity 0.3s;
+    }
+    .secret-input-container:hover, .secret-input-container:focus-within {
+        opacity: 1;
+    }
+
+    .secret-input {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid #4B5563;
+        color: #10B981;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-family: monospace;
+        text-align: center;
+        outline: none;
+        width: 200px;
+    }
+    .secret-input:focus {
+        border-color: #10B981;
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    }
 </style>
 
 <script>
@@ -170,17 +207,46 @@ const t = translations[lang];
 
         const unlockedIds = achievementManager.unlocked;
         const cards = document.querySelectorAll('.achievement-card');
+        let revealed = false;
+
+        try {
+            if (localStorage.getItem('achievements_revealed') === 'true') {
+                revealed = true;
+            }
+        } catch(e) {}
 
         cards.forEach(card => {
             const id = card.getAttribute('data-id');
-            if (unlockedIds.has(id)) {
+            const isUnlocked = unlockedIds.has(id);
+
+            if (isUnlocked) {
                 unlockCard(card);
+            } else if (revealed) {
+                revealCard(card);
             }
         });
+
+        // Secret Input Logic
+        const input = document.getElementById('secret-input');
+        if (input) {
+            input.addEventListener('input', (e) => {
+                const val = (e.target as HTMLInputElement).value.trim().toLowerCase();
+                if (val === 'truth') {
+                    // Password Correct!
+                    localStorage.setItem('achievements_revealed', 'true');
+                    achievementManager.unlock('truth_seeker');
+                    (e.target as HTMLInputElement).value = '';
+                    (e.target as HTMLInputElement).blur();
+
+                    // Reload to update UI state properly (easiest way)
+                    location.reload();
+                }
+            });
+        }
     });
 
     function unlockCard(card) {
-        card.classList.remove('locked');
+        card.classList.remove('locked', 'revealed');
         card.classList.add('unlocked');
 
         // Swap Icons
@@ -190,6 +256,30 @@ const t = translations[lang];
         // Swap Status
         card.querySelector('.lock-icon').classList.add('hidden');
         card.querySelector('.unlock-icon').classList.remove('hidden');
+
+        // Reveal Text
+        const template = card.querySelector('.achievement-data');
+        if (template) {
+            const title = template.content.querySelector('.data-title').textContent;
+            const desc = template.content.querySelector('.data-desc').textContent;
+
+            card.querySelector('.achievement-card-title').textContent = title;
+            card.querySelector('.achievement-desc').textContent = desc;
+        }
+    }
+
+    function revealCard(card) {
+        // Show details but keep locked visual
+        card.classList.remove('locked');
+        card.classList.add('revealed');
+
+        // Swap Icons (optional, maybe keep ? for mystery but show text?)
+        // Let's show icon too if revealed
+        card.querySelector('.achievement-icon-placeholder').classList.add('hidden');
+        card.querySelector('.achievement-icon-real').classList.remove('hidden');
+
+        // Keep lock icon
+        card.querySelector('.lock-icon').classList.remove('hidden');
 
         // Reveal Text
         const template = card.querySelector('.achievement-data');

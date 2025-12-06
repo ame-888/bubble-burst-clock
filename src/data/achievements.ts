@@ -55,5 +55,48 @@ export const achievements = [
         description: 'Unlocked all other achievements.',
         icon: '🏆',
         secret: true
+    },
+    // New Achievements
+    {
+        id: 'truth_seeker',
+        title: 'The Truth Seeker',
+        description: 'You found the secret password and revealed the truth.',
+        icon: '🗝️',
+        secret: true
+    },
+    {
+        id: 'snake_charmer',
+        title: 'Snake Charmer',
+        description: 'Scored 500+ points in Snake.',
+        icon: '🐍',
+        secret: true
+    },
+    {
+        id: 'tetris_master',
+        title: 'Cluster Master',
+        description: 'Scored 1000+ points in Cluster Builder.',
+        icon: '🧱',
+        secret: true
+    },
+    {
+        id: 'pool_shark',
+        title: 'Neural Pool Shark',
+        description: 'Won a game of Neural Pool.',
+        icon: '🎱',
+        secret: true
+    },
+    {
+        id: 'breakout_artist',
+        title: 'Firewall Breaker',
+        description: 'Cleared a level in Firewall Breaker.',
+        icon: '🧱',
+        secret: true
+    },
+    {
+        id: 'scholar',
+        title: 'Hype Scholar',
+        description: 'Visited the Hype Dictionary to learn the terminology.',
+        icon: '📖',
+        secret: true
     }
 ];
