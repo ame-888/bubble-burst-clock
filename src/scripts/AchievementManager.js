@@ -66,6 +66,10 @@ class AchievementManager {
         }
 
         // Initialize AudioContext on first interaction
+        this.ensureAudioContext();
+    }
+
+    ensureAudioContext() {
         if (!this.audioContext) {
             try {
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -76,7 +80,7 @@ class AchievementManager {
 
         // Resume if suspended (common browser policy)
         if (this.audioContext && this.audioContext.state === 'suspended') {
-            this.audioContext.resume();
+            this.audioContext.resume().catch(e => console.error("Audio resume failed", e));
         }
     }
 
@@ -95,11 +99,8 @@ class AchievementManager {
     }
 
     playUnlockSound() {
+        this.ensureAudioContext();
         if (!this.audioContext) return;
-        if (this.audioContext.state === 'suspended') {
-            // Can't play if suspended and not in a user event, but we try.
-            this.audioContext.resume().catch(() => {});
-        }
 
         try {
             const osc = this.audioContext.createOscillator();
