@@ -108,4 +108,19 @@
     "total_predictions": "Total Predictions",
     "success_rate": "Success Rate",
     "class_label": "Class"
+    ,
+    "achievements_button": "成就",
+    "my_stats_button": "我的统计",
+    "bet_correct": "说法正确",
+    "bet_incorrect": "说法错误",
+    "stats_title": "我的投注统计",
+    "stats_bets_placed": "已投注",
+    "stats_wins": "胜利",
+    "stats_losses": "失败",
+    "stats_win_rate": "胜率",
+    "share_stats": "分享",
+    "copy_stats": "复制",
+    "stats_shared": "已复制！",
+    "bet_pending": "待定",
+    "bet_resolved": "已解决"
 }

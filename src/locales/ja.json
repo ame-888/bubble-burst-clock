@@ -108,4 +108,19 @@
     "total_predictions": "Total Predictions",
     "success_rate": "Success Rate",
     "class_label": "Class"
+    ,
+    "achievements_button": "実績",
+    "my_stats_button": "私の統計",
+    "bet_correct": "主張は正しい",
+    "bet_incorrect": "主張は誤り",
+    "stats_title": "賭けの統計",
+    "stats_bets_placed": "賭け数",
+    "stats_wins": "勝利",
+    "stats_losses": "敗北",
+    "stats_win_rate": "勝率",
+    "share_stats": "共有",
+    "copy_stats": "コピー",
+    "stats_shared": "コピーしました！",
+    "bet_pending": "保留中",
+    "bet_resolved": "解決済み"
 }

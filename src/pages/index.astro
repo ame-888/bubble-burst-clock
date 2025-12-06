@@ -3,6 +3,7 @@
 import Layout from '../layouts/Layout.astro';
 import GameCenter from '../components/GameCenter.astro';
 import PredictionCard from '../components/PredictionCard.astro';
+import { bettingManager } from '../scripts/BettingManager';
 import { predictions } from '../data/predictions';
 import en from '../locales/en.json';
 import ptBR from '../locales/pt-BR.json';
@@ -650,8 +651,66 @@ const simulatedServerTime = now.getTime(); // Pass to client
 
 </style>
 
+<script>
+    import '../scripts/BettingManager.js';
+</script>
+
 <script define:vars={{ lang, t, translations, latestClaimDate, simulatedServerTime, predictions }}>
     function init() {
+        // --- Betting Logic ---
+        function setupBetting() {
+            const controls = document.querySelectorAll('.betting-controls');
+
+            // Initial render state
+            updateBettingUI();
+
+            controls.forEach(control => {
+                const id = control.getAttribute('data-prediction-id');
+                const btnCorrect = control.querySelector('.bet-correct');
+                const btnIncorrect = control.querySelector('.bet-incorrect');
+
+                if (btnCorrect) {
+                    btnCorrect.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation(); // Prevent card click
+                        window.BettingManager.placeBet(id, 'correct');
+                    });
+                }
+
+                if (btnIncorrect) {
+                    btnIncorrect.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.BettingManager.placeBet(id, 'incorrect');
+                    });
+                }
+            });
+
+            // Listen for updates
+            window.addEventListener('bets-updated', updateBettingUI);
+        }
+
+        function updateBettingUI() {
+            if (!window.BettingManager) return;
+
+            document.querySelectorAll('.betting-controls').forEach(control => {
+                const id = control.getAttribute('data-prediction-id');
+                const userBet = window.BettingManager.getBet(id);
+                const btnCorrect = control.querySelector('.bet-correct');
+                const btnIncorrect = control.querySelector('.bet-incorrect');
+
+                // Reset classes
+                if (btnCorrect) btnCorrect.classList.remove('bet-active-correct');
+                if (btnIncorrect) btnIncorrect.classList.remove('bet-active-incorrect');
+
+                if (userBet === 'correct' && btnCorrect) {
+                    btnCorrect.classList.add('bet-active-correct');
+                } else if (userBet === 'incorrect' && btnIncorrect) {
+                    btnIncorrect.classList.add('bet-active-incorrect');
+                }
+            });
+        }
+
         // --- Modal Logic ---
         const overlay = document.getElementById('modal-overlay');
         const submissionModal = document.getElementById('submission-modal');
@@ -975,6 +1034,7 @@ const simulatedServerTime = now.getTime(); // Pass to client
             updateStaticTranslations();
             startClock();
             setupSortAndSearch();
+            setupBetting();
         } catch (e) {
             console.error('Error updating static translations:', e);
         }

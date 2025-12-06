@@ -98,5 +98,56 @@ export const achievements = [
         description: 'Visited the Hype Dictionary to learn the terminology.',
         icon: '📖',
         secret: true
+    },
+    // Betting Achievements
+    {
+        id: 'first_bet',
+        title: 'Skin in the Game',
+        description: 'Placed your first prediction bet.',
+        icon: '🎲',
+        secret: true
+    },
+    {
+        id: 'market_mover',
+        title: 'Market Mover',
+        description: 'Placed 5 bets.',
+        icon: '📈',
+        secret: true
+    },
+    {
+        id: 'hedge_fund',
+        title: 'Hedge Fund',
+        description: 'Placed 10 bets.',
+        icon: '💰',
+        secret: true
+    },
+    {
+        id: 'first_win',
+        title: 'I Told You So',
+        description: 'Won a prediction bet.',
+        icon: '🎯',
+        secret: true
+    },
+    {
+        id: 'oracle',
+        title: 'The Oracle',
+        description: 'Won 10 prediction bets.',
+        icon: '🔮',
+        secret: true
+    },
+    // Special Betting
+    {
+        id: 'skeptic_supreme',
+        title: 'The Hidden Truth',
+        description: 'You bet against every single claim. You see the pattern.',
+        icon: '👁️',
+        secret: true
+    },
+    {
+        id: 'doomer_king',
+        title: 'King of Doomers',
+        description: 'You agreed with every single claim. Apocalypse now!',
+        icon: '🔥',
+        secret: true
     }
 ];
