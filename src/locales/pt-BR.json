@@ -108,4 +108,19 @@
     "total_predictions": "Total Predictions",
     "success_rate": "Success Rate",
     "class_label": "Class"
+    ,
+    "achievements_button": "CONQUISTAS",
+    "my_stats_button": "MINHAS ESTATÍSTICAS",
+    "bet_correct": "Afirmação Correta",
+    "bet_incorrect": "Afirmação Incorreta",
+    "stats_title": "Minhas Estatísticas de Apostas",
+    "stats_bets_placed": "Apostas Feitas",
+    "stats_wins": "Vitórias",
+    "stats_losses": "Derrotas",
+    "stats_win_rate": "Taxa de Sucesso",
+    "share_stats": "Compartilhar",
+    "copy_stats": "Copiar",
+    "stats_shared": "Copiado!",
+    "bet_pending": "Pendente",
+    "bet_resolved": "Resolvido"
 }

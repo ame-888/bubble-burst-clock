@@ -108,5 +108,18 @@
     "total_predictions": "Total Predictions",
     "success_rate": "Success Rate",
     "class_label": "Class",
-    "achievements_button": "ACHIEVEMENTS"
+    "achievements_button": "ACHIEVEMENTS",
+    "my_stats_button": "MY STATS",
+    "bet_correct": "Claim is Correct",
+    "bet_incorrect": "Claim is Incorrect",
+    "stats_title": "My Betting Stats",
+    "stats_bets_placed": "Bets Placed",
+    "stats_wins": "Wins",
+    "stats_losses": "Losses",
+    "stats_win_rate": "Success Rate",
+    "share_stats": "Share Stats",
+    "copy_stats": "Copy to Clipboard",
+    "stats_shared": "Copied!",
+    "bet_pending": "Pending",
+    "bet_resolved": "Resolved"
 }

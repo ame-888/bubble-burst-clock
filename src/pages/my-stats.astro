@@ -1,0 +1,249 @@
+---
+import Layout from '../layouts/Layout.astro';
+import en from '../locales/en.json';
+import ptBR from '../locales/pt-BR.json';
+import ja from '../locales/ja.json';
+import es from '../locales/es.json';
+import zh from '../locales/zh.json';
+
+const translations = {
+    'en': en,
+    'pt-BR': ptBR,
+    'ja': ja,
+    'es': es,
+    'zh': zh,
+};
+
+// In an MPA, we default to English, but client-side script will update
+const lang = 'en';
+const t = translations[lang] || en;
+---
+
+<Layout lang={lang} title={`${t.my_stats_button} - Bubble Burst Clock`}>
+    <main class="stats-page">
+        <h1 class="page-title" data-i18n-key="stats_title">{t.stats_title}</h1>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 data-i18n-key="stats_bets_placed">{t.stats_bets_placed}</h3>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+            <div class="stat-card">
+                <h3 data-i18n-key="bet_pending">{t.bet_pending}</h3>
+                <div class="stat-value text-blue" id="stat-pending">0</div>
+            </div>
+            <div class="stat-card">
+                <h3 data-i18n-key="bet_resolved">{t.bet_resolved}</h3>
+                <div class="stat-value text-gray" id="stat-resolved">0</div>
+            </div>
+            <div class="stat-card">
+                <h3 data-i18n-key="stats_wins">{t.stats_wins}</h3>
+                <div class="stat-value text-green" id="stat-wins">0</div>
+            </div>
+            <div class="stat-card">
+                <h3 data-i18n-key="stats_losses">{t.stats_losses}</h3>
+                <div class="stat-value text-red" id="stat-losses">0</div>
+            </div>
+            <div class="stat-card highlight-card">
+                <h3 data-i18n-key="stats_win_rate">{t.stats_win_rate}</h3>
+                <div class="stat-value text-gold" id="stat-win-rate">0%</div>
+            </div>
+        </div>
+
+        <div class="share-section">
+            <button id="share-twitter-btn" class="share-btn twitter">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
+                X (Twitter)
+            </button>
+            <button id="share-email-btn" class="share-btn email">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"></path><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"></path></svg>
+                Email
+            </button>
+            <button id="copy-stats-btn" class="share-btn copy" data-i18n-key="copy_stats">
+                {t.copy_stats}
+            </button>
+        </div>
+    </main>
+</Layout>
+
+<style>
+    .stats-page {
+        max-width: 60rem;
+        margin: 4rem auto;
+        padding: 0 1rem;
+        min-height: 60vh;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        text-align: center;
+        margin-bottom: 3rem;
+        background: linear-gradient(to right, #60A5FA, #A78BFA);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 4rem;
+    }
+
+    .stat-card {
+        background: rgba(31, 41, 55, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1rem;
+        padding: 2rem 1rem;
+        text-align: center;
+        backdrop-filter: blur(5px);
+    }
+
+    .stat-card h3 {
+        font-size: 0.9rem;
+        color: #9CA3AF;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: white;
+    }
+
+    .highlight-card {
+        border-color: rgba(251, 191, 36, 0.3);
+        background: rgba(251, 191, 36, 0.1);
+        grid-column: 1 / -1; /* Span full width on mobile */
+    }
+
+    @media (min-width: 768px) {
+        .highlight-card {
+            grid-column: span 2; /* Span 2 cols on desktop */
+        }
+    }
+
+    .text-blue { color: #60A5FA; }
+    .text-green { color: #34D399; }
+    .text-red { color: #F87171; }
+    .text-gold { color: #FBBF24; }
+    .text-gray { color: #9CA3AF; }
+
+    .share-section {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .share-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: transform 0.2s, opacity 0.2s;
+        font-size: 1rem;
+        color: white;
+        text-decoration: none;
+    }
+
+    .share-btn:hover {
+        transform: translateY(-2px);
+        opacity: 0.9;
+    }
+
+    .share-btn svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .twitter { background-color: #000000; border: 1px solid #333; }
+    .email { background-color: #EA4335; }
+    .copy { background-color: #4B5563; }
+
+</style>
+
+<script>
+    import '../scripts/BettingManager.js';
+</script>
+
+<script define:vars={{ translations, lang }}>
+    function initStats() {
+        if (!window.BettingManager) {
+            console.error("Betting Manager not loaded");
+            return;
+        }
+
+        const stats = window.BettingManager.getStats();
+
+        // Update DOM
+        document.getElementById('stat-total').textContent = stats.totalBets;
+        document.getElementById('stat-pending').textContent = stats.pending;
+        document.getElementById('stat-resolved').textContent = stats.resolved;
+        document.getElementById('stat-wins').textContent = stats.wins;
+        document.getElementById('stat-losses').textContent = stats.losses;
+        document.getElementById('stat-win-rate').textContent = stats.winRate + '%';
+
+        // Share Logic
+        const shareText = `I have a ${stats.winRate}% success rate predicting the AI bubble on Bubble Burst Clock! 🫧⏰ #BubbleBurstClock`;
+        const shareUrl = "https://bubble-burst-clock.vercel.app/";
+
+        const twitterBtn = document.getElementById('share-twitter-btn');
+        const emailBtn = document.getElementById('share-email-btn');
+        const copyBtn = document.getElementById('copy-stats-btn');
+
+        if (twitterBtn) {
+            twitterBtn.addEventListener('click', () => {
+                const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+                window.open(url, '_blank');
+            });
+        }
+
+        if (emailBtn) {
+            emailBtn.addEventListener('click', () => {
+                const subject = "Check out my AI prediction stats!";
+                const body = `${shareText}\n\nCheck it out here: ${shareUrl}`;
+                window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            });
+        }
+
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(`${shareText} ${shareUrl}`).then(() => {
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                });
+            });
+        }
+
+        // --- Translation Update ---
+        let currentLang = lang;
+        try {
+            currentLang = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+        } catch (e) {}
+
+        const t = translations[currentLang] || translations['en'];
+
+        document.querySelectorAll('[data-i18n-key]').forEach(el => {
+            const key = el.getAttribute('data-i18n-key');
+            if (t[key]) el.textContent = t[key];
+        });
+    }
+
+    // Wait for BettingManager to be ready or just run if deferred
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initStats);
+    } else {
+        initStats();
+    }
+</script>
