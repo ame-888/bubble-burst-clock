@@ -179,8 +179,11 @@
     /* Modal Styling */
     #game-modal {
         position: fixed;
-        inset: 0;
-        z-index: 10000;
+        top: 4rem; /* Below Navbar */
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 90; /* Below Navbar (100) */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -285,7 +288,7 @@
     /* Menu Buttons */
     #game-menu {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 1rem;
         width: 100%;
     }
