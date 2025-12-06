@@ -134,21 +134,41 @@ const players = Object.values(creatorsData).map(c => {
     };
     const flavorText = flavorTextMap[rpgClass] || "A watcher of the bubble.";
 
-    return { ...c, stats, successRate, rpgClass, rarity, mtgColor, flavorText };
+    // Last Entry Date (for sorting)
+    const latestDate = Math.max(...c.predictions.map(p => {
+        const d = p.uploadDate ? new Date(p.uploadDate) : new Date(0);
+        return d.getTime();
+    }));
+
+    return { ...c, stats, successRate, rpgClass, rarity, mtgColor, flavorText, latestDate };
     // @ts-ignore
-}).sort((a, b) => b.total - a.total);
+}).sort((a, b) => b.total - a.total); // Default sort
 ---
 
 <Layout lang={lang} title={`${t.player_cards_title} - ${t.title}`}>
     <main>
         <h1 id="player-cards-title">{t.player_cards_title}</h1>
 
+        <!-- Sorting Controls -->
+        <div class="sort-controls">
+            <label for="sort-select" class="sort-label">Sort by:</label>
+            <select id="sort-select" class="sort-select">
+                <option value="famous_desc">Most Famous</option>
+                <option value="famous_asc">Least Famous</option>
+                <option value="date_desc">Latest Entry</option>
+                <option value="date_asc">Oldest Entry</option>
+            </select>
+        </div>
+
         <div class="player-container">
             <!-- Grid View -->
             <div id="player-grid-view" class="">
-                <div class="player-grid">
+                <div class="player-grid" id="player-grid-container">
                     {players.map(player => (
-                        <div class="player-card-mini" data-player-name={player.name}>
+                        <div class="player-card-mini"
+                             data-player-name={player.name}
+                             data-rarity={player.rarity}
+                             data-latest-date={player.latestDate}>
                             <div class="player-avatar-mini">{player.name.substring(0, 2).toUpperCase()}</div>
                             <div class="player-info-mini">
                                 <div class="player-name-mini">{player.name}</div>
@@ -164,7 +184,13 @@ const players = Object.values(creatorsData).map(c => {
 
             <!-- Detail View -->
             <div id="player-detail-view" class="hidden">
-                <button id="back-to-grid" class="back-button">← Back</button>
+                <div class="detail-nav">
+                    <button id="back-to-grid" class="back-button">← Back</button>
+                    <div class="nav-arrows">
+                         <button id="prev-card" class="nav-arrow" aria-label="Previous">←</button>
+                         <button id="next-card" class="nav-arrow" aria-label="Next">→</button>
+                    </div>
+                </div>
 
                 <div class="mtg-card-container" id="mtg-card-container">
                     <!-- Dynamic classes for color/rarity will be added here via JS -->
@@ -238,6 +264,29 @@ const players = Object.values(creatorsData).map(c => {
     }
 
     /* Grid View */
+    .sort-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+    }
+
+    .sort-label {
+        color: #D1D5DB;
+        font-weight: 600;
+    }
+
+    .sort-select {
+        background: rgba(31, 41, 55, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+    }
+
     .player-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -276,6 +325,30 @@ const players = Object.values(creatorsData).map(c => {
         height: 4px;
         background: linear-gradient(90deg, #10B981, #3B82F6);
         opacity: 0.7;
+    }
+
+    /* Rarity Specific Styles for Grid */
+    :global(.player-card-mini[data-rarity="Legendary"]) {
+        border-color: #FF4500;
+        box-shadow: 0 0 15px rgba(255, 69, 0, 0.2);
+    }
+    :global(.player-card-mini[data-rarity="Legendary"]::before) {
+        background: linear-gradient(90deg, #FFD700, #FF4500);
+    }
+
+    :global(.player-card-mini[data-rarity="Epic"]) {
+        border-color: #9932CC;
+        box-shadow: 0 0 10px rgba(153, 50, 204, 0.2);
+    }
+    :global(.player-card-mini[data-rarity="Epic"]::before) {
+        background: linear-gradient(90deg, #DA70D6, #9932CC);
+    }
+
+    :global(.player-card-mini[data-rarity="Rare"]) {
+        border-color: #C0C0C0;
+    }
+    :global(.player-card-mini[data-rarity="Rare"]::before) {
+        background: linear-gradient(90deg, #E5E7EB, #9CA3AF);
     }
 
     .player-avatar-mini {
@@ -327,7 +400,18 @@ const players = Object.values(creatorsData).map(c => {
     /* Detail View (MTG Style) */
     .hidden { display: none !important; }
 
-    .back-button {
+    .detail-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        width: 100%;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .back-button, .nav-arrow {
         background: rgba(31, 41, 55, 0.8);
         border: 1px solid rgba(255, 255, 255, 0.1);
         color: white;
@@ -335,14 +419,17 @@ const players = Object.values(creatorsData).map(c => {
         border-radius: 0.5rem;
         cursor: pointer;
         font-weight: 600;
-        margin-bottom: 2rem;
-        display: inline-flex;
-        align-items: center;
         transition: all 0.2s;
     }
-    .back-button:hover {
+
+    .back-button:hover, .nav-arrow:hover {
         background: rgba(55, 65, 81, 0.8);
-        transform: translateX(-5px);
+        border-color: #60A5FA;
+    }
+
+    .nav-arrows {
+        display: flex;
+        gap: 0.5rem;
     }
 
     /* MTG Card Styles (Reused) */
@@ -578,7 +665,121 @@ const players = Object.values(creatorsData).map(c => {
         const gridView = document.getElementById('player-grid-view');
         const detailView = document.getElementById('player-detail-view');
         const backBtn = document.getElementById('back-to-grid');
-        const gridCards = document.querySelectorAll('.player-card-mini');
+        const gridContainer = document.getElementById('player-grid-container');
+        const sortSelect = document.getElementById('sort-select');
+        const prevBtn = document.getElementById('prev-card');
+        const nextBtn = document.getElementById('next-card');
+
+        let currentSortedPlayers = [...players];
+        let currentIndex = -1;
+
+        // Rarity Priority Map for Sorting
+        const rarityVal = { "Legendary": 4, "Epic": 3, "Rare": 2, "Common": 1 };
+
+        function updateGrid() {
+            if (!gridContainer) return;
+            gridContainer.innerHTML = '';
+
+            // Re-render based on sorted list
+            currentSortedPlayers.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-card-mini';
+                div.dataset.playerName = player.name;
+                div.dataset.rarity = player.rarity; // Ensure rarity is set on re-render
+                div.innerHTML = `
+                    <div class="player-avatar-mini">${player.name.substring(0, 2).toUpperCase()}</div>
+                    <div class="player-info-mini">
+                        <div class="player-name-mini">${player.name}</div>
+                        <div class="player-class-mini">${player.rpgClass}</div>
+                    </div>
+                    <div class="player-stats-mini">
+                        <div class="stat-badge">LVL ${player.total}</div>
+                    </div>
+                `;
+                div.addEventListener('click', () => openDetail(player.name));
+                gridContainer.appendChild(div);
+            });
+        }
+
+        function sortPlayers(mode) {
+            if (mode === 'famous_desc') {
+                currentSortedPlayers.sort((a, b) => (rarityVal[b.rarity] || 1) - (rarityVal[a.rarity] || 1));
+            } else if (mode === 'famous_asc') {
+                currentSortedPlayers.sort((a, b) => (rarityVal[a.rarity] || 1) - (rarityVal[b.rarity] || 1));
+            } else if (mode === 'date_desc') {
+                currentSortedPlayers.sort((a, b) => b.latestDate - a.latestDate);
+            } else if (mode === 'date_asc') {
+                currentSortedPlayers.sort((a, b) => a.latestDate - b.latestDate);
+            }
+            updateGrid();
+        }
+
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => sortPlayers(e.target.value));
+            // Initial sort
+            sortPlayers(sortSelect.value);
+        }
+
+        function openDetail(name) {
+             const index = currentSortedPlayers.findIndex(p => p.name === name);
+             if (index === -1) return;
+             currentIndex = index;
+             renderDetail(currentSortedPlayers[currentIndex]);
+
+             gridView.classList.add('hidden');
+             detailView.classList.remove('hidden');
+        }
+
+        function renderDetail(player) {
+            // Populate Detail View (MTG Style)
+            const dName = document.getElementById('detail-name');
+            if (dName) dName.textContent = player.name;
+
+            const dType = document.getElementById('detail-type-text');
+            if (dType) dType.textContent = `${player.rarity} ${player.rpgClass}`;
+
+            const dMana = document.getElementById('detail-mana');
+            if (dMana) dMana.textContent = player.total;
+
+            const dAvatar = document.getElementById('detail-avatar');
+            if (dAvatar) dAvatar.textContent = player.name.substring(0, 2).toUpperCase();
+
+            const dPt = document.getElementById('detail-pt');
+            if (dPt) dPt.textContent = `${player.successes}/${player.total}`;
+
+            const dFlavor = document.getElementById('detail-flavor');
+            if (dFlavor) dFlavor.textContent = `"${player.flavorText}"`;
+
+            // Update Lists
+            const list = document.getElementById('detail-predictions-list');
+            if (list) {
+                list.innerHTML = '';
+                player.predictions.forEach(p => {
+                    const li = document.createElement('li');
+
+                    // Localize claim if object
+                    let claimText = '';
+                    if (typeof p.claim === 'string') claimText = p.claim;
+                    else if (typeof p.claim === 'object') claimText = p.claim[currentLang] || p.claim['en'];
+
+                    let bulletColorClass = 'bullet-future';
+                    if (p.status === 'ACTIVE') bulletColorClass = 'bullet-active';
+                    if (p.status === 'EXPIRED') bulletColorClass = 'bullet-expired';
+
+                    // Use a colored bullet point instead of text label
+                    li.innerHTML = `<span class="mtg-ability-bullet ${bulletColorClass}">●</span> <span>${claimText}</span>`;
+                    list.appendChild(li);
+                });
+            }
+
+            // Apply Styles
+            const container = document.getElementById('mtg-card-container');
+            if (container) {
+                container.className = 'mtg-card-container'; // Reset
+                container.classList.add(player.mtgColor.toLowerCase());
+                container.classList.add(player.rarity.toLowerCase());
+            }
+        }
 
         if (backBtn && gridView && detailView) {
             backBtn.addEventListener('click', () => {
@@ -587,67 +788,31 @@ const players = Object.values(creatorsData).map(c => {
             });
         }
 
-        gridCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const name = card.getAttribute('data-player-name');
-                const player = players.find(p => p.name === name);
-
-                if (player) {
-                    // Populate Detail View (MTG Style)
-                    const dName = document.getElementById('detail-name');
-                    if (dName) dName.textContent = player.name;
-
-                    const dType = document.getElementById('detail-type-text');
-                    if (dType) dType.textContent = `${player.rarity} ${player.rpgClass}`;
-
-                    const dMana = document.getElementById('detail-mana');
-                    if (dMana) dMana.textContent = player.total;
-
-                    const dAvatar = document.getElementById('detail-avatar');
-                    if (dAvatar) dAvatar.textContent = player.name.substring(0, 2).toUpperCase();
-
-                    const dPt = document.getElementById('detail-pt');
-                    if (dPt) dPt.textContent = `${player.successes}/${player.total}`;
-
-                    const dFlavor = document.getElementById('detail-flavor');
-                    if (dFlavor) dFlavor.textContent = `"${player.flavorText}"`;
-
-                    // Update Lists
-                    const list = document.getElementById('detail-predictions-list');
-                    if (list) {
-                        list.innerHTML = '';
-                        player.predictions.forEach(p => {
-                            const li = document.createElement('li');
-
-                            // Localize claim if object
-                            let claimText = '';
-                            if (typeof p.claim === 'string') claimText = p.claim;
-                            else if (typeof p.claim === 'object') claimText = p.claim[currentLang] || p.claim['en'];
-
-                            let bulletColorClass = 'bullet-future';
-                            if (p.status === 'ACTIVE') bulletColorClass = 'bullet-active';
-                            if (p.status === 'EXPIRED') bulletColorClass = 'bullet-expired';
-
-                            // Use a colored bullet point instead of text label
-                            li.innerHTML = `<span class="mtg-ability-bullet ${bulletColorClass}">●</span> <span>${claimText}</span>`;
-                            list.appendChild(li);
-                        });
-                    }
-
-                    // Apply Styles
-                    const container = document.getElementById('mtg-card-container');
-                    if (container) {
-                        container.className = 'mtg-card-container'; // Reset
-                        container.classList.add(player.mtgColor.toLowerCase());
-                        container.classList.add(player.rarity.toLowerCase());
-                    }
-
-                    // Show Detail View
-                    gridView.classList.add('hidden');
-                    detailView.classList.remove('hidden');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    renderDetail(currentSortedPlayers[currentIndex]);
+                } else {
+                    // Loop to end
+                    currentIndex = currentSortedPlayers.length - 1;
+                    renderDetail(currentSortedPlayers[currentIndex]);
                 }
             });
-        });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                if (currentIndex < currentSortedPlayers.length - 1) {
+                    currentIndex++;
+                    renderDetail(currentSortedPlayers[currentIndex]);
+                } else {
+                    // Loop to start
+                    currentIndex = 0;
+                    renderDetail(currentSortedPlayers[currentIndex]);
+                }
+            });
+        }
     }
 
     document.addEventListener('DOMContentLoaded', init);

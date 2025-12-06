@@ -205,6 +205,43 @@ export class ScoreManager {
 
 // --- Game Logic ---
 
+// Retro Pixel Art Helpers
+function drawPixelRect(ctx, x, y, w, h, color, outline=true) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+    if (outline) {
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
+    }
+    // Highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillRect(x + 2, y + 2, w - 4, 4);
+}
+
+function drawPixelCircle(ctx, cx, cy, r, color) {
+    // Approximate circle with pixels
+    const steps = 8;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+        const theta = (i / steps) * Math.PI * 2;
+        const px = cx + Math.cos(theta) * r;
+        const py = cy + Math.sin(theta) * r;
+        if (i===0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Pixel shine
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillRect(cx - r/2, cy - r/2, r/3, r/3);
+}
+
 export const GameLogic = {
     // Snake
     snake: {
@@ -274,24 +311,31 @@ export const GameLogic = {
         },
         draw: (ctx, state, canvas) => {
             const g = state.grid;
-            // Food
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#F59E0B';
-            ctx.fillStyle = '#F59E0B';
-            ctx.beginPath();
-            ctx.arc(state.food.x * g + g/2, state.food.y * g + g/2, g/2 - 2, 0, Math.PI * 2);
-            ctx.fill();
+            // Retro Grid Background
+            ctx.fillStyle = '#0F172A';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.strokeStyle = '#1E293B';
+            ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=g) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+            for(let i=0; i<canvas.height; i+=g) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
+
+            // Food (Pixel Apple)
+            const fx = state.food.x * g;
+            const fy = state.food.y * g;
+            drawPixelRect(ctx, fx, fy, g, g, '#EF4444');
 
             // Snake
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#60A5FA';
             state.snake.forEach((seg, i) => {
-                ctx.fillStyle = i === 0 ? '#FFFFFF' : '#60A5FA';
-                ctx.beginPath();
-                ctx.arc(seg.x * g + g/2, seg.y * g + g/2, g/2 - 1, 0, Math.PI * 2);
-                ctx.fill();
+                const color = i === 0 ? '#10B981' : '#059669'; // Green head, darker body
+                drawPixelRect(ctx, seg.x * g, seg.y * g, g, g, color);
+
+                // Eyes for head
+                if (i === 0) {
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(seg.x * g + 4, seg.y * g + 4, 4, 4);
+                    ctx.fillRect(seg.x * g + 12, seg.y * g + 4, 4, 4);
+                }
             });
-            ctx.shadowBlur = 0;
         }
     },
 
@@ -439,36 +483,30 @@ export const GameLogic = {
         },
         draw: (ctx, state, canvas) => {
             const g = state.grid;
-            ctx.strokeStyle = '#1F2937';
+            // Background
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(0,0,canvas.width, canvas.height);
+
+            // Grid lines
+            ctx.strokeStyle = '#374151';
             ctx.lineWidth = 1;
             for(let x=0; x<=canvas.width; x+=g) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+            for(let y=0; y<=canvas.height; y+=g) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
 
             // Board
             state.board.forEach((row, y) => {
                 row.forEach((color, x) => {
-                    if (color) GameLogic.tetris.drawBubble(ctx, x, y, color, false, g);
+                    if (color) drawPixelRect(ctx, x*g, y*g, g, g, color);
                 });
             });
             // Piece
             if (state.piece) {
                 state.piece.shape.forEach((row, y) => {
                     row.forEach((val, x) => {
-                        if (val) GameLogic.tetris.drawBubble(ctx, state.piece.x + x, state.piece.y + y, state.piece.color, true, g);
+                        if (val) drawPixelRect(ctx, (state.piece.x + x)*g, (state.piece.y + y)*g, g, g, state.piece.color);
                     });
                 });
             }
-        },
-        drawBubble: (ctx, gx, gy, color, active, g) => {
-            const x = gx * g + g/2;
-            const y = gy * g + g/2;
-            const r = g/2 - 2;
-            ctx.fillStyle = color;
-            ctx.shadowBlur = active ? 10 : 0;
-            ctx.shadowColor = color;
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
         }
     },
 
@@ -546,27 +584,21 @@ export const GameLogic = {
             return state;
         },
         draw: (ctx, state) => {
+             // BG
+             ctx.fillStyle = '#0F172A';
+             ctx.fillRect(0,0,400,400); // hardcoded for now or use global
+
              const p = state.paddle;
-             ctx.shadowBlur = 10;
-             ctx.shadowColor = '#60A5FA';
-             ctx.fillStyle = '#60A5FA';
-             ctx.fillRect(p.x, p.y, p.w, p.h);
+             drawPixelRect(ctx, p.x, p.y, p.w, p.h, '#60A5FA');
 
              const b = state.ball;
-             ctx.fillStyle = '#FFFFFF';
-             ctx.beginPath();
-             ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-             ctx.fill();
+             // Square ball for retro feel
+             drawPixelRect(ctx, b.x - b.r, b.y - b.r, b.r*2, b.r*2, '#FFFFFF');
 
              state.bricks.forEach(brick => {
                  if (!brick.active) return;
-                 ctx.shadowColor = brick.color;
-                 ctx.fillStyle = brick.color;
-                 ctx.beginPath();
-                 ctx.roundRect(brick.x, brick.y, brick.w, brick.h, 5);
-                 ctx.fill();
+                 drawPixelRect(ctx, brick.x, brick.y, brick.w, brick.h, brick.color);
              });
-             ctx.shadowBlur = 0;
         }
     },
 
@@ -763,8 +795,12 @@ export const GameLogic = {
         draw: (ctx, state, canvas) => {
             const w = canvas.width / 3;
             const h = canvas.height / 3;
-            ctx.clearRect(0,0,canvas.width, canvas.height);
-            ctx.strokeStyle = state.hardMode ? '#EF4444' : '#374151'; // Red border in hard mode
+            // BG
+            ctx.fillStyle = '#0F172A';
+            ctx.fillRect(0,0,canvas.width, canvas.height);
+
+            // Grid
+            ctx.strokeStyle = state.hardMode ? '#EF4444' : '#3B82F6';
             ctx.lineWidth = 4;
             ctx.beginPath();
             ctx.moveTo(w, 0); ctx.lineTo(w, canvas.height);
@@ -779,18 +815,19 @@ export const GameLogic = {
                 const row = Math.floor(i / 3);
                 const cx = col * w + w/2;
                 const cy = row * h + h/2;
-                ctx.shadowBlur = 20;
+
                 if (cell === 'X') {
-                    ctx.fillStyle = '#3B82F6';
-                    ctx.shadowColor = '#3B82F6';
+                    drawPixelRect(ctx, cx - 20, cy - 20, 40, 40, '#3B82F6');
+                    // Draw X
+                    ctx.strokeStyle = '#FFF';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 15, cy - 15); ctx.lineTo(cx + 15, cy + 15);
+                    ctx.moveTo(cx + 15, cy - 15); ctx.lineTo(cx - 15, cy + 15);
+                    ctx.stroke();
                 } else {
-                    ctx.fillStyle = '#EF4444';
-                    ctx.shadowColor = '#EF4444';
+                    drawPixelCircle(ctx, cx, cy, 20, '#EF4444');
                 }
-                ctx.beginPath();
-                ctx.arc(cx, cy, w/3, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
             });
         }
     },
@@ -1030,9 +1067,14 @@ export const GameLogic = {
             callbacks.playSound('move');
         },
         draw: (ctx, state, canvas) => {
-            // Felt
-            ctx.fillStyle = '#064E3B'; // Dark Green
+            // Felt (Pixel pattern or just color)
+            ctx.fillStyle = '#064E3B';
             ctx.fillRect(0,0,canvas.width, canvas.height);
+            // Draw grid pattern on felt
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            for(let i=0; i<canvas.width; i+=4) {
+                if(i%8===0) ctx.fillRect(i,0,4,canvas.height);
+            }
 
             // Pockets
             const pocketR = 15;
@@ -1041,61 +1083,33 @@ export const GameLogic = {
                  {x:0, y:canvas.height}, {x:canvas.width/2, y:canvas.height}, {x:canvas.width, y:canvas.height}
              ];
              corners.forEach(p => {
-                 // Radial gradient for depth
-                 const grad = ctx.createRadialGradient(p.x, p.y, pocketR * 0.2, p.x, p.y, pocketR);
-                 grad.addColorStop(0, '#000');
-                 grad.addColorStop(1, '#333');
-                 ctx.fillStyle = grad;
-                 ctx.beginPath();
-                 ctx.arc(p.x, p.y, pocketR, 0, Math.PI*2);
-                 ctx.fill();
-
-                 // Rim
-                 ctx.strokeStyle = '#4B5563';
-                 ctx.lineWidth = 1;
-                 ctx.stroke();
+                 drawPixelCircle(ctx, p.x, p.y, pocketR, '#000');
              });
 
              // Balls
              [...state.balls, state.cueBall].forEach(b => {
-                 ctx.shadowBlur = 5;
-                 ctx.shadowColor = 'rgba(0,0,0,0.5)';
-                 ctx.fillStyle = b.color;
-                 ctx.beginPath();
-                 ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
-                 ctx.fill();
-
-                 // Shine
-                 ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                 ctx.beginPath();
-                 ctx.arc(b.x - b.r/3, b.y - b.r/3, b.r/3, 0, Math.PI*2);
-                 ctx.fill();
-                 ctx.shadowBlur = 0;
+                 drawPixelCircle(ctx, b.x, b.y, b.r, b.color);
 
                  // Numbers
                  if (typeof b.id !== 'undefined') {
-                     ctx.fillStyle = '#FFFFFF';
-                     ctx.font = 'bold 10px Inter, sans-serif';
+                     ctx.fillStyle = b.color === '#FFFFFF' ? '#000' : '#FFF';
+                     ctx.font = 'bold 8px monospace';
                      ctx.textAlign = 'center';
                      ctx.textBaseline = 'middle';
-                     // +1 because ids start at 0
                      ctx.fillText(b.id + 1, b.x, b.y);
                  }
              });
 
-             // Aim Line
+             // Aim Line (Dotted Pixel Line)
              if (state.dragging && state.stopped && (state.turn === 'player' || !state.vsAI)) {
-                 ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-                 ctx.lineWidth = 2;
-                 ctx.setLineDash([5, 5]);
-                 ctx.beginPath();
-                 ctx.moveTo(state.cueBall.x, state.cueBall.y);
-                 const aimLength = 50 + state.power * 5; // Dynamic length based on power
-                 const aimX = state.cueBall.x + Math.cos(state.angle + Math.PI) * aimLength;
-                 const aimY = state.cueBall.y + Math.sin(state.angle + Math.PI) * aimLength;
-                 ctx.lineTo(aimX, aimY);
-                 ctx.stroke();
-                 ctx.setLineDash([]);
+                 ctx.fillStyle = '#FFF';
+                 const aimLength = 50 + state.power * 5;
+                 const step = 5;
+                 for(let d=0; d<aimLength; d+=step) {
+                     const ax = state.cueBall.x + Math.cos(state.angle + Math.PI) * d;
+                     const ay = state.cueBall.y + Math.sin(state.angle + Math.PI) * d;
+                     ctx.fillRect(ax, ay, 2, 2);
+                 }
              }
         }
     },
@@ -1261,11 +1275,11 @@ export const GameLogic = {
         },
         draw: (ctx, state, canvas) => {
              // Bg
-             ctx.fillStyle = '#0F172A'; // Darker Slate
+             ctx.fillStyle = '#0F172A';
              ctx.fillRect(0,0,canvas.width, canvas.height);
 
              // Divider
-             ctx.strokeStyle = 'rgba(55, 65, 81, 0.5)';
+             ctx.strokeStyle = '#374151';
              ctx.lineWidth = 2;
              ctx.beginPath();
              ctx.moveTo(canvas.width/2, 20); ctx.lineTo(canvas.width/2, canvas.height - 20);
@@ -1278,63 +1292,24 @@ export const GameLogic = {
 
              // Compute Text
              ctx.fillStyle = '#FFFFFF';
-             ctx.font = 'bold 36px Inter, sans-serif';
+             ctx.font = 'bold 30px monospace';
              ctx.textAlign = 'center';
-             ctx.shadowColor = 'rgba(96, 165, 250, 0.5)';
-             ctx.shadowBlur = 10;
              ctx.fillText(Math.floor(state.compute).toLocaleString(), cx, 60);
-             ctx.shadowBlur = 0;
 
-             ctx.font = '600 14px Inter, sans-serif';
+             ctx.font = '14px monospace';
              ctx.fillStyle = '#94A3B8';
              const rate = GameLogic.idle.getGenRate(state);
              ctx.fillText(`${rate.toFixed(1)} / sec`, cx, 85);
 
-             // The Bubble (Polished)
-             // Outer Glow
-             ctx.shadowBlur = 30 + (Math.sin(Date.now() / 500) * 10);
-             ctx.shadowColor = 'rgba(59, 130, 246, 0.6)';
-
-             // Gradient Fill
-             const gradient = ctx.createRadialGradient(cx, cy - 20, 10, cx, cy, r);
-             gradient.addColorStop(0, '#93C5FD'); // Light Blue Highlight
-             gradient.addColorStop(0.2, '#3B82F6'); // Blue Body
-             gradient.addColorStop(1, '#1E3A8A'); // Dark Blue Edge
-
-             ctx.fillStyle = gradient;
-             ctx.beginPath();
-             ctx.arc(cx, cy, r, 0, Math.PI * 2);
-             ctx.fill();
-
-             // Shine Reflection
-             ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-             ctx.beginPath();
-             ctx.ellipse(cx - r*0.3, cy - r*0.3, r*0.2, r*0.1, Math.PI / 4, 0, Math.PI * 2);
-             ctx.fill();
-
-             // Rim
-             ctx.shadowBlur = 0;
-             ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-             ctx.lineWidth = 3;
-             ctx.stroke();
-
-             // Pulse Rings (Visual only)
-             const pulseR = r + (Math.sin(Date.now() / 1000) * 5) + 5;
-             ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
-             ctx.lineWidth = 2;
-             ctx.beginPath();
-             ctx.arc(cx, cy, pulseR, 0, Math.PI * 2);
-             ctx.stroke();
+             // The Bubble (Pixel Art Style)
+             drawPixelCircle(ctx, cx, cy, r, '#3B82F6');
 
              // Particles
              state.particles.forEach(p => {
                  ctx.globalAlpha = p.life;
                  ctx.fillStyle = '#FBBF24'; // Amber
-                 ctx.font = 'bold 18px Inter, sans-serif';
-                 ctx.shadowColor = 'black';
-                 ctx.shadowBlur = 4;
+                 ctx.font = 'bold 18px monospace';
                  ctx.fillText(p.text, p.x, p.y);
-                 ctx.shadowBlur = 0;
                  ctx.globalAlpha = 1.0;
              });
 
@@ -1348,7 +1323,7 @@ export const GameLogic = {
 
              // Header
              ctx.fillStyle = '#E2E8F0';
-             ctx.font = 'bold 14px Inter, sans-serif';
+             ctx.font = 'bold 14px monospace';
              ctx.fillText("COMPANIES", listX, 40);
 
              GameLogic.idle.config.companies.forEach((c, i) => {
@@ -1357,78 +1332,49 @@ export const GameLogic = {
                  const cost = Math.floor(c.cost * Math.pow(1.15, count));
                  const affordable = state.compute >= cost;
 
-                 // Button Bg
-                 ctx.fillStyle = affordable ? 'rgba(31, 41, 55, 0.9)' : 'rgba(17, 24, 39, 0.5)';
-                 ctx.strokeStyle = affordable ? c.color : 'rgba(55, 65, 81, 0.5)';
-                 ctx.lineWidth = affordable ? 2 : 1;
-
-                 if (affordable) {
-                    ctx.shadowColor = c.color;
-                    ctx.shadowBlur = 5;
-                 }
-
-                 ctx.beginPath();
-                 ctx.roundRect(listX, by, itemW, itemH, 8);
-                 ctx.fill();
-                 ctx.shadowBlur = 0;
-                 ctx.stroke();
+                 // Button Bg (Pixel)
+                 const color = affordable ? '#1F2937' : '#111827';
+                 drawPixelRect(ctx, listX, by, itemW, itemH, color);
 
                  // Info
                  ctx.fillStyle = affordable ? '#F8FAFC' : '#64748B';
-                 ctx.font = 'bold 12px Inter, sans-serif';
+                 ctx.font = 'bold 10px monospace';
                  const displayName = c.id.charAt(0).toUpperCase() + c.id.slice(1);
-                 ctx.fillText(displayName, listX + 10, by + 16);
+                 ctx.fillText(displayName, listX + 5, by + 12);
 
-                 ctx.font = '10px Inter, sans-serif';
+                 ctx.font = '9px monospace';
                  ctx.fillStyle = affordable ? '#94A3B8' : '#475569';
-                 ctx.fillText(`Cost: ${cost.toLocaleString()}`, listX + 10, by + 30);
+                 ctx.fillText(`$${cost.toLocaleString()}`, listX + 5, by + 25);
 
-                 // Count Badge
+                 // Count
                  ctx.fillStyle = c.color;
-                 ctx.beginPath();
-                 ctx.arc(listX + itemW - 15, by + itemH/2, 10, 0, Math.PI*2);
-                 ctx.fill();
-                 ctx.fillStyle = '#000'; // or dark contrast
-                 ctx.font = 'bold 10px Inter, sans-serif';
+                 ctx.fillRect(listX + itemW - 20, by + 5, 15, 15);
+                 ctx.fillStyle = '#000';
                  ctx.textAlign = 'center';
-                 ctx.textBaseline = 'middle';
-                 ctx.fillText(count, listX + itemW - 15, by + itemH/2 + 1);
+                 ctx.fillText(count, listX + itemW - 12.5, by + 16);
                  ctx.textAlign = 'left';
-                 ctx.textBaseline = 'alphabetic';
              });
 
              // Upgrades
              const upgradeY = listY + GameLogic.idle.config.companies.length * (itemH + 5) + 20;
              ctx.fillStyle = '#E2E8F0';
-             ctx.font = 'bold 14px Inter, sans-serif';
+             ctx.font = 'bold 14px monospace';
              ctx.fillText("UPGRADES", listX, upgradeY - 10);
 
-             const upgSize = 40;
+             const upgSize = 35;
              GameLogic.idle.config.upgrades.forEach((u, i) => {
-                 const ux = listX + i * (upgSize + 10);
+                 const ux = listX + i * (upgSize + 5);
                  const owned = state.upgrades[u.id];
                  const affordable = state.compute >= u.cost;
 
-                 ctx.fillStyle = owned ? 'rgba(16, 185, 129, 0.2)' : (affordable ? 'rgba(31, 41, 55, 0.9)' : 'rgba(17, 24, 39, 0.5)');
-                 ctx.strokeStyle = owned ? '#10B981' : (affordable ? '#F59E0B' : 'rgba(55, 65, 81, 0.5)');
-                 ctx.lineWidth = (owned || affordable) ? 2 : 1;
-
-                 if (affordable && !owned) {
-                     ctx.shadowColor = '#F59E0B';
-                     ctx.shadowBlur = 5;
-                 }
-
-                 ctx.beginPath();
-                 ctx.roundRect(ux, upgradeY, upgSize, upgSize, 8);
-                 ctx.fill();
-                 ctx.shadowBlur = 0;
-                 ctx.stroke();
+                 const color = owned ? '#10B981' : (affordable ? '#F59E0B' : '#374151');
+                 drawPixelRect(ctx, ux, upgradeY, upgSize, upgSize, color);
 
                  ctx.textAlign = 'center';
                  ctx.textBaseline = 'middle';
-                 ctx.font = '20px Inter, sans-serif';
+                 ctx.font = '16px monospace';
                  ctx.fillStyle = '#FFF';
-                 ctx.fillText(u.icon, ux + upgSize/2, upgradeY + upgSize/2 + 2);
+                 ctx.fillText(u.icon, ux + upgSize/2, upgradeY + upgSize/2);
                  ctx.textBaseline = 'alphabetic';
                  ctx.textAlign = 'left';
              });
