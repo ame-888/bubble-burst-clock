@@ -126,8 +126,8 @@ const bubblesConfig = [
                     const startXPercent = parseFloat(el.getAttribute('data-x'));
                     const speed = parseFloat(el.getAttribute('data-speed'));
 
-                    // Randomize vertical start positions so they don't all come up at once initially
-                    const startY = -150 - Math.random() * window.innerHeight;
+                    // Randomize vertical start positions to distribute them across the screen initially
+                    const startY = Math.random() * window.innerHeight;
 
                     return {
                         el,

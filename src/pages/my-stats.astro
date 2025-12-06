@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { predictions } from '../data/predictions';
 import en from '../locales/en.json';
 import ptBR from '../locales/pt-BR.json';
 import ja from '../locales/ja.json';
@@ -17,6 +18,9 @@ const translations = {
 // In an MPA, we default to English, but client-side script will update
 const lang = 'en';
 const t = translations[lang] || en;
+
+// Pass full predictions list to client for calculating favorite player stats if needed
+const allPredictions = predictions;
 ---
 
 <Layout lang={lang} title={`${t.my_stats_button} - Bubble Burst Clock`}>
@@ -47,6 +51,39 @@ const t = translations[lang] || en;
             <div class="stat-card highlight-card">
                 <h3 data-i18n-key="stats_win_rate">{t.stats_win_rate}</h3>
                 <div class="stat-value text-gold" id="stat-win-rate">0%</div>
+            </div>
+        </div>
+
+        <!-- Favorite Player Section -->
+        <div id="favorite-player-section" class="section-container hidden">
+             <h2 class="section-title">Favorite Player</h2>
+             <div class="favorite-wrapper">
+                 <div id="favorite-card-container">
+                     <!-- Mini Card injected here -->
+                 </div>
+             </div>
+        </div>
+
+        <!-- AGI/ASI Predictions Section -->
+        <div class="section-container">
+            <h2 class="section-title">AGI & ASI Predictions</h2>
+            <div class="prediction-form">
+                <div class="form-group">
+                    <label for="agi-date">AGI Date Prediction</label>
+                    <input type="date" id="agi-date" class="date-input" />
+                </div>
+                <div class="form-group">
+                    <label for="asi-date">ASI Date Prediction</label>
+                    <input type="date" id="asi-date" class="date-input" />
+                </div>
+                <button id="save-prediction-btn" class="action-btn">Save Prediction</button>
+            </div>
+
+            <div class="history-container">
+                <h3>History of Predictions</h3>
+                <ul id="prediction-history-list" class="history-list">
+                    <!-- History Items Injected Here -->
+                </ul>
             </div>
         </div>
 
@@ -168,13 +205,128 @@ const t = translations[lang] || en;
     .email { background-color: #EA4335; }
     .copy { background-color: #4B5563; }
 
+    /* New Sections */
+    .section-container {
+        margin-bottom: 4rem;
+        padding: 2rem;
+        background: rgba(31, 41, 55, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1rem;
+    }
+    .section-title {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        color: #F3F4F6;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 0.5rem;
+    }
+    .favorite-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+    .hidden { display: none !important; }
+
+    /* Form */
+    .prediction-form {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        margin-bottom: 2rem;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .form-group label {
+        color: #D1D5DB;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .date-input {
+        background: rgba(17, 24, 39, 0.8);
+        border: 1px solid #4B5563;
+        color: white;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        font-family: 'Inter', sans-serif;
+    }
+    .action-btn {
+        background: #3B82F6;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        height: fit-content;
+    }
+    .action-btn:hover { background: #2563EB; }
+    .delete-btn { background: #EF4444; padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+    .delete-btn:hover { background: #DC2626; }
+    .edit-btn { background: #F59E0B; padding: 0.4rem 0.8rem; font-size: 0.8rem; margin-right: 0.5rem; }
+    .edit-btn:hover { background: #D97706; }
+
+    /* History List */
+    .history-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .history-item {
+        background: rgba(0,0,0,0.2);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid rgba(255,255,255,0.05);
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .history-info {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    .history-date { color: #9CA3AF; font-size: 0.85rem; display: block; margin-bottom: 0.2rem; }
+    .prediction-val { font-weight: 600; color: #E5E7EB; }
+    .val-label { color: #60A5FA; margin-right: 0.3rem; }
+
+    /* Inline Edit Inputs */
+    .inline-date {
+        background: #1f2937;
+        border: 1px solid #4b5563;
+        color: white;
+        padding: 0.3rem;
+        border-radius: 0.3rem;
+        font-size: 0.9rem;
+    }
+    .save-inline-btn {
+        background: #10B981;
+        color: white;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.3rem;
+        cursor: pointer;
+        margin-right: 0.5rem;
+    }
+
 </style>
 
 <script>
     import '../scripts/BettingManager.js';
+    import { getPlayerCardData } from '../scripts/PlayerUtils.js';
+
+    window.getPlayerCardData = getPlayerCardData;
 </script>
 
-<script define:vars={{ translations, lang }}>
+<script define:vars={{ translations, lang, allPredictions }}>
     function initStats() {
         if (!window.BettingManager) {
             console.error("Betting Manager not loaded");
@@ -243,6 +395,236 @@ const t = translations[lang] || en;
             const key = el.getAttribute('data-i18n-key');
             if (t[key]) el.textContent = t[key];
         });
+
+        // --- Favorite Player Logic ---
+        loadFavoritePlayer();
+
+        // --- AGI/ASI Prediction History Logic ---
+        initHistory();
+    }
+
+    function loadFavoritePlayer() {
+        const favName = localStorage.getItem('favorite_player');
+        if (!favName || !window.getPlayerCardData) return;
+
+        // Filter predictions for this creator (simplified, mimicking Players logic)
+        // Ideally we'd use the pre-calculated ones but we have raw list here.
+        // We'll filter by creator name.
+        const creatorPredictions = allPredictions.filter(p => p.creator === favName);
+
+        // Process status for stats (Simplified: just pass them, let Utils handle if possible or Utils just needs name for RPG stats?)
+        // Utils needs name for stats. We need counts for display.
+        // Let's manually count here to be safe and simple
+        const total = creatorPredictions.length;
+        // Mock success/failure based on status presence in data or assume defaults
+        // For the visual card, we really just need Name, Class, Rarity, Color, Stats.
+        // The counts are nice but secondary.
+        // Utils.getPlayerCardData does the RPG logic.
+
+        const cardData = window.getPlayerCardData(favName, creatorPredictions);
+        // Note: getPlayerCardData calculates RPG stats. We need to manually inject success/total into the HTML if we want it.
+        // The mini card expects: Name, Mana(Total), Avatar letter, Class, Set Symbol, Stats, P/T (Success/Total)
+
+        // Calculate counts based on dates (using same logic as Players page roughly)
+        const now = new Date();
+        let successes = 0;
+        let failures = 0;
+        creatorPredictions.forEach(p => {
+            // Simplified status check
+            const start = p.validityStart ? new Date(p.validityStart) : null;
+            const end = p.validityEnd ? new Date(p.validityEnd) : null;
+            let status = 'FUTURE';
+            if (start && end) {
+                if (now >= start && now <= end) status = 'ACTIVE';
+                else if (now > end) status = 'EXPIRED';
+            }
+            if (status === 'EXPIRED') failures++;
+            else if (status === 'FUTURE' || status === 'ACTIVE') { /* pending */ }
+            else successes++; // Assume manual success or non-expired past?
+            // Actually Players page logic: EXPIRED=Failure, ACTIVE/FUTURE=Pending, Else=Success
+        });
+        // Correct 'successes' calculation based on Players logic implies 'else' is success.
+        // But since we don't have explicit SUCCESS status in data usually, it might just be pending/expired.
+        // Let's just use total and successes=total-failures-pending for display.
+
+        const section = document.getElementById('favorite-player-section');
+        const container = document.getElementById('favorite-card-container');
+
+        if (section && container) {
+            section.classList.remove('hidden');
+
+            // Render Mini Card HTML
+            container.innerHTML = `
+                <div class="player-card-mini" style="width: 220px; aspect-ratio: 2.5/3.5; margin: 0 auto; perspective: 1000px;">
+                     <div class="mtg-card-container mini ${cardData.mtgColor.toLowerCase()} ${cardData.rarity.toLowerCase()}" style="transform: rotateX(0);">
+                        <div class="mtg-card-border">
+                            <div class="mtg-card-content">
+                                <div class="mtg-header">
+                                    <span class="mtg-card-name">${cardData.name}</span>
+                                    <span class="mtg-mana-cost">${total}</span>
+                                </div>
+                                <div class="mtg-art-frame">
+                                    <div class="mtg-art-inner">
+                                        <div class="rpg-avatar">${cardData.name.substring(0, 1).toUpperCase()}</div>
+                                    </div>
+                                </div>
+                                <div class="mtg-type-line">
+                                    <span class="type-text">${cardData.rpgClass}</span>
+                                    <div class="mtg-set-symbol"></div>
+                                </div>
+                                <div class="mtg-text-box">
+                                    <div class="mini-stats-grid">
+                                        <span>STR: ${cardData.stats.STR}</span>
+                                        <span>INT: ${cardData.stats.INT}</span>
+                                        <span>CHA: ${cardData.stats.CHA}</span>
+                                        <span>LUCK: ${cardData.stats.LUCK}</span>
+                                    </div>
+                                </div>
+                                <div class="mtg-footer">
+                                    <div class="mtg-pt-box">
+                                        ${successes}/${total}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                     </div>
+                </div>
+            `;
+
+            // Make it clickable to go to players page detail?
+            container.onclick = () => {
+                window.location.href = '/players';
+            };
+            container.style.cursor = 'pointer';
+        }
+    }
+
+    function initHistory() {
+        const agiInput = document.getElementById('agi-date');
+        const asiInput = document.getElementById('asi-date');
+        const saveBtn = document.getElementById('save-prediction-btn');
+        const listContainer = document.getElementById('prediction-history-list');
+
+        function loadHistory() {
+            try {
+                return JSON.parse(localStorage.getItem('agi_asi_predictions') || '[]');
+            } catch { return []; }
+        }
+
+        function saveHistory(history) {
+            localStorage.setItem('agi_asi_predictions', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const history = loadHistory();
+            if (!listContainer) return;
+            listContainer.innerHTML = '';
+
+            history.slice().reverse().forEach((item, index) => {
+                // Reverse index for deletion correctly (since we reversed display)
+                const originalIndex = history.length - 1 - index;
+
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `
+                    <div class="history-info">
+                        <div>
+                             <span class="history-date">${new Date(item.timestamp).toLocaleString()}</span>
+                             <div><span class="val-label">AGI:</span> <span class="prediction-val" id="agi-val-${originalIndex}">${item.agi}</span></div>
+                             <div><span class="val-label">ASI:</span> <span class="prediction-val" id="asi-val-${originalIndex}">${item.asi}</span></div>
+                        </div>
+                    </div>
+                    <div class="history-actions">
+                        <button class="action-btn edit-btn" data-index="${originalIndex}">Edit</button>
+                        <button class="action-btn delete-btn" data-index="${originalIndex}">Delete</button>
+                    </div>
+                `;
+                listContainer.appendChild(li);
+            });
+
+            // Attach listeners
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    const h = loadHistory();
+                    h.splice(idx, 1);
+                    saveHistory(h);
+                });
+            });
+
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    handleEdit(idx, e.target);
+                });
+            });
+        }
+
+        function handleEdit(index, btnEl) {
+            const h = loadHistory();
+            const item = h[index];
+            const li = btnEl.closest('.history-item');
+
+            // Replace values with inputs
+            const agiSpan = li.querySelector(`#agi-val-${index}`);
+            const asiSpan = li.querySelector(`#asi-val-${index}`);
+            const actionsDiv = li.querySelector('.history-actions');
+
+            if (agiSpan && asiSpan) {
+                agiSpan.innerHTML = `<input type="date" class="inline-date" id="edit-agi-${index}" value="${item.agi}">`;
+                asiSpan.innerHTML = `<input type="date" class="inline-date" id="edit-asi-${index}" value="${item.asi}">`;
+            }
+
+            // Replace Edit button with Save
+            actionsDiv.innerHTML = `
+                <button class="save-inline-btn" id="save-inline-${index}">Save</button>
+                <button class="action-btn delete-btn" data-index="${index}">Cancel</button>
+            `;
+
+            // Save Handler
+            document.getElementById(`save-inline-${index}`).addEventListener('click', () => {
+                const newAgi = document.getElementById(`edit-agi-${index}`).value;
+                const newAsi = document.getElementById(`edit-asi-${index}`).value;
+
+                if (newAgi && newAsi) {
+                    h[index].agi = newAgi;
+                    h[index].asi = newAsi;
+                    saveHistory(h);
+                } else {
+                    alert('Please select both dates.');
+                }
+            });
+
+            // Cancel Handler (re-render)
+            actionsDiv.querySelector('.delete-btn').addEventListener('click', renderHistory);
+        }
+
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                const agi = agiInput.value;
+                const asi = asiInput.value;
+
+                if (!agi || !asi) {
+                    alert('Please select dates for both AGI and ASI.');
+                    return;
+                }
+
+                const history = loadHistory();
+                history.push({
+                    timestamp: Date.now(),
+                    agi,
+                    asi
+                });
+                saveHistory(history);
+
+                // Clear inputs
+                agiInput.value = '';
+                asiInput.value = '';
+            });
+        }
+
+        renderHistory();
     }
 
     // Wait for BettingManager to be ready or just run if deferred
