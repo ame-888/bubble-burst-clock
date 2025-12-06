@@ -1,0 +1,204 @@
+---
+import Layout from '../layouts/Layout.astro';
+import en from '../locales/en.json';
+import ptBR from '../locales/pt-BR.json';
+import ja from '../locales/ja.json';
+import es from '../locales/es.json';
+import zh from '../locales/zh.json';
+import { achievements } from '../data/achievements';
+
+const translations = {
+    'en': en,
+    'pt-BR': ptBR,
+    'ja': ja,
+    'es': es,
+    'zh': zh,
+};
+
+// We default to 'en' for SSR; client will hydrate correctly
+const lang = 'en';
+const t = translations[lang];
+
+// For SSR rendering, we don't know what's unlocked, so we render a skeleton or generic state.
+// The client script will reveal the truth.
+---
+
+<Layout lang={lang} title={`Achievements - ${t.title}`}>
+    <main>
+        <h1 id="achievements-title">Achievements</h1>
+        <p class="subtitle" id="achievements-subtitle">Uncover the secrets of the Bubble Burst Clock.</p>
+
+        <div class="achievements-grid" id="achievements-grid">
+            {achievements.map(achievement => (
+                <div class="achievement-card locked" data-id={achievement.id}>
+                    <div class="achievement-icon-wrapper">
+                        <div class="achievement-icon-placeholder">?</div>
+                        <div class="achievement-icon-real hidden">{achievement.icon}</div>
+                    </div>
+                    <div class="achievement-content">
+                        <h3 class="achievement-card-title">???</h3>
+                        <p class="achievement-desc">Locked Secret</p>
+                    </div>
+                    <div class="status-indicator">
+                        <span class="lock-icon">🔒</span>
+                        <span class="unlock-icon hidden">✅</span>
+                    </div>
+
+                    <!-- Hidden data for JS to use when unlocking -->
+                    <template class="achievement-data">
+                        <div class="data-title">{achievement.title}</div>
+                        <div class="data-desc">{achievement.description}</div>
+                    </template>
+                </div>
+            ))}
+        </div>
+    </main>
+</Layout>
+
+<style>
+    main {
+        max-width: 80rem;
+        margin: 4rem auto;
+        padding: 0 1rem;
+    }
+
+    h1 {
+        font-size: 3rem;
+        font-weight: 900;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        color: white;
+        background: linear-gradient(to right, #F59E0B, #D97706);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: #9CA3AF;
+        margin-bottom: 3rem;
+        font-size: 1.2rem;
+    }
+
+    .achievements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .achievement-card {
+        background: rgba(31, 41, 55, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .achievement-card.locked {
+        opacity: 0.7;
+        filter: grayscale(1);
+    }
+
+    .achievement-card.unlocked {
+        background: rgba(31, 41, 55, 0.8);
+        border-color: #F59E0B;
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+        opacity: 1;
+        filter: none;
+        transform: translateY(-2px);
+    }
+
+    .achievement-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .achievement-card.unlocked .achievement-icon-wrapper {
+        background: rgba(245, 158, 11, 0.2);
+        border-color: #F59E0B;
+    }
+
+    .achievement-content {
+        flex: 1;
+    }
+
+    .achievement-card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 0.25rem 0;
+    }
+
+    .achievement-desc {
+        font-size: 0.9rem;
+        color: #9CA3AF;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .status-indicator {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.2rem;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+</style>
+
+<script>
+    import { achievementManager } from '../scripts/AchievementManager';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Force a check on load to ensure sync
+        achievementManager.init();
+
+        const unlockedIds = achievementManager.unlocked;
+        const cards = document.querySelectorAll('.achievement-card');
+
+        cards.forEach(card => {
+            const id = card.getAttribute('data-id');
+            if (unlockedIds.has(id)) {
+                unlockCard(card);
+            }
+        });
+    });
+
+    function unlockCard(card) {
+        card.classList.remove('locked');
+        card.classList.add('unlocked');
+
+        // Swap Icons
+        card.querySelector('.achievement-icon-placeholder').classList.add('hidden');
+        card.querySelector('.achievement-icon-real').classList.remove('hidden');
+
+        // Swap Status
+        card.querySelector('.lock-icon').classList.add('hidden');
+        card.querySelector('.unlock-icon').classList.remove('hidden');
+
+        // Reveal Text
+        const template = card.querySelector('.achievement-data');
+        if (template) {
+            const title = template.content.querySelector('.data-title').textContent;
+            const desc = template.content.querySelector('.data-desc').textContent;
+
+            card.querySelector('.achievement-card-title').textContent = title;
+            card.querySelector('.achievement-desc').textContent = desc;
+        }
+    }
+</script>

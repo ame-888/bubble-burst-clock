@@ -149,8 +149,15 @@ const currentLang = languages.find(l => l.code === currentLangCode) || languages
             link.addEventListener('click', (event) => {
                 event.preventDefault();
                 const selectedLanguage = link.getAttribute('data-lang');
+
+                // Dispatch event before reload for achievement tracking
+                window.dispatchEvent(new CustomEvent('language-changed'));
+
                 localStorage.setItem('language', selectedLanguage);
                 document.cookie = `language=${selectedLanguage};path=/`;
+
+                // Small delay to allow event to process if needed, though reload might kill it.
+                // Achievement manager saves to localStorage immediately, so it should be fine.
                 window.location.reload();
             });
         });
