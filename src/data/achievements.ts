@@ -149,5 +149,20 @@ export const achievements = [
         description: 'You agreed with every single claim. Apocalypse now!',
         icon: '🔥',
         secret: true
+    },
+    // New Features
+    {
+        id: 'lucky_devil',
+        title: 'The Chosen One',
+        description: 'You possess a sinister kind of luck.',
+        icon: '😈',
+        secret: true
+    },
+    {
+        id: 'social_spread',
+        title: 'Spread the Word',
+        description: 'Shared your prediction stats on X.',
+        icon: '🐦',
+        secret: true
     }
 ];

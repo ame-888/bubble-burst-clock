@@ -122,5 +122,11 @@
     "copy_stats": "复制",
     "stats_shared": "已复制！",
     "bet_pending": "待定",
-    "bet_resolved": "已解决"
+    "bet_resolved": "已解决",
+    "reset_zone_title": "Danger Zone",
+    "reset_btn": "RESET ALL ACHIEVEMENTS",
+    "reset_modal_title": "RESET ACHIEVEMENTS?",
+    "reset_modal_msg": "WARNING: This action cannot be undone. All your unlocked achievements will be lost forever.",
+    "reset_modal_confirm": "YES, WIPE THEM",
+    "reset_modal_cancel": "Cancel"
 }

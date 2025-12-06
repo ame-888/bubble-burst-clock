@@ -121,5 +121,11 @@
     "copy_stats": "Copy to Clipboard",
     "stats_shared": "Copied!",
     "bet_pending": "Pending",
-    "bet_resolved": "Resolved"
+    "bet_resolved": "Resolved",
+    "reset_zone_title": "Danger Zone",
+    "reset_btn": "RESET ALL ACHIEVEMENTS",
+    "reset_modal_title": "RESET ACHIEVEMENTS?",
+    "reset_modal_msg": "WARNING: This action cannot be undone. All your unlocked achievements will be lost forever.",
+    "reset_modal_confirm": "YES, WIPE THEM",
+    "reset_modal_cancel": "Cancel"
 }

@@ -122,5 +122,11 @@
     "copy_stats": "コピー",
     "stats_shared": "コピーしました！",
     "bet_pending": "保留中",
-    "bet_resolved": "解決済み"
+    "bet_resolved": "解決済み",
+    "reset_zone_title": "Danger Zone",
+    "reset_btn": "RESET ALL ACHIEVEMENTS",
+    "reset_modal_title": "RESET ACHIEVEMENTS?",
+    "reset_modal_msg": "WARNING: This action cannot be undone. All your unlocked achievements will be lost forever.",
+    "reset_modal_confirm": "YES, WIPE THEM",
+    "reset_modal_cancel": "Cancel"
 }
