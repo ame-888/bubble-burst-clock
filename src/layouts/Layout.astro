@@ -1,4 +1,5 @@
 ---
+import Navbar from '../components/Navbar.astro';
 const { lang = 'en', title = 'Bubble Burst Clock' } = Astro.props;
 
 const companies = [
@@ -92,6 +93,9 @@ const bubblesConfig = [
                 />
             ))}
         </div>
+
+        <Navbar lang={lang} />
+
 		<div class="content-wrapper">
             <slot />
         </div>

@@ -1,11 +1,9 @@
 ---
 // --- PAGE BRAIN ---
 import Layout from '../layouts/Layout.astro';
-import LanguageSwitcher from '../components/LanguageSwitcher.astro';
 import GameCenter from '../components/GameCenter.astro';
 import PredictionCard from '../components/PredictionCard.astro';
 import { predictions } from '../data/predictions';
-import { benchmarks } from '../data/benchmarks';
 import en from '../locales/en.json';
 import ptBR from '../locales/pt-BR.json';
 import ja from '../locales/ja.json';
@@ -29,16 +27,11 @@ const t = translations[lang] || en;
 // In a real app, this would be new Date().
 const now = new Date('2025-12-03T00:00:00Z');
 
-// --- Serial Popper Logic ---
+// --- Serial Popper Logic (Only for isSerialPopper flag on cards) ---
 const creatorCounts: Record<string, number> = {};
 predictions.forEach(p => {
     creatorCounts[p.creator] = (creatorCounts[p.creator] || 0) + 1;
 });
-
-const serialPoppers = Object.entries(creatorCounts)
-    .filter(([name, count]) => count > 1)
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count);
 
 const processedPredictions = predictions.map(p => {
     let status = 'FUTURE PREDICTION'; // Default
@@ -72,148 +65,18 @@ const latestExpired = expiredPredictions.length > 0 ? expiredPredictions[0] : nu
 const latestClaimDate = latestExpired ? latestExpired.failureDate.toISOString() : null;
 const simulatedServerTime = now.getTime(); // Pass to client
 
-// --- Benchmark Logic ---
-const processedBenchmarks = benchmarks.models.map(m => {
-    const scores = Object.values(m.scores);
-    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-    return { ...m, avg };
-}).sort((a, b) => b.avg - a.avg);
-
-// --- Player Cards Logic ---
-const creatorsData = {};
-// We need to process predictions to calculate stats per creator
-processedPredictions.forEach(p => {
-    if (!creatorsData[p.creator]) {
-        creatorsData[p.creator] = {
-            name: p.creator,
-            total: 0,
-            failures: 0,
-            pending: 0,
-            successes: 0,
-            predictions: []
-        };
-    }
-    creatorsData[p.creator].total++;
-    creatorsData[p.creator].predictions.push(p);
-
-    if (p.status === 'EXPIRED') {
-        creatorsData[p.creator].failures++;
-    } else if (p.status === 'ACTIVE' || p.status === 'FUTURE PREDICTION') {
-        creatorsData[p.creator].pending++;
-    } else {
-        creatorsData[p.creator].successes++;
-    }
-});
-
-// Deterministic RPG Stats Generator
-function getRPGStats(name) {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const rng = (seed) => {
-        const x = Math.sin(seed) * 10000;
-        return Math.floor((Math.abs(x - Math.floor(x))) * 100); // 0-99
-    };
-    // Ensure we don't get 0 stats, scale them 10-99
-    const scale = (val) => 10 + Math.floor(val * 0.89);
-
-    return {
-        STR: scale(rng(hash)),
-        INT: scale(rng(hash + 1)),
-        CHA: scale(rng(hash + 2)),
-        LUCK: scale(rng(hash + 3))
-    };
-}
-
-const players = Object.values(creatorsData).map(c => {
-    const stats = getRPGStats(c.name);
-    // Success Rate: (Success / (Success + Failure)) * 100. If 0 completed, 0%.
-    const completed = c.successes + c.failures;
-    const successRate = completed > 0 ? ((c.successes / completed) * 100).toFixed(0) : 0;
-
-    // Assign a "Class" based on stats or name
-    let rpgClass = "Doomer"; // Default
-    if (stats.INT > 85) rpgClass = "Technomancer";
-    else if (stats.CHA > 85) rpgClass = "Cult Leader";
-    else if (stats.STR > 85) rpgClass = "Bubble Burster";
-    else if (stats.LUCK > 85) rpgClass = "Oracle";
-
-    // Rarity Map (Manual assignment as requested)
-    const rarityMap = {
-        "Gary Marcus": "Legendary",
-        "O Primo Rico": "Legendary",
-        "Sabine Hossenfelder": "Legendary",
-        "Adam Conover": "Epic",
-        "Brianne Worth": "Epic",
-        "Cole Hastings": "Epic",
-        "Man Carrying Thing": "Epic",
-        "Georg Rockall-Schmidt": "Epic",
-        "Sasha Yanshin": "Epic",
-        "OverEasy": "Rare",
-        "Shade of Code": "Rare"
-    };
-
-    const rarity = rarityMap[c.name] || "Common";
-
-    // MTG Color Mapping
-    let mtgColor = "white"; // Doomer/Default
-    if (rpgClass === "Technomancer") mtgColor = "blue";
-    else if (rpgClass === "Cult Leader") mtgColor = "black";
-    else if (rpgClass === "Bubble Burster") mtgColor = "red";
-    else if (rpgClass === "Oracle") mtgColor = "green";
-
-    // Flavor Text
-    const flavorTextMap = {
-        "Technomancer": "Logic is a prison waiting to be broken.",
-        "Cult Leader": "Belief is the only currency that matters.",
-        "Bubble Burster": "Reality has a way of asserting itself.",
-        "Oracle": "I see what you refuse to acknowledge.",
-        "Doomer": "The end is not near, it is here."
-    };
-    const flavorText = flavorTextMap[rpgClass] || "A watcher of the bubble.";
-
-    return { ...c, stats, successRate, rpgClass, rarity, mtgColor, flavorText };
-}).sort((a, b) => b.total - a.total);
-
 ---
 
 <Layout lang={lang} title={t.title}>
     <!-- Move specific head elements here -->
     <meta slot="head" name="google-site-verification" content="gi2pzxwjvX7zQtdowKjXbAw1wGHfjs8Cdf2w5ThdNcM" />
 
-    <LanguageSwitcher />
-    <button id="btn-privacy" class="privacy-button">{t.privacy_policy_button}</button>
-    <button id="btn-about" class="about-button">{t.about_button}</button>
     <div id="game-center-wrapper" class="hidden">
         <GameCenter />
     </div>
 
     <!-- Modals -->
     <div id="modal-overlay" class="hidden"></div>
-
-    <div id="privacy-modal" class="modal hidden">
-        <div class="modal-content privacy-theme">
-            <button class="close-modal">&times;</button>
-            <h3 id="privacy-title">{t.privacy_policy_title}</h3>
-            <div class="privacy-content">
-                <p id="privacy-text" set:html={t.privacy_policy_content}></p>
-            </div>
-        </div>
-    </div>
-
-    <div id="about-modal" class="modal hidden">
-        <div class="modal-content about-theme">
-            <button class="close-modal">&times;</button>
-            <h3 id="about-title">{t.about_title}</h3>
-            <div class="about-content">
-                <p id="about-welcome">{t.about_welcome}</p>
-                <p id="about-desc1">{t.about_desc1}</p>
-                <p id="about-desc2">{t.about_desc2}</p>
-                <p class="secret-hint"><em id="secret-hint">{t.secret_hint}</em></p>
-            </div>
-        </div>
-    </div>
 
     <div id="submission-modal" class="modal hidden">
         <div class="modal-content">
@@ -244,165 +107,6 @@ const players = Object.values(creatorsData).map(c => {
         </div>
     </div>
 
-    <div id="benchmark-modal" class="modal hidden">
-        <div class="modal-content benchmark-theme">
-            <button class="close-modal">&times;</button>
-            <h3 id="benchmark-title">{t.benchmark_title}</h3>
-            <div class="benchmark-list">
-                {processedBenchmarks.map((m, index) => (
-                    <div class="benchmark-item">
-                        <div class="rank">#{index + 1}</div>
-                        <div class="model-info">
-                            <div class="model-name">{m.name}</div>
-                            <div class="model-avg">Avg: {m.avg.toFixed(1)}%</div>
-                            <div class="level-breakdown">
-                                {benchmarks.levels.map(l => (
-                                    <div class="level-score">
-                                        <span class="level-label">{l.name}:</span>
-                                        <span class="level-value">{m.scores[l.id]}%</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    </div>
-
-    <div id="serial-popper-modal" class="modal hidden">
-        <div class="modal-content serial-popper-theme">
-            <button class="close-modal">&times;</button>
-            <h3 id="serial-popper-title">{t.serial_popper_modal_title}</h3>
-            <div class="serial-popper-list">
-                {serialPoppers.length > 0 ? (
-                    serialPoppers.map((sp, index) => (
-                        <div class="serial-popper-item">
-                            <div class="rank">#{index + 1}</div>
-                            <div class="popper-info">
-                                <div class="popper-name">{sp.name} 🍿</div>
-                                <div class="popper-count"><span id="serial-popper-count-label">{t.serial_popper_count_label}</span>: {sp.count}</div>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <p class="no-data">No serial poppers yet...</p>
-                )}
-            </div>
-        </div>
-    </div>
-
-    <div id="hype-dictionary-modal" class="modal hidden">
-        <div class="modal-content hype-theme">
-            <button class="close-modal">&times;</button>
-            <h3 id="hype-title">{t.hype_dictionary_title}</h3>
-            <div class="hype-list">
-                <div class="hype-item">
-                    <dt id="term-agentic">{t.hype_term_agentic}</dt>
-                    <dd id="def-agentic">{t.hype_def_agentic}</dd>
-                </div>
-                <div class="hype-item">
-                    <dt id="term-hallucination">{t.hype_term_hallucination}</dt>
-                    <dd id="def-hallucination">{t.hype_def_hallucination}</dd>
-                </div>
-                <div class="hype-item">
-                    <dt id="term-slop">{t.hype_term_slop}</dt>
-                    <dd id="def-slop">{t.hype_def_slop}</dd>
-                </div>
-                <div class="hype-item">
-                    <dt id="term-collapse">{t.hype_term_collapse}</dt>
-                    <dd id="def-collapse">{t.hype_def_collapse}</dd>
-                </div>
-                <div class="hype-item">
-                    <dt id="term-prompt">{t.hype_term_prompt}</dt>
-                    <dd id="def-prompt">{t.hype_def_prompt}</dd>
-                </div>
-                <div class="hype-item">
-                    <dt id="term-agi">{t.hype_term_agi}</dt>
-                    <dd id="def-agi">{t.hype_def_agi}</dd>
-                </div>
-                <div class="hype-item">
-                    <dt id="term-alignment">{t.hype_term_alignment}</dt>
-                    <dd id="def-alignment">{t.hype_def_alignment}</dd>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="player-cards-modal" class="modal hidden">
-        <div class="modal-content player-cards-theme">
-            <button class="close-modal">&times;</button>
-
-            <!-- Grid View -->
-            <div id="player-grid-view" class="">
-                <h3 id="player-cards-title">{t.player_cards_title}</h3>
-                <div class="player-grid">
-                    {players.map(player => (
-                        <div class="player-card-mini" data-player-name={player.name}>
-                            <div class="player-avatar-mini">{player.name.substring(0, 2).toUpperCase()}</div>
-                            <div class="player-info-mini">
-                                <div class="player-name-mini">{player.name}</div>
-                                <div class="player-class-mini">{player.rpgClass}</div>
-                            </div>
-                            <div class="player-stats-mini">
-                                <div class="stat-badge">LVL {player.total}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <!-- Detail View -->
-            <div id="player-detail-view" class="hidden">
-                <button id="back-to-grid" class="back-button">← Back</button>
-
-                <div class="mtg-card-container" id="mtg-card-container">
-                    <!-- Dynamic classes for color/rarity will be added here via JS -->
-                    <div class="mtg-card-border">
-                        <div class="mtg-card-content">
-                            <!-- Header -->
-                            <div class="mtg-header">
-                                <span id="detail-name" class="mtg-card-name">Player Name</span>
-                                <span id="detail-mana" class="mtg-mana-cost"></span>
-                            </div>
-
-                            <!-- Art -->
-                            <div class="mtg-art-frame">
-                                <div class="mtg-art-inner">
-                                    <div class="rpg-avatar" id="detail-avatar"></div>
-                                </div>
-                            </div>
-
-                            <!-- Type Line -->
-                            <div class="mtg-type-line">
-                                <span id="detail-type-text">Legendary Creature — Class</span>
-                                <div id="detail-set-symbol" class="mtg-set-symbol"></div>
-                            </div>
-
-                            <!-- Text Box -->
-                            <div class="mtg-text-box">
-                                <ul id="detail-predictions-list" class="mtg-abilities-list">
-                                    <!-- Populated by JS -->
-                                </ul>
-                                <div class="mtg-flavor-separator"></div>
-                                <div id="detail-flavor" class="mtg-flavor-text">
-                                    "Flavor text goes here."
-                                </div>
-                            </div>
-
-                            <!-- Footer -->
-                            <div class="mtg-footer">
-                                <div class="mtg-pt-box">
-                                    <span id="detail-pt">0 / 0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <main>
         <div id="disclaimer" class="site-disclaimer">{t.site_disclaimer}</div>
         <h1 id="main-title" class="interactive-title">{t.title}</h1>
@@ -414,23 +118,10 @@ const players = Object.values(creatorsData).map(c => {
                 <div class="clock-label" id="clock-label">{t.clock_label}</div>
                 <div id="big-clock">00d 00h 00m 00s</div>
                 <p id="clock-explanation" class="explanation-text">{t.clock_explanation}</p>
+            </div>
 
-                <button id="btn-player-cards" class="player-cards-trigger" title={t.player_cards_title}>
-                    <span class="player-icon">👾</span>
-                    <span class="player-label">{t.player_cards_button}</span>
-                </button>
-            </div>
-            <div class="button-group">
-                <button id="btn-serial-popper" class="serial-popper-trigger" title="View Serial Poppers">
-                    <span class="icon">🍿</span> <span id="serial-popper-button">{t.serial_popper_button}</span>
-                </button>
-                <button id="btn-benchmark" class="benchmark-trigger" title="View Benchmarks">
-                    <span class="icon">🏆</span> <span id="leaderboard-button">{t.leaderboard_button}</span>
-                </button>
-                <button id="btn-hype-dictionary" class="hype-dictionary-trigger" title="The Hype Dictionary">
-                    <span class="icon">📖</span> <span id="hype-dictionary-button">{t.hype_dictionary_button}</span>
-                </button>
-            </div>
+            <!-- Removed floating buttons for Leaderboard, Serial Poppers, Hype Dictionary, Player Cards -->
+            <!-- They are now in the Navbar -->
         </div>
 
         <div class="sort-container">
@@ -739,98 +430,12 @@ const players = Object.values(creatorsData).map(c => {
         box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
     }
 
-    /* Benchmark Button & Serial Popper Button */
     .clock-section-wrapper {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 2rem;
         margin: 0 auto 4rem auto;
-    }
-
-    .button-group {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        align-items: center;
-    }
-
-    .benchmark-trigger, .serial-popper-trigger {
-        border: none;
-        color: white;
-        padding: 0.75rem 1.5rem;
-        font-weight: 700;
-        font-size: 1rem;
-        border-radius: 2rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        transition: all 0.2s;
-        z-index: 10;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        width: 100%; /* Make them same width in the column */
-        max-width: 350px;
-    }
-
-    .benchmark-trigger {
-        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-    }
-
-    .benchmark-trigger .icon {
-        font-size: 1.2rem;
-    }
-
-    .benchmark-trigger:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
-    }
-
-    .serial-popper-trigger {
-        background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
-    }
-
-    .serial-popper-trigger .icon {
-        font-size: 1.2rem;
-    }
-
-    .serial-popper-trigger:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
-    }
-
-    .hype-dictionary-trigger {
-        border: none;
-        color: white;
-        padding: 0.75rem 1.5rem;
-        font-weight: 700;
-        font-size: 1rem;
-        border-radius: 2rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        transition: all 0.2s;
-        z-index: 10;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        width: 100%;
-        max-width: 350px;
-        background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
-    }
-
-    .hype-dictionary-trigger .icon {
-        font-size: 1.2rem;
-    }
-
-    .hype-dictionary-trigger:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
     }
 
     /* Modals */
@@ -872,47 +477,6 @@ const players = Object.values(creatorsData).map(c => {
     .modal-content.bug-theme {
         border: 1px solid rgba(239, 68, 68, 0.3);
         box-shadow: 0 0 30px rgba(239, 68, 68, 0.1);
-    }
-
-    .modal-content.benchmark-theme {
-        border: 1px solid rgba(245, 158, 11, 0.3);
-        box-shadow: 0 0 30px rgba(245, 158, 11, 0.1);
-        max-width: 500px;
-    }
-
-    .modal-content.serial-popper-theme {
-        border: 1px solid rgba(248, 113, 113, 0.3);
-        box-shadow: 0 0 30px rgba(248, 113, 113, 0.1);
-        max-width: 500px;
-    }
-
-    .modal-content.hype-theme {
-        border: 1px solid rgba(139, 92, 246, 0.3);
-        box-shadow: 0 0 30px rgba(139, 92, 246, 0.1);
-        max-width: 600px;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-
-    .modal-content.about-theme {
-        border: 1px solid rgba(96, 165, 250, 0.3);
-        box-shadow: 0 0 30px rgba(96, 165, 250, 0.1);
-    }
-
-    .about-content {
-        line-height: 1.6;
-        color: #D1D5DB;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .secret-hint {
-        margin-top: 1rem;
-        font-size: 0.9rem;
-        color: #9CA3AF;
-        border-top: 1px dashed rgba(255,255,255,0.1);
-        padding-top: 1rem;
     }
 
     .close-modal {
@@ -965,52 +529,6 @@ const players = Object.values(creatorsData).map(c => {
         box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
     }
 
-    /* About Button */
-    .about-button {
-        position: absolute;
-        top: 3.5rem;
-        left: 4rem;
-        z-index: 10;
-        background-color: #374151;
-        color: white;
-        border: 1px solid #4B5563;
-        border-radius: 0.375rem;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        font-size: 0.875rem;
-        font-weight: 600;
-        font-family: inherit;
-        line-height: 1.25rem;
-    }
-
-    .about-button:hover {
-        background-color: #4B5563;
-    }
-
-    /* Privacy Button */
-    .privacy-button {
-        position: absolute;
-        top: 1rem;
-        left: 4rem;
-        z-index: 10;
-        background-color: #374151;
-        color: white;
-        border: 1px solid #4B5563;
-        border-radius: 0.375rem;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        font-size: 0.875rem;
-        font-weight: 600;
-        font-family: inherit;
-        line-height: 1.25rem;
-    }
-
-    .privacy-button:hover {
-        background-color: #4B5563;
-    }
-
     /* Site Disclaimer */
     .site-disclaimer {
         font-size: 0.8rem;
@@ -1018,147 +536,6 @@ const players = Object.values(creatorsData).map(c => {
         text-align: center;
         margin-bottom: 0.5rem;
         opacity: 0.8;
-    }
-
-    .privacy-content {
-        line-height: 1.6;
-        color: #D1D5DB;
-    }
-
-    .modal-content.privacy-theme {
-        border: 1px solid rgba(20, 184, 166, 0.3);
-        box-shadow: 0 0 30px rgba(20, 184, 166, 0.1);
-    }
-
-    /* Benchmark Styling */
-    .benchmark-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        margin-top: 1.5rem;
-    }
-
-    .benchmark-item {
-        display: flex;
-        gap: 1rem;
-        align-items: flex-start;
-        padding-bottom: 1.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .benchmark-item:last-child { border-bottom: none; }
-
-    .rank {
-        font-size: 2rem;
-        font-weight: 900;
-        color: #F59E0B;
-        min-width: 60px;
-    }
-
-    .model-info {
-        flex: 1;
-    }
-
-    .model-name {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: white;
-    }
-
-    .model-avg {
-        font-size: 0.9rem;
-        color: #9CA3AF;
-        margin-bottom: 0.5rem;
-    }
-
-    .level-breakdown {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.5rem;
-        background: rgba(0,0,0,0.2);
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-    }
-
-    .level-score {
-        text-align: center;
-    }
-
-    .level-label {
-        display: block;
-        font-size: 0.7rem;
-        color: #6B7280;
-    }
-
-    .level-value {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #D1D5DB;
-    }
-
-    /* Serial Popper List */
-    .serial-popper-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        margin-top: 1.5rem;
-    }
-
-    .serial-popper-item {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        padding-bottom: 1.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .serial-popper-item:last-child { border-bottom: none; }
-
-    .popper-info {
-        flex: 1;
-    }
-
-    .popper-name {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: white;
-    }
-
-    .popper-count {
-        font-size: 0.9rem;
-        color: #9CA3AF;
-        margin-top: 0.25rem;
-    }
-
-    .no-data {
-        text-align: center;
-        color: #9CA3AF;
-        font-style: italic;
-    }
-
-    /* Hype Dictionary Styling */
-    .hype-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        margin-top: 1.5rem;
-    }
-
-    .hype-item {
-        padding-bottom: 1.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .hype-item:last-child { border-bottom: none; }
-
-    .hype-item dt {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #A78BFA;
-        margin-bottom: 0.5rem;
-    }
-
-    .hype-item dd {
-        margin: 0;
-        color: #D1D5DB;
-        line-height: 1.6;
     }
 
     /* Footer */
@@ -1260,10 +637,6 @@ const players = Object.values(creatorsData).map(c => {
         box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.5);
     }
 
-    .hidden {
-        display: none !important;
-    }
-
     .interactive-title {
         cursor: pointer;
         user-select: none;
@@ -1273,411 +646,17 @@ const players = Object.values(creatorsData).map(c => {
         transform: scale(0.95);
     }
 
-    /* Player Cards Styling */
-    .player-cards-trigger {
-        position: absolute;
-        right: -80px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #10B981, #059669);
-        border: 2px solid #34D399;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-        transition: all 0.3s;
-        z-index: 20;
-    }
-
-    @media (max-width: 800px) {
-        .player-cards-trigger {
-            position: static;
-            width: 100%;
-            height: auto;
-            border-radius: 2rem;
-            padding: 0.75rem;
-            flex-direction: row;
-            gap: 0.5rem;
-            transform: none;
-            margin-top: 1rem;
-            max-width: 350px;
-        }
-    }
-
-    .player-cards-trigger:hover {
-        transform: translateY(-50%) scale(1.1);
-        box-shadow: 0 0 25px rgba(16, 185, 129, 0.7);
-    }
-
-    @media (max-width: 800px) {
-        .player-cards-trigger:hover {
-            transform: scale(1.05);
-        }
-    }
-
-    .player-icon {
-        font-size: 1.5rem;
-        line-height: 1;
-    }
-
-    .player-label {
-        font-size: 0.6rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        margin-top: 2px;
-        text-align: center;
-    }
-
-    @media (max-width: 800px) {
-        .player-label {
-            font-size: 1rem;
-            margin-top: 0;
-        }
-    }
-
-    /* Player Cards Modal Theme */
-    .modal-content.player-cards-theme {
-        border: 1px solid rgba(16, 185, 129, 0.5);
-        box-shadow: 0 0 40px rgba(16, 185, 129, 0.2);
-        max-width: 800px;
-        background: #111827;
-        max-height: 90vh;
-        overflow-y: auto;
-    }
-
-    /* Grid View */
-    .player-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 1rem;
-        margin-top: 1.5rem;
-    }
-
-    .player-card-mini {
-        background: rgba(31, 41, 55, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 0.75rem;
-        padding: 1rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .player-card-mini:hover {
-        background: rgba(55, 65, 81, 0.8);
-        border-color: #10B981;
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .player-card-mini::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background: linear-gradient(90deg, #10B981, #3B82F6);
-        opacity: 0.5;
-    }
-
-    .player-avatar-mini {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: #1F2937;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 900;
-        font-size: 1.2rem;
-        color: #10B981;
-        margin-bottom: 0.5rem;
-        border: 2px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .player-info-mini {
-        margin-bottom: 0.5rem;
-    }
-
-    .player-name-mini {
-        font-weight: 700;
-        font-size: 0.9rem;
-        color: white;
-        margin-bottom: 0.2rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        max-width: 120px;
-    }
-
-    .player-class-mini {
-        font-size: 0.7rem;
-        color: #9CA3AF;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .stat-badge {
-        background: rgba(16, 185, 129, 0.2);
-        color: #34D399;
-        font-size: 0.7rem;
-        padding: 0.2rem 0.5rem;
-        border-radius: 1rem;
-        font-weight: 600;
-    }
-
-    /* Detail View (MTG Style) */
-    .back-button {
-        background: none;
-        border: none;
-        color: #9CA3AF;
-        cursor: pointer;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        transition: color 0.2s;
-    }
-    .back-button:hover { color: white; }
-
-    .mtg-card-container {
-        width: 100%;
-        max-width: 400px;
-        margin: 0 auto;
-        font-family: 'Times New Roman', serif;
-        position: relative;
-        border-radius: 15px;
-        padding: 10px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-
-    /* Colors */
-    .mtg-card-container.white { background: #E0E0E0; }
-    .mtg-card-container.blue { background: #A0C0E0; }
-    .mtg-card-container.black { background: #404040; }
-    .mtg-card-container.red { background: #E08080; }
-    .mtg-card-container.green { background: #90C090; }
-
-    .mtg-card-border {
-        background: #111;
-        border-radius: 10px;
-        padding: 4px; /* Inner black border */
-        height: 100%;
-    }
-
-    /* Rarity Borders */
-    .mtg-card-container.common .mtg-card-border { border: 2px solid #000; }
-    .mtg-card-container.rare .mtg-card-border { border: 2px solid #C0C0C0; box-shadow: 0 0 10px silver; }
-    .mtg-card-container.epic .mtg-card-border { border: 2px solid #FFD700; box-shadow: 0 0 15px gold; }
-    .mtg-card-container.legendary .mtg-card-border {
-        border: 4px double #FF4500;
-        box-shadow: 0 0 20px rgba(255, 69, 0, 0.6);
-        clip-path: polygon(
-            5% 0%, 95% 0%, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0% 95%, 0% 5%
-        );
-    }
-
-    .mtg-card-content {
-        background: #e6e6e6; /* Default card face */
-        border-radius: 8px;
-        padding: 0.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        height: 100%;
-    }
-    /* Inner Face Colors (slightly lighter than border) */
-    .mtg-card-container.white .mtg-card-content { background: #F8F8F8; }
-    .mtg-card-container.blue .mtg-card-content { background: #C8D8E8; }
-    .mtg-card-container.black .mtg-card-content { background: #B0B0B0; }
-    .mtg-card-container.red .mtg-card-content { background: #F0C0C0; }
-    .mtg-card-container.green .mtg-card-content { background: #C8E8C8; }
-
-    /* Header */
-    .mtg-header {
-        border: 2px solid #888;
-        background: rgba(255,255,255,0.4);
-        border-radius: 15px 15px 0 0;
-        padding: 0.25rem 0.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
-    }
-    .mtg-card-name {
-        font-weight: 700;
-        font-size: 1.1rem;
-        color: #000;
-    }
-    .mtg-mana-cost {
-        font-weight: 700;
-        color: #333;
-        font-size: 0.9rem;
-        background: rgba(255,255,255,0.5);
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #666;
-    }
-
-    /* Art */
-    .mtg-art-frame {
-        background: #000;
-        padding: 2px;
-        margin: 0.1rem 0;
-        border: 1px solid #555;
-    }
-    .mtg-art-inner {
-        background: #333;
-        height: 180px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        position: relative;
-    }
-    /* Reuse the avatar styling but larger */
-    .rpg-avatar {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: #374151;
-        border: 3px solid #FFF;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3rem;
-        font-weight: 900;
-        color: white;
-        z-index: 1;
-        box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
-
-    /* Type Line */
-    .mtg-type-line {
-        border: 2px solid #888;
-        background: rgba(255,255,255,0.4);
-        padding: 0.25rem 0.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: #000;
-        box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
-    }
-
-    .mtg-set-symbol {
-        font-size: 1.2rem;
-    }
-    .mtg-card-container.common .mtg-set-symbol::after { content: '●'; color: black; }
-    .mtg-card-container.rare .mtg-set-symbol::after { content: '★'; color: gold; text-shadow: 0 0 2px black; }
-    .mtg-card-container.epic .mtg-set-symbol::after { content: '◆'; color: #9932CC; text-shadow: 0 0 2px black; }
-    .mtg-card-container.legendary .mtg-set-symbol::after { content: '♛'; color: #FF4500; text-shadow: 0 0 3px yellow; }
-
-    /* Text Box */
-    .mtg-text-box {
-        border: 2px solid #888;
-        background: rgba(255,255,255,0.7);
-        padding: 0.5rem;
-        flex: 1;
-        font-size: 0.85rem;
-        color: #000;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        min-height: 150px;
-    }
-
-    .mtg-abilities-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        flex: 1;
-    }
-    .mtg-abilities-list li {
-        margin-bottom: 0.4rem;
-        line-height: 1.3;
-    }
-    .mtg-ability-bullet {
-        font-weight: bold;
-        margin-right: 4px;
-    }
-    .bullet-future { color: #3B82F6; }
-    .bullet-active { color: #10B981; }
-    .bullet-expired { color: #EF4444; }
-
-    .mtg-flavor-separator {
-        height: 1px;
-        background: #000;
-        opacity: 0.2;
-        margin: 0.25rem 0;
-    }
-
-    .mtg-flavor-text {
-        font-style: italic;
-        font-size: 0.8rem;
-        opacity: 0.8;
-    }
-
-    /* Footer / P/T */
-    .mtg-footer {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: -10px; /* Overlap text box slightly */
-        z-index: 10;
-        position: relative;
-    }
-    .mtg-pt-box {
-        background: #e6e6e6;
-        border: 2px solid #888;
-        padding: 0.2rem 0.6rem;
-        border-radius: 10px;
-        font-weight: 700;
-        font-size: 1rem;
-        color: #000;
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-    }
-    .mtg-card-container.black .mtg-pt-box { background: #B0B0B0; }
-    .mtg-card-container.blue .mtg-pt-box { background: #C8D8E8; }
-
 </style>
 
-<script define:vars={{ lang, t, translations, latestClaimDate, simulatedServerTime, predictions, players }}>
+<script define:vars={{ lang, t, translations, latestClaimDate, simulatedServerTime, predictions }}>
     function init() {
         // --- Modal Logic ---
         const overlay = document.getElementById('modal-overlay');
         const submissionModal = document.getElementById('submission-modal');
         const bugModal = document.getElementById('bug-modal');
-        const benchmarkModal = document.getElementById('benchmark-modal');
-        const aboutModal = document.getElementById('about-modal');
-        const serialPopperModal = document.getElementById('serial-popper-modal');
-        const privacyModal = document.getElementById('privacy-modal');
-        const hypeDictionaryModal = document.getElementById('hype-dictionary-modal');
-        const playerCardsModal = document.getElementById('player-cards-modal');
 
         const btnSubmit = document.getElementById('fab-submit');
         const btnBug = document.getElementById('fab-bug');
-        const btnBenchmark = document.getElementById('btn-benchmark');
-        const btnSerialPopper = document.getElementById('btn-serial-popper');
-        const btnHypeDictionary = document.getElementById('btn-hype-dictionary');
-        const btnAbout = document.getElementById('btn-about');
-        const btnPrivacy = document.getElementById('btn-privacy');
-        const btnPlayerCards = document.getElementById('btn-player-cards');
 
         const closeButtons = document.querySelectorAll('.close-modal');
 
@@ -1691,17 +670,6 @@ const players = Object.values(creatorsData).map(c => {
             overlay.classList.add('hidden');
             submissionModal.classList.add('hidden');
             bugModal.classList.add('hidden');
-            benchmarkModal.classList.add('hidden');
-            aboutModal.classList.add('hidden');
-            serialPopperModal.classList.add('hidden');
-            if (privacyModal) privacyModal.classList.add('hidden');
-            if (hypeDictionaryModal) hypeDictionaryModal.classList.add('hidden');
-            if (playerCardsModal) {
-                 playerCardsModal.classList.add('hidden');
-                 // Reset to grid view when closing
-                 document.getElementById('player-grid-view').classList.remove('hidden');
-                 document.getElementById('player-detail-view').classList.add('hidden');
-            }
         }
 
         if (btnSubmit) btnSubmit.addEventListener('click', () => openModal(submissionModal));
@@ -1732,79 +700,10 @@ const players = Object.values(creatorsData).map(c => {
 
             openModal(bugModal);
         });
-        if (btnBenchmark) btnBenchmark.addEventListener('click', () => openModal(benchmarkModal));
-        if (btnSerialPopper) btnSerialPopper.addEventListener('click', () => openModal(serialPopperModal));
-        if (btnHypeDictionary) btnHypeDictionary.addEventListener('click', () => openModal(hypeDictionaryModal));
-        if (btnAbout) btnAbout.addEventListener('click', () => openModal(aboutModal));
-        if (btnPrivacy) btnPrivacy.addEventListener('click', () => openModal(privacyModal));
-        if (btnPlayerCards) btnPlayerCards.addEventListener('click', () => openModal(playerCardsModal));
+
         if (overlay) overlay.addEventListener('click', closeModal);
 
         closeButtons.forEach(btn => btn.addEventListener('click', closeModal));
-
-        // --- Player Cards Logic ---
-        const gridCards = document.querySelectorAll('.player-card-mini');
-        const gridView = document.getElementById('player-grid-view');
-        const detailView = document.getElementById('player-detail-view');
-        const backBtn = document.getElementById('back-to-grid');
-
-        if (backBtn && gridView && detailView) {
-            backBtn.addEventListener('click', () => {
-                detailView.classList.add('hidden');
-                gridView.classList.remove('hidden');
-            });
-        }
-
-        gridCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const name = card.getAttribute('data-player-name');
-                const player = players.find(p => p.name === name);
-
-                if (player) {
-                    // Populate Detail View (MTG Style)
-                    document.getElementById('detail-name').textContent = player.name;
-                    document.getElementById('detail-type-text').textContent = `${player.rarity} ${player.rpgClass}`;
-                    document.getElementById('detail-mana').textContent = player.total; // Level as mana cost
-                    document.getElementById('detail-avatar').textContent = player.name.substring(0, 2).toUpperCase();
-                    document.getElementById('detail-pt').textContent = `${player.successes}/${player.total}`;
-                    document.getElementById('detail-flavor').textContent = `"${player.flavorText}"`;
-
-                    // Update Lists
-                    const list = document.getElementById('detail-predictions-list');
-                    list.innerHTML = '';
-                    player.predictions.forEach(p => {
-                        const li = document.createElement('li');
-
-                        // Localize claim if object
-                        let claimText = '';
-                        const selectedLang = (typeof currentLang !== 'undefined') ? currentLang : lang;
-
-                        if (typeof p.claim === 'string') claimText = p.claim;
-                        else if (typeof p.claim === 'object') claimText = p.claim[selectedLang] || p.claim['en'];
-
-                        // No Truncation as requested
-
-                        let bulletColorClass = 'bullet-future';
-                        if (p.status === 'ACTIVE') bulletColorClass = 'bullet-active';
-                        if (p.status === 'EXPIRED') bulletColorClass = 'bullet-expired';
-
-                        // Use a colored bullet point instead of text label
-                        li.innerHTML = `<span class="mtg-ability-bullet ${bulletColorClass}">●</span> <span>${claimText}</span>`;
-                        list.appendChild(li);
-                    });
-
-                    // Apply Styles
-                    const container = document.getElementById('mtg-card-container');
-                    container.className = 'mtg-card-container'; // Reset
-                    container.classList.add(player.mtgColor.toLowerCase());
-                    container.classList.add(player.rarity.toLowerCase());
-
-                    // Show Detail View
-                    gridView.classList.add('hidden');
-                    detailView.classList.remove('hidden');
-                }
-            });
-        });
 
         // --- Easter Egg Logic ---
         let titleClickCount = 0;
@@ -1841,30 +740,8 @@ const players = Object.values(creatorsData).map(c => {
             const subtitle = document.getElementById('subtitle');
             if (subtitle) subtitle.textContent = currentTranslations.subtitle;
 
-            // Header & Privacy
-            if (btnAbout) btnAbout.textContent = currentTranslations.about_button;
-            if (btnPrivacy) btnPrivacy.textContent = currentTranslations.privacy_policy_button;
-
             const disclaimer = document.getElementById('disclaimer');
             if (disclaimer) disclaimer.textContent = currentTranslations.site_disclaimer;
-
-            // Privacy Modal
-            const privacyTitle = document.getElementById('privacy-title');
-            if (privacyTitle) privacyTitle.textContent = currentTranslations.privacy_policy_title;
-            const privacyText = document.getElementById('privacy-text');
-            if (privacyText) privacyText.innerHTML = currentTranslations.privacy_policy_content;
-
-            // About Modal
-            const aboutTitle = document.getElementById('about-title');
-            if (aboutTitle) aboutTitle.textContent = currentTranslations.about_title;
-            const aboutWelcome = document.getElementById('about-welcome');
-            if (aboutWelcome) aboutWelcome.textContent = currentTranslations.about_welcome;
-            const aboutDesc1 = document.getElementById('about-desc1');
-            if (aboutDesc1) aboutDesc1.textContent = currentTranslations.about_desc1;
-            const aboutDesc2 = document.getElementById('about-desc2');
-            if (aboutDesc2) aboutDesc2.textContent = currentTranslations.about_desc2;
-            const secretHint = document.getElementById('secret-hint');
-            if (secretHint) secretHint.textContent = currentTranslations.secret_hint;
 
             // Bug Modal
             const reportBugTitle = document.getElementById('report-bug-title');
@@ -1887,38 +764,11 @@ const players = Object.values(creatorsData).map(c => {
             document.querySelectorAll('input[name="email"]').forEach(el => el.placeholder = currentTranslations.email_placeholder);
             document.querySelectorAll('textarea[name="message"]').forEach(el => el.placeholder = currentTranslations.message_placeholder);
 
-            // Benchmark Modal
-            const benchmarkTitle = document.getElementById('benchmark-title');
-            if (benchmarkTitle) benchmarkTitle.textContent = currentTranslations.benchmark_title;
-
-            // Serial Popper Modal
-            const serialPopperTitle = document.getElementById('serial-popper-title');
-            if (serialPopperTitle) serialPopperTitle.textContent = currentTranslations.serial_popper_modal_title;
-            const serialPopperCountLabel = document.getElementById('serial-popper-count-label');
-            if (serialPopperCountLabel) serialPopperCountLabel.textContent = currentTranslations.serial_popper_count_label;
-
             // Clock & Main
             const clockLabel = document.getElementById('clock-label');
             if (clockLabel) clockLabel.textContent = currentTranslations.clock_label;
             const clockExplanation = document.getElementById('clock-explanation');
             if (clockExplanation) clockExplanation.textContent = currentTranslations.clock_explanation;
-            const leaderboardButton = document.getElementById('leaderboard-button');
-            if (leaderboardButton) leaderboardButton.textContent = currentTranslations.leaderboard_button;
-            const serialPopperButton = document.getElementById('serial-popper-button');
-            if (serialPopperButton) serialPopperButton.textContent = currentTranslations.serial_popper_button;
-            const hypeDictionaryButton = document.getElementById('hype-dictionary-button');
-            if (hypeDictionaryButton) hypeDictionaryButton.textContent = currentTranslations.hype_dictionary_button;
-
-            // Hype Dictionary Modal
-            const hypeTitle = document.getElementById('hype-title');
-            if (hypeTitle) hypeTitle.textContent = currentTranslations.hype_dictionary_title;
-            const terms = ['agentic', 'hallucination', 'slop', 'collapse', 'prompt', 'agi', 'alignment'];
-            terms.forEach(term => {
-                const dt = document.getElementById(`term-${term}`);
-                const dd = document.getElementById(`def-${term}`);
-                if (dt) dt.textContent = currentTranslations[`hype_term_${term}`];
-                if (dd) dd.textContent = currentTranslations[`hype_def_${term}`];
-            });
 
             // Footer
             const footerContactLabel = document.getElementById('footer-contact-label');

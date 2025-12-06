@@ -1,0 +1,117 @@
+---
+import Layout from '../layouts/Layout.astro';
+import en from '../locales/en.json';
+import ptBR from '../locales/pt-BR.json';
+import ja from '../locales/ja.json';
+import es from '../locales/es.json';
+import zh from '../locales/zh.json';
+
+const translations = {
+    'en': en,
+    'pt-BR': ptBR,
+    'ja': ja,
+    'es': es,
+    'zh': zh,
+};
+
+const lang = 'en';
+const t = translations[lang];
+
+const terms = ['agentic', 'hallucination', 'slop', 'collapse', 'prompt', 'agi', 'alignment'];
+---
+
+<Layout lang={lang} title={`${t.hype_dictionary_title} - ${t.title}`}>
+    <main>
+        <h1 id="hype-title">{t.hype_dictionary_title}</h1>
+        <div class="hype-container">
+            <dl class="hype-list">
+                {terms.map(term => (
+                    <div class="hype-item">
+                        <dt id={`term-${term}`}>{t[`hype_term_${term}`]}</dt>
+                        <dd id={`def-${term}`}>{t[`hype_def_${term}`]}</dd>
+                    </div>
+                ))}
+            </dl>
+        </div>
+    </main>
+</Layout>
+
+<style>
+    main {
+        max-width: 50rem;
+        margin: 4rem auto;
+        padding: 0 1rem;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 900;
+        text-align: center;
+        margin-bottom: 2rem;
+        color: white;
+        background: linear-gradient(to right, #8B5CF6, #C084FC);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hype-container {
+        background: rgba(31, 41, 55, 0.5);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        box-shadow: 0 0 30px rgba(139, 92, 246, 0.1);
+        border-radius: 1rem;
+        padding: 2.5rem;
+    }
+
+    .hype-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        margin: 0;
+    }
+
+    .hype-item {
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .hype-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    dt {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #A78BFA;
+        margin-bottom: 0.75rem;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    dd {
+        margin: 0;
+        color: #D1D5DB;
+        line-height: 1.6;
+        font-size: 1.05rem;
+    }
+</style>
+
+<script define:vars={{ translations, lang, terms }}>
+    function updateTranslations() {
+        let currentLang = lang;
+        try {
+            currentLang = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+        } catch (e) {
+            console.warn('Language detection failed:', e);
+        }
+
+        const t = translations[currentLang] || translations['en'];
+
+        const title = document.getElementById('hype-title');
+        if (title) title.textContent = t.hype_dictionary_title;
+
+        terms.forEach(term => {
+            const dt = document.getElementById(`term-${term}`);
+            const dd = document.getElementById(`def-${term}`);
+            if (dt) dt.textContent = t[`hype_term_${term}`];
+            if (dd) dd.textContent = t[`hype_def_${term}`];
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', updateTranslations);
+</script>

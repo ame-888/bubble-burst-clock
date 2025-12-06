@@ -1,0 +1,225 @@
+---
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import en from '../locales/en.json';
+import ptBR from '../locales/pt-BR.json';
+import ja from '../locales/ja.json';
+import es from '../locales/es.json';
+import zh from '../locales/zh.json';
+
+const translations = {
+    'en': en,
+    'pt-BR': ptBR,
+    'ja': ja,
+    'es': es,
+    'zh': zh,
+};
+
+const { lang = 'en' } = Astro.props;
+const t = translations[lang] || en;
+---
+
+<nav class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-brand">
+            <a href="/" class="brand-link">
+                Bubble Burst Clock
+            </a>
+        </div>
+
+        <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle Navigation">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+
+        <div class="navbar-menu" id="navbar-menu">
+            <a href="/" class="nav-link" data-i18n-key="nav_home">Home</a>
+            <a href="/players" class="nav-link" data-i18n-key="player_cards_button">{t.player_cards_button}</a>
+            <a href="/leaderboard" class="nav-link" data-i18n-key="leaderboard_button">{t.leaderboard_button}</a>
+            <a href="/hype-dictionary" class="nav-link" data-i18n-key="hype_dictionary_button">{t.hype_dictionary_button}</a>
+            <a href="/about" class="nav-link" data-i18n-key="about_button">{t.about_button}</a>
+            <a href="/privacy" class="nav-link" data-i18n-key="privacy_policy_button">{t.privacy_policy_button}</a>
+        </div>
+
+        <div class="navbar-end">
+             <LanguageSwitcher />
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar {
+        background-color: rgba(17, 24, 39, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(10px);
+    }
+
+    .navbar-container {
+        max-width: 80rem;
+        margin: 0 auto;
+        padding: 0 1rem;
+        height: 4rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .brand-link {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 900;
+        font-size: 1.25rem;
+        color: white;
+        text-decoration: none;
+        background: linear-gradient(to right, #60A5FA, #A78BFA);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .navbar-menu {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .nav-link {
+        color: #D1D5DB;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .nav-link:hover {
+        color: white;
+    }
+
+    .navbar-end {
+        position: relative;
+        min-width: 150px; /* Space for language switcher */
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* Override LanguageSwitcher positioning for Navbar */
+    :global(.language-switcher) {
+        position: static !important;
+    }
+
+    .navbar-toggle {
+        display: none;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 30px;
+        height: 21px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        z-index: 101;
+    }
+
+    .bar {
+        height: 3px;
+        width: 100%;
+        background-color: white;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    @media (max-width: 900px) {
+        .navbar-toggle {
+            display: flex;
+        }
+
+        .navbar-menu {
+            position: fixed;
+            top: 4rem; /* Below navbar */
+            left: 0;
+            width: 100%;
+            background-color: #1F2937;
+            flex-direction: column;
+            gap: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .navbar-menu.active {
+            max-height: 400px; /* Arbitrary large height */
+        }
+
+        .nav-link {
+            width: 100%;
+            text-align: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-link:last-child {
+            border-bottom: none;
+        }
+
+        /* Hide the language switcher in header if desired, or keep it.
+           Currently keeping it in .navbar-end which is flex.
+           On mobile, .navbar-container is space-between.
+           We might want to hide navbar-end on really small screens or move it into menu?
+           For now, let's keep it visible. */
+    }
+</style>
+
+<script define:vars={{ translations, lang }}>
+    // Mobile Menu Toggle
+    const toggle = document.getElementById('navbar-toggle');
+    const menu = document.getElementById('navbar-menu');
+
+    if (toggle && menu) {
+        toggle.addEventListener('click', () => {
+            menu.classList.toggle('active');
+            // Animate hamburger (optional simple rotation)
+        });
+    }
+
+    // Client-side Translation Update for Navbar
+    function updateNavbarTranslations() {
+        let currentLang = lang;
+        try {
+            currentLang = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+        } catch (e) {
+            console.warn('Language detection failed:', e);
+        }
+
+        const t = translations[currentLang] || translations['en'];
+
+        document.querySelectorAll('.nav-link[data-i18n-key]').forEach(link => {
+            const key = link.getAttribute('data-i18n-key');
+
+            // Special handling for 'nav_home' if not in all json files (fallback to 'Home')
+            if (key === 'nav_home') {
+                link.textContent = t[key] || "Home";
+            } else if (t[key]) {
+                link.textContent = t[key];
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateNavbarTranslations();
+
+        // Also highlight active link
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const href = link.getAttribute('href');
+            // Exact match or sub-path match (e.g. /players matching /players/...)
+            if (href === currentPath || (href !== '/' && currentPath.startsWith(href))) {
+                link.style.color = '#60A5FA';
+                link.style.fontWeight = '700';
+            }
+        });
+    });
+</script>

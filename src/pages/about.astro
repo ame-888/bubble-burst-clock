@@ -1,0 +1,111 @@
+---
+import Layout from '../layouts/Layout.astro';
+import en from '../locales/en.json';
+import ptBR from '../locales/pt-BR.json';
+import ja from '../locales/ja.json';
+import es from '../locales/es.json';
+import zh from '../locales/zh.json';
+
+const translations = {
+    'en': en,
+    'pt-BR': ptBR,
+    'ja': ja,
+    'es': es,
+    'zh': zh,
+};
+
+const lang = 'en';
+const t = translations[lang];
+---
+
+<Layout lang={lang} title={`${t.about_title} - ${t.title}`}>
+    <main>
+        <h1 id="about-title">{t.about_title}</h1>
+        <div class="about-container">
+            <p id="about-welcome" class="welcome-text">{t.about_welcome}</p>
+            <div class="divider"></div>
+            <p id="about-desc1">{t.about_desc1}</p>
+            <p id="about-desc2">{t.about_desc2}</p>
+            <p class="secret-hint"><em id="secret-hint">{t.secret_hint}</em></p>
+        </div>
+    </main>
+</Layout>
+
+<style>
+    main {
+        max-width: 50rem;
+        margin: 4rem auto;
+        padding: 0 1rem;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 900;
+        text-align: center;
+        margin-bottom: 2rem;
+        color: white;
+        background: linear-gradient(to right, #60A5FA, #A78BFA);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .about-container {
+        background: rgba(31, 41, 55, 0.5);
+        border: 1px solid rgba(96, 165, 250, 0.3);
+        box-shadow: 0 0 30px rgba(96, 165, 250, 0.1);
+        border-radius: 1rem;
+        padding: 2.5rem;
+        color: #D1D5DB;
+        line-height: 1.8;
+    }
+
+    .welcome-text {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+        margin: 1.5rem 0;
+    }
+
+    .secret-hint {
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        color: #9CA3AF;
+        border-top: 1px dashed rgba(255,255,255,0.1);
+        padding-top: 1rem;
+        text-align: center;
+    }
+</style>
+
+<script define:vars={{ translations, lang }}>
+    function updateTranslations() {
+        let currentLang = lang;
+        try {
+            currentLang = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+        } catch (e) {
+            console.warn('Language detection failed:', e);
+        }
+
+        const t = translations[currentLang] || translations['en'];
+
+        const title = document.getElementById('about-title');
+        const welcome = document.getElementById('about-welcome');
+        const desc1 = document.getElementById('about-desc1');
+        const desc2 = document.getElementById('about-desc2');
+        const hint = document.getElementById('secret-hint');
+
+        if (title) title.textContent = t.about_title;
+        if (welcome) welcome.textContent = t.about_welcome;
+        if (desc1) desc1.textContent = t.about_desc1;
+        if (desc2) desc2.textContent = t.about_desc2;
+        if (hint) hint.textContent = t.secret_hint;
+    }
+
+    document.addEventListener('DOMContentLoaded', updateTranslations);
+</script>

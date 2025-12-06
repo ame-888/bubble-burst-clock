@@ -1,0 +1,249 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { benchmarks } from '../data/benchmarks';
+import { predictions } from '../data/predictions';
+import en from '../locales/en.json';
+import ptBR from '../locales/pt-BR.json';
+import ja from '../locales/ja.json';
+import es from '../locales/es.json';
+import zh from '../locales/zh.json';
+
+const translations = {
+    'en': en,
+    'pt-BR': ptBR,
+    'ja': ja,
+    'es': es,
+    'zh': zh,
+};
+
+const lang = 'en';
+const t = translations[lang];
+
+// Benchmark Logic
+const processedBenchmarks = benchmarks.models.map(m => {
+    const scores = Object.values(m.scores);
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    return { ...m, avg };
+}).sort((a, b) => b.avg - a.avg);
+
+// Serial Popper Logic
+const creatorCounts: Record<string, number> = {};
+predictions.forEach(p => {
+    creatorCounts[p.creator] = (creatorCounts[p.creator] || 0) + 1;
+});
+
+const serialPoppers = Object.entries(creatorCounts)
+    .filter(([name, count]) => count > 1)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+---
+
+<Layout lang={lang} title={`${t.leaderboard_button} - ${t.title}`}>
+    <main>
+        <h1 id="leaderboard-title">{t.leaderboard_button}</h1>
+
+        <div class="leaderboard-grid">
+            <!-- Benchmarks Section -->
+            <section class="leaderboard-section">
+                <h2 id="benchmark-title">{t.benchmark_title}</h2>
+                <div class="benchmark-container">
+                    <div class="benchmark-list">
+                        {processedBenchmarks.map((m, index) => (
+                            <div class="benchmark-item">
+                                <div class="rank">#{index + 1}</div>
+                                <div class="model-info">
+                                    <div class="model-name">{m.name}</div>
+                                    <div class="model-avg">Avg: {m.avg.toFixed(1)}%</div>
+                                    <div class="level-breakdown">
+                                        {benchmarks.levels.map(l => (
+                                            <div class="level-score">
+                                                <span class="level-label">{l.name}:</span>
+                                                <span class="level-value">{m.scores[l.id]}%</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            <!-- Serial Poppers Section -->
+            <section class="leaderboard-section">
+                <h2 id="serial-popper-title">{t.serial_popper_modal_title}</h2>
+                <div class="serial-popper-container">
+                    <div class="serial-popper-list">
+                        {serialPoppers.length > 0 ? (
+                            serialPoppers.map((sp, index) => (
+                                <div class="serial-popper-item">
+                                    <div class="rank">#{index + 1}</div>
+                                    <div class="popper-info">
+                                        <div class="popper-name">{sp.name} 🍿</div>
+                                        <div class="popper-count"><span id="serial-popper-count-label">{t.serial_popper_count_label}</span>: {sp.count}</div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p class="no-data">No serial poppers yet...</p>
+                        )}
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</Layout>
+
+<style>
+    main {
+        max-width: 80rem;
+        margin: 4rem auto;
+        padding: 0 1rem;
+    }
+
+    h1 {
+        font-size: 3rem;
+        font-weight: 900;
+        text-align: center;
+        margin-bottom: 3rem;
+        color: white;
+        background: linear-gradient(to right, #F59E0B, #EF4444);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .leaderboard-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 4rem;
+    }
+
+    @media (min-width: 900px) {
+        .leaderboard-grid {
+            grid-template-columns: 1fr 1fr;
+            align-items: start;
+        }
+    }
+
+    .benchmark-container, .serial-popper-container {
+        background: rgba(31, 41, 55, 0.5);
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 0 30px rgba(0,0,0,0.2);
+    }
+
+    .benchmark-container {
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .serial-popper-container {
+        border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+
+    .benchmark-list, .serial-popper-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .benchmark-item, .serial-popper-item {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .benchmark-item:last-child, .serial-popper-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .rank {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #F59E0B;
+        min-width: 50px;
+        line-height: 1;
+    }
+
+    .serial-popper-item .rank {
+        color: #EF4444;
+    }
+
+    .model-info, .popper-info {
+        flex: 1;
+    }
+
+    .model-name, .popper-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .model-avg, .popper-count {
+        font-size: 0.9rem;
+        color: #9CA3AF;
+        margin-bottom: 0.5rem;
+    }
+
+    .level-breakdown {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+        gap: 0.5rem;
+        background: rgba(0,0,0,0.2);
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    }
+
+    .level-score {
+        text-align: center;
+    }
+
+    .level-label {
+        display: block;
+        font-size: 0.7rem;
+        color: #6B7280;
+    }
+
+    .level-value {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #D1D5DB;
+    }
+
+    .no-data {
+        text-align: center;
+        color: #9CA3AF;
+        font-style: italic;
+    }
+</style>
+
+<script define:vars={{ translations, lang }}>
+    function updateTranslations() {
+        let currentLang = lang;
+        try {
+            currentLang = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+        } catch (e) {
+            console.warn('Language detection failed:', e);
+        }
+
+        const t = translations[currentLang] || translations['en'];
+
+        const mainTitle = document.getElementById('leaderboard-title');
+        const benchTitle = document.getElementById('benchmark-title');
+        const popperTitle = document.getElementById('serial-popper-title');
+        const popperLabel = document.getElementById('serial-popper-count-label');
+
+        if (mainTitle) mainTitle.textContent = t.leaderboard_button;
+        if (benchTitle) benchTitle.textContent = t.benchmark_title;
+        if (popperTitle) popperTitle.textContent = t.serial_popper_modal_title;
+        if (popperLabel) popperLabel.textContent = t.serial_popper_count_label;
+    }
+
+    document.addEventListener('DOMContentLoaded', updateTranslations);
+</script>
