@@ -1,0 +1,83 @@
+---
+import Layout from '../layouts/Layout.astro';
+import en from '../locales/en.json';
+import ptBR from '../locales/pt-BR.json';
+import ja from '../locales/ja.json';
+import es from '../locales/es.json';
+import zh from '../locales/zh.json';
+
+const translations = {
+    'en': en,
+    'pt-BR': ptBR,
+    'ja': ja,
+    'es': es,
+    'zh': zh,
+};
+
+const lang = 'en';
+const t = translations[lang];
+---
+
+<Layout lang={lang} title={`${t.privacy_policy_title} - ${t.title}`}>
+    <main>
+        <h1 id="privacy-title">{t.privacy_policy_title}</h1>
+        <div class="privacy-container">
+            <p id="privacy-content" set:html={t.privacy_policy_content}></p>
+        </div>
+    </main>
+</Layout>
+
+<style>
+    main {
+        max-width: 50rem;
+        margin: 4rem auto;
+        padding: 0 1rem;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 900;
+        text-align: center;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .privacy-container {
+        background: rgba(31, 41, 55, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        padding: 2rem;
+        color: #D1D5DB;
+        line-height: 1.8;
+    }
+
+    /* Additional styles for potential expanded content */
+    :global(.privacy-container a) {
+        color: #60A5FA;
+        text-decoration: underline;
+    }
+    :global(.privacy-container a:hover) {
+        color: #93C5FD;
+    }
+</style>
+
+<script define:vars={{ translations, lang }}>
+    function updateTranslations() {
+        let currentLang = lang;
+        try {
+            currentLang = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
+        } catch (e) {
+            console.warn('Language detection failed:', e);
+        }
+
+        const t = translations[currentLang] || translations['en'];
+
+        const title = document.getElementById('privacy-title');
+        const content = document.getElementById('privacy-content');
+
+        if (title) title.textContent = t.privacy_policy_title;
+        if (content) content.innerHTML = t.privacy_policy_content;
+    }
+
+    document.addEventListener('DOMContentLoaded', updateTranslations);
+</script>
