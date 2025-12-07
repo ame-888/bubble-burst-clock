@@ -2,6 +2,10 @@
 // Pixel Pet Component
 // This component renders a pixel art pet based on CSS box-shadows.
 // It handles its own client-side logic for interactions (petting, naming, releasing).
+import { predictions } from '../data/predictions';
+
+// Calculate the current simulated date (must match index.astro logic for consistency)
+const simulatedNow = new Date('2025-12-03T00:00:00Z').getTime();
 ---
 
 <div id="pixel-pet-container" class="pet-container hidden">
@@ -23,6 +27,8 @@
             <span title="Love"><span id="pet-love-count">0</span> ❤️</span>
             <span class="separator">|</span>
             <span title="Time together"><span id="pet-days-count">0</span> Days</span>
+            <span class="separator">|</span>
+            <span title="Failed Claims Witnessed"><span id="pet-burst-count">0</span> 💥</span>
         </div>
         <button id="pet-release-btn" class="release-btn">Release</button>
     </div>
@@ -364,7 +370,7 @@
 
 </style>
 
-<script>
+<script define:vars={{ predictions, simulatedNow }}>
     class PixelPet {
         constructor() {
             this.container = document.getElementById('pixel-pet-container');
@@ -372,6 +378,7 @@
             this.nameEl = document.getElementById('pet-name-display');
             this.loveEl = document.getElementById('pet-love-count');
             this.daysEl = document.getElementById('pet-days-count');
+            this.burstEl = document.getElementById('pet-burst-count');
             this.heartsContainer = document.getElementById('pet-hearts');
             this.data = null;
 
@@ -422,6 +429,21 @@
             const start = this.data.obtainedAt || Date.now();
             const days = Math.floor((Date.now() - start) / msPerDay);
             if (this.daysEl) this.daysEl.textContent = days.toString();
+
+            // Calculate Bursts (Failed Claims Witnessed)
+            let burstCount = 0;
+            if (predictions && Array.isArray(predictions)) {
+                burstCount = predictions.filter(p => {
+                    const end = new Date(p.validityEnd).getTime();
+                    // Status Check Logic (Replicated from index.astro)
+                    let status = 'FUTURE';
+                    if (simulatedNow > end) status = 'EXPIRED';
+
+                    // Count if expired AND expiration date is after pet obtained date
+                    return status === 'EXPIRED' && end > start;
+                }).length;
+            }
+            if (this.burstEl) this.burstEl.textContent = burstCount.toString();
 
             // Set Type Class
             this.el.className = `pixel-pet pet-type-${this.data.type}`;

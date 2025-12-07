@@ -1,18 +1,21 @@
 ---
+const { mode = 'modal' } = Astro.props;
 ---
-<div id="game-center-container">
-    <button id="joystick-btn" aria-label="Open Game Center" title="Play Games">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="joystick-icon">
-            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
-            <path d="M6 12h4"></path>
-            <path d="M8 10v4"></path>
-            <line x1="15" y1="13" x2="15.01" y2="13"></line>
-            <line x1="18" y1="11" x2="18.01" y2="11"></line>
-        </svg>
-    </button>
+<div id="game-center-container" data-mode={mode}>
+    {mode === 'modal' && (
+        <button id="joystick-btn" aria-label="Open Game Center" title="Play Games">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="joystick-icon">
+                <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                <path d="M6 12h4"></path>
+                <path d="M8 10v4"></path>
+                <line x1="15" y1="13" x2="15.01" y2="13"></line>
+                <line x1="18" y1="11" x2="18.01" y2="11"></line>
+            </svg>
+        </button>
+    )}
 
-    <div id="game-modal" class="hidden">
-        <div class="modal-overlay"></div>
+    <div id="game-modal" class={mode === 'embedded' ? 'embedded-view' : 'hidden'}>
+        {mode === 'modal' && <div class="modal-overlay"></div>}
         <div class="modal-content glass-panel">
             <div class="modal-header">
                 <button id="header-back-btn" class="hidden" aria-label="Back to Menu">←</button>
@@ -192,7 +195,17 @@
         transition: opacity 0.3s, visibility 0.3s;
     }
 
-    #game-modal:not(.hidden) {
+    #game-modal.embedded-view {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding-bottom: 2rem;
+    }
+
+    #game-modal:not(.hidden):not(.embedded-view) {
         opacity: 1;
         visibility: visible;
     }
@@ -577,7 +590,13 @@
             closeBtn.addEventListener('click', () => {
                 // Fully quit the game
                 stopGame(true);
-                modal.classList.add('hidden');
+                if (!modal.classList.contains('embedded-view')) {
+                    modal.classList.add('hidden');
+                } else {
+                    // For embedded, maybe redirect to home or just show menu
+                    showMenu();
+                    window.location.href = '/';
+                }
             });
         }
 

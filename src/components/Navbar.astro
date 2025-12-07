@@ -35,6 +35,7 @@ const t = translations[lang] || en;
             <a href="/hype-dictionary" class="nav-link" data-i18n-key="hype_dictionary_button">{t.hype_dictionary_button}</a>
             <a href="/about" class="nav-link" data-i18n-key="about_button">{t.about_button}</a>
             <a href="/privacy" class="nav-link" data-i18n-key="privacy_policy_button">{t.privacy_policy_button}</a>
+            <a href="/arcade" id="nav-arcade" class="nav-link hidden" style="color: #FACC15; font-weight: 700;">ARCADE</a>
         </div>
 
         <div class="navbar-end">
@@ -259,6 +260,13 @@ const t = translations[lang] || en;
 
     document.addEventListener('DOMContentLoaded', () => {
         updateNavbarTranslations();
+
+        // Check for Arcade Unlock
+        const arcadeUnlocked = localStorage.getItem('arcade_unlocked') === 'true';
+        if (arcadeUnlocked) {
+            const arcadeLink = document.getElementById('nav-arcade');
+            if (arcadeLink) arcadeLink.classList.remove('hidden');
+        }
 
         // Also highlight active link
         const currentPath = window.location.pathname;

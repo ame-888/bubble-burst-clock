@@ -1,7 +1,6 @@
 ---
 // --- PAGE BRAIN ---
 import Layout from '../layouts/Layout.astro';
-import GameCenter from '../components/GameCenter.astro';
 import PredictionCard from '../components/PredictionCard.astro';
 import { bettingManager } from '../scripts/BettingManager';
 import { predictions } from '../data/predictions';
@@ -71,10 +70,6 @@ const simulatedServerTime = now.getTime(); // Pass to client
 <Layout lang={lang} title={t.title}>
     <!-- Move specific head elements here -->
     <meta slot="head" name="google-site-verification" content="gi2pzxwjvX7zQtdowKjXbAw1wGHfjs8Cdf2w5ThdNcM" />
-
-    <div id="game-center-wrapper" class="hidden">
-        <GameCenter />
-    </div>
 
     <!-- Modals -->
     <div id="modal-overlay" class="hidden"></div>
@@ -771,20 +766,31 @@ const simulatedServerTime = now.getTime(); // Pass to client
         // --- Easter Egg Logic ---
         let titleClickCount = 0;
         const mainTitle = document.getElementById('main-title');
-        const gameCenterWrapper = document.getElementById('game-center-wrapper');
 
-        if (mainTitle && gameCenterWrapper) {
+        if (mainTitle) {
             mainTitle.addEventListener('click', () => {
                 titleClickCount++;
                 if (titleClickCount === 5) {
-                    gameCenterWrapper.classList.remove('hidden');
-                    // Achievement: Open Game Center
+                    // Unlock Arcade Mode
+                    localStorage.setItem('arcade_unlocked', 'true');
+
+                    // Show Link
+                    const arcadeLink = document.getElementById('nav-arcade');
+                    if (arcadeLink) arcadeLink.classList.remove('hidden');
+
+                    // Achievement: Open Game Center (Trigger logic still valid for unlock)
                     window.dispatchEvent(new CustomEvent('game-center-opened'));
 
-                    console.log('Game Center Unlocked! 🎮');
-                    mainTitle.style.color = '#F59E0B'; // Turn title gold temporarily
+                    console.log('Arcade Mode Unlocked! 🎮');
+
+                    // Visual Feedback
+                    mainTitle.style.color = '#FACC15'; // Bright Yellow
+                    mainTitle.style.textShadow = '0 0 20px rgba(250, 204, 21, 0.5)';
+
                     setTimeout(() => {
                         mainTitle.style.color = '';
+                        mainTitle.style.textShadow = '';
+                        alert("🕹️ ARCADE MODE UNLOCKED! Check the menu.");
                     }, 500);
                 }
             });
