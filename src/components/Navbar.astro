@@ -38,6 +38,7 @@ const t = translations[lang] || en;
         </div>
 
         <div class="navbar-end">
+             <button id="bubbles-toggle" class="bubbles-toggle-btn">Bubbles: ON</button>
              <LanguageSwitcher />
         </div>
     </div>
@@ -98,12 +99,34 @@ const t = translations[lang] || en;
         position: relative;
         min-width: 150px; /* Space for language switcher */
         display: flex;
+        align-items: center;
+        gap: 1rem;
         justify-content: flex-end;
     }
 
     /* Override LanguageSwitcher positioning for Navbar */
     :global(.language-switcher) {
         position: static !important;
+    }
+
+    .bubbles-toggle-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.3rem 0.6rem;
+        border-radius: 0.3rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .bubbles-toggle-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    .bubbles-toggle-btn.off {
+        opacity: 0.6;
+        background: transparent;
+        border-color: rgba(255,255,255,0.1);
     }
 
     .navbar-toggle {
@@ -178,6 +201,36 @@ const t = translations[lang] || en;
         toggle.addEventListener('click', () => {
             menu.classList.toggle('active');
             // Animate hamburger (optional simple rotation)
+        });
+    }
+
+    // Bubbles Toggle Logic
+    const bubblesBtn = document.getElementById('bubbles-toggle');
+    if (bubblesBtn) {
+        let isEnabled = true;
+        try {
+            const saved = localStorage.getItem('bubbles_enabled');
+            if (saved === 'false') isEnabled = false;
+        } catch(e) {}
+
+        function updateBtn() {
+            if (isEnabled) {
+                bubblesBtn.textContent = "Bubbles: ON";
+                bubblesBtn.classList.remove('off');
+            } else {
+                bubblesBtn.textContent = "Bubbles: OFF";
+                bubblesBtn.classList.add('off');
+            }
+        }
+        updateBtn();
+
+        bubblesBtn.addEventListener('click', () => {
+            isEnabled = !isEnabled;
+            localStorage.setItem('bubbles_enabled', isEnabled);
+            updateBtn();
+
+            // Reload to apply changes cleanly to the physics engine
+            location.reload();
         });
     }
 
