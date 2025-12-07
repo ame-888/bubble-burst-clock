@@ -22,9 +22,9 @@
     "sort_status": "Status",
     "about_button": "ABOUT",
     "about_title": "The Chronicles of the Bubble",
-    "about_welcome": "Welcome to the Bubble Burst Clock—an Intelligence Age chronicle.",
-    "about_desc1": "This archive serves as a permanent record of the AI industry's grandest promises. From the Doomsday Clock tracking the last time a major prediction failed, to the Dictionary defining the era's lexicon, we document the gap between marketing and reality.",
-    "about_desc2": "Explore the predictions database, test your foresight with the betting system, and climb the ranks of truth-seekers. Uncover hidden secrets, unlock achievements, and perhaps find a rare companion in the bubbles. This is not just a clock; it is a testament to human ambition and its limits.",
+    "about_welcome": "Witness the grand timeline of artificial intelligence hubris.",
+    "about_desc1": "We serve as the silent observers of an industry prone to spectacular proclamations. This archive meticulously records the bold prophecies of the technological elite—claims that promised utopia but delivered only delays.",
+    "about_desc2": "The Great Clock stands as a testament to reality's persistence, counting the moments since the last illusion shattered. Review the active prophecies, document new visions, and consult the data to distinguish true progress from ephemeral hype.",
     "secret_hint": "Psst... rumor has it the main title hides a retro secret if you tap it enough times.",
     "report_bug_title": "Report a Bug",
     "report_bug_desc": "Found something broken? Let us know.",
@@ -127,13 +127,5 @@
     "reset_modal_title": "RESET ACHIEVEMENTS?",
     "reset_modal_msg": "WARNING: This action cannot be undone. All your unlocked achievements will be lost forever.",
     "reset_modal_confirm": "YES, WIPE THEM",
-    "reset_modal_cancel": "Cancel",
-    "pet_section_title": "Bubble Pet Habitat",
-    "pet_name_label": "Name Your Pet",
-    "pet_name_placeholder": "e.g. Blobby",
-    "pet_button_save": "Save Name",
-    "pet_button_pet": "Pet",
-    "pet_button_release": "Release",
-    "pet_release_confirm": "Are you sure you want to release your pet? It will be gone forever.",
-    "pet_found_toast": "You found a Rare Bubble Egg! Check your Achievements page!"
+    "reset_modal_cancel": "Cancel"
 }
