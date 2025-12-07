@@ -20,7 +20,9 @@
 
     <div class="pet-controls">
         <div class="stats">
-            <span id="pet-love-count">0</span> ❤️
+            <span title="Love"><span id="pet-love-count">0</span> ❤️</span>
+            <span class="separator">|</span>
+            <span title="Time together"><span id="pet-days-count">0</span> Days</span>
         </div>
         <button id="pet-release-btn" class="release-btn">Release</button>
     </div>
@@ -96,7 +98,7 @@
         width: 100%;
         height: 150px;
         position: relative;
-        overflow: hidden; /* Constrain movement to this box? Or let it roam? User said "bottom of page". Let's constrain to a wide stage. */
+        overflow: hidden;
         border-bottom: 4px solid rgba(255, 255, 255, 0.1);
         margin-bottom: 1rem;
         cursor: pointer;
@@ -104,143 +106,153 @@
 
     .pixel-pet {
         position: absolute;
-        bottom: 10px; /* Ground level */
+        bottom: 12px;
         left: 50%;
-        width: 4px; /* Pixel scale unit */
-        height: 4px;
+        width: 3px; /* Smaller pixel unit for more detail */
+        height: 3px;
         transform-origin: bottom center;
-        transition: transform 0.2s; /* For flip */
-        /* Animation handled by JS for random walking */
+        transition: transform 0.2s;
     }
 
     /*
-       PIXEL ART DEFINITIONS
-       Using box-shadow on a 1x1 pixel div (scaled up).
-       The art-body is the single pixel that gets cast.
+       PIXEL ART DEFINITIONS (16x16 Grid optimized)
+       Unit: 1em = 3px
     */
     .art-body {
         width: 1em;
         height: 1em;
-        font-size: 5px; /* Size of one pixel */
+        font-size: 3px;
         background: transparent;
     }
 
-    /* DOG (Golden Retriever style) */
-    /* 10x8 approx */
+    /* DOG - Enhanced (Floppy ears, spotty) */
     .pet-type-dog .art-body {
-        color: #F59E0B; /* Primary Fur Color */
+        color: #D97706; /* Base Brown */
         box-shadow:
             /* Head */
-            2em -6em, 3em -6em, 4em -6em,
-            2em -5em, 5em -5em,
-            2em -4em, 3em -4em, 4em -4em, 5em -4em,
-            /* Ears */
-            1em -5em #D97706, 5em -6em #D97706,
+            3em -11em #F59E0B, 4em -11em #F59E0B, 5em -11em #F59E0B, 6em -11em #F59E0B,
+            2em -10em #F59E0B, 3em -10em #F59E0B, 4em -10em #F59E0B, 5em -10em #F59E0B, 6em -10em #F59E0B, 7em -10em #F59E0B,
+            2em -9em #F59E0B, 3em -9em #FFF, 4em -9em #FFF, 5em -9em #F59E0B, 6em -9em #F59E0B, 7em -9em #F59E0B,
+            /* Ears (Floppy) */
+            1em -9em #92400E, 8em -9em #92400E,
+            1em -8em #92400E, 8em -8em #92400E,
+            /* Eyes/Nose */
+            3em -9em #000, 6em -9em #000,
+            4em -8em #000, 5em -8em #000,
             /* Body */
-            3em -3em, 4em -3em, 5em -3em, 6em -3em, 7em -3em,
-            3em -2em, 4em -2em, 5em -2em, 6em -2em, 7em -2em, 8em -2em,
+            3em -7em #F59E0B, 4em -7em #F59E0B, 5em -7em #F59E0B, 6em -7em #F59E0B,
+            3em -6em #FFF, 4em -6em #FFF, 5em -6em #FFF, 6em -6em #FFF,
+            3em -5em #F59E0B, 4em -5em #F59E0B, 5em -5em #F59E0B, 6em -5em #F59E0B,
+            3em -4em #F59E0B, 4em -4em #F59E0B, 5em -4em #F59E0B, 6em -4em #F59E0B,
             /* Legs */
-            3em -1em, 7em -1em,
+            3em -3em #F59E0B, 6em -3em #F59E0B,
+            3em -2em #F59E0B, 6em -2em #F59E0B,
             /* Tail */
-            8em -4em #F59E0B, 9em -5em #F59E0B;
+            7em -5em #F59E0B, 8em -6em #F59E0B, 9em -7em #FFF;
     }
 
-    /* CAT (Black cat) */
+    /* CAT - Enhanced (Tuxedo Cat) */
     .pet-type-cat .art-body {
-        color: #1F2937;
+        color: #1F2937; /* Black */
         box-shadow:
             /* Head */
-            2em -5em, 3em -5em, 4em -5em,
-            1em -4em, 2em -4em, 3em -4em, 4em -4em, 5em -4em,
-            /* Ears */
-            2em -6em, 4em -6em,
-            /* Eyes (using transparent holes or different color) */
+            3em -11em, 6em -11em, /* Ear tips */
+            2em -10em, 3em -10em, 4em -10em, 5em -10em, 6em -10em, 7em -10em,
+            2em -9em, 3em -9em #10B981, 4em -9em, 5em -9em, 6em -9em #10B981, 7em -9em, /* Eyes Green */
+            2em -8em, 3em -8em, 4em -8em #FFF, 5em -8em #FFF, 6em -8em, 7em -8em, /* White muzzle */
             /* Body */
-            2em -3em, 3em -3em, 4em -3em, 5em -3em,
-            2em -2em, 3em -2em, 4em -2em, 5em -2em, 6em -2em,
+            3em -7em, 4em -7em, 5em -7em, 6em -7em,
+            3em -6em, 4em -6em #FFF, 5em -6em #FFF, 6em -6em, /* White Chest */
+            3em -5em, 4em -5em, 5em -5em, 6em -5em,
+            3em -4em, 4em -4em, 5em -4em, 6em -4em,
             /* Legs */
-            2em -1em, 5em -1em,
-            /* Tail (up) */
-            6em -3em, 6em -4em, 6em -5em;
+            3em -3em, 6em -3em,
+            3em -2em #FFF, 6em -2em #FFF, /* White paws */
+            /* Tail */
+            7em -4em, 8em -3em, 8em -2em, 9em -1em;
     }
 
-    /* MONKEY */
+    /* MONKEY - Enhanced */
     .pet-type-monkey .art-body {
         color: #92400E;
         box-shadow:
             /* Head */
-            3em -7em, 4em -7em, 5em -7em,
-            2em -6em #B45309, 3em -6em #FEF3C7, 4em -6em #FEF3C7, 5em -6em #FEF3C7, 6em -6em #B45309,
+            4em -12em, 5em -12em,
+            3em -11em, 4em -11em #FEF3C7, 5em -11em #FEF3C7, 6em -11em,
+            2em -10em, 3em -10em #FEF3C7, 4em -10em #FEF3C7, 5em -10em #FEF3C7, 6em -10em #FEF3C7, 7em -10em,
+            3em -9em #FEF3C7, 4em -9em #FEF3C7, 5em -9em #FEF3C7, 6em -9em #FEF3C7,
             /* Body */
-            3em -5em, 4em -5em, 5em -5em,
-            3em -4em, 4em -4em, 5em -4em,
-            3em -3em, 4em -3em, 5em -3em,
-            /* Arms/Legs */
-            2em -4em, 6em -4em,
-            3em -2em, 5em -2em,
+            4em -8em, 5em -8em,
+            3em -7em, 4em -7em, 5em -7em, 6em -7em,
+            3em -6em, 4em -6em, 5em -6em, 6em -6em,
+            3em -5em, 4em -5em, 5em -5em, 6em -5em,
+            /* Limbs */
+            2em -6em, 7em -6em,
+            2em -5em, 7em -5em,
+            3em -4em, 6em -4em,
+            3em -3em, 6em -3em,
             /* Tail */
-            6em -3em, 7em -4em, 8em -3em;
+            7em -4em, 8em -5em, 9em -5em, 10em -4em;
     }
 
-    /* RHINO */
+    /* RHINO - Enhanced */
     .pet-type-rhino .art-body {
         color: #6B7280;
         box-shadow:
             /* Head */
-            1em -5em #E5E7EB, 2em -6em, 2em -5em, 3em -5em, 4em -5em,
-            /* Horn */
-            1em -6em #E5E7EB,
+            2em -10em #E5E7EB, /* Horn Tip */
+            2em -9em #E5E7EB, 3em -9em, 4em -9em,
+            2em -8em, 3em -8em, 4em -8em, 5em -8em,
             /* Body */
-            3em -4em, 4em -4em, 5em -4em, 6em -4em, 7em -4em,
-            3em -3em, 4em -3em, 5em -3em, 6em -3em, 7em -3em,
+            4em -7em, 5em -7em, 6em -7em, 7em -7em, 8em -7em,
+            4em -6em, 5em -6em, 6em -6em, 7em -6em, 8em -6em, 9em -6em,
+            4em -5em, 5em -5em, 6em -5em, 7em -5em, 8em -5em, 9em -5em,
             /* Legs */
-            3em -2em, 3em -1em,
-            6em -2em, 6em -1em;
+            4em -4em, 5em -4em, 8em -4em, 9em -4em,
+            4em -3em, 5em -3em, 8em -3em, 9em -3em,
+            4em -2em, 5em -2em, 8em -2em, 9em -2em;
     }
 
-    /* DRAGON */
+    /* DRAGON - Enhanced */
     .pet-type-dragon .art-body {
         color: #047857;
         box-shadow:
+            /* Horns */
+            2em -13em #065F46, 4em -13em #065F46,
             /* Head */
-            2em -7em, 3em -7em,
-            1em -6em, 2em -6em, 3em -6em,
+            2em -12em, 3em -12em, 4em -12em,
+            1em -11em, 2em -11em, 3em -11em, 4em -11em,
+            /* Neck */
+            3em -10em, 4em -10em,
             /* Body */
-            3em -5em, 4em -5em,
-            3em -4em, 4em -4em, 5em -4em,
-            3em -3em, 4em -3em, 5em -3em, 6em -3em,
+            3em -9em, 4em -9em, 5em -9em,
+            3em -8em, 4em -8em, 5em -8em, 6em -8em,
+            3em -7em, 4em -7em, 5em -7em, 6em -7em,
             /* Wings */
-            4em -6em #EF4444, 5em -7em #EF4444,
-            /* Tail */
-            7em -3em, 8em -2em,
+            5em -10em #EF4444, 6em -11em #EF4444, 7em -12em #EF4444,
+            5em -9em #EF4444, 6em -8em #EF4444,
             /* Legs */
-            3em -2em, 5em -2em;
+            3em -6em, 6em -6em,
+            3em -5em, 6em -5em,
+            /* Tail */
+            7em -7em, 8em -6em, 9em -5em, 10em -4em;
     }
 
-    /* FISH (in Aquarium) */
+    /* FISH - Enhanced */
     .pet-type-fish .art-body {
-        color: #3B82F6; /* Fish color */
+        color: #3B82F6;
         box-shadow:
-            /* Tank Water (Blue tint) */
-            /* Using a large box shadow for the tank is hard with single pixel.
-               Let's draw the fish and wheels, and maybe a border. */
-
-            /* Fish */
-            3em -5em, 4em -5em, 5em -5em,
-            2em -4em, 3em -4em, 4em -4em, 5em -4em, 6em -4em #F59E0B, /* Tail orange */
-            3em -3em, 4em -3em, 5em -3em,
-
-            /* Tank Border (Cyan) */
-            0em -7em #22D3EE, 1em -7em #22D3EE, 2em -7em #22D3EE, 3em -7em #22D3EE, 4em -7em #22D3EE, 5em -7em #22D3EE, 6em -7em #22D3EE, 7em -7em #22D3EE, 8em -7em #22D3EE,
-            0em -6em #22D3EE, 8em -6em #22D3EE,
-            0em -5em #22D3EE, 8em -5em #22D3EE,
-            0em -4em #22D3EE, 8em -4em #22D3EE,
-            0em -3em #22D3EE, 8em -3em #22D3EE,
-            0em -2em #22D3EE, 1em -2em #22D3EE, 2em -2em #22D3EE, 3em -2em #22D3EE, 4em -2em #22D3EE, 5em -2em #22D3EE, 6em -2em #22D3EE, 7em -2em #22D3EE, 8em -2em #22D3EE,
-
-            /* Wheels */
-            1em -1em #374151, 2em -1em #374151,
-            6em -1em #374151, 7em -1em #374151;
+            /* Body */
+            4em -8em, 5em -8em, 6em -8em,
+            3em -7em, 4em -7em, 5em -7em, 6em -7em, 7em -7em,
+            2em -6em, 3em -6em, 4em -6em, 5em -6em, 6em -6em, 7em -6em, 8em -6em #F59E0B, /* Tail start */
+            3em -5em, 4em -5em, 5em -5em, 6em -5em, 7em -5em, 9em -7em #F59E0B, 9em -5em #F59E0B, /* Tail Tips */
+            4em -4em, 5em -4em, 6em -4em,
+            /* Fins */
+            5em -9em #F59E0B, /* Top Fin */
+            5em -3em #F59E0B, /* Bottom Fin */
+            /* Bubble */
+            9em -9em #A5F3FC, 10em -11em #A5F3FC;
     }
 
     /* Animation Classes */
@@ -250,7 +262,7 @@
 
     @keyframes bounce {
         from { transform: translateY(0); }
-        to { transform: translateY(-2px); }
+        to { transform: translateY(-3px); }
     }
 
     .pet-hearts {
@@ -284,7 +296,15 @@
 
     .stats {
         font-family: monospace;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+        color: #D1D5DB;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .separator {
+        color: #4B5563;
     }
 
     .release-btn {
@@ -351,6 +371,7 @@
             this.el = document.getElementById('pixel-pet');
             this.nameEl = document.getElementById('pet-name-display');
             this.loveEl = document.getElementById('pet-love-count');
+            this.daysEl = document.getElementById('pet-days-count');
             this.heartsContainer = document.getElementById('pet-hearts');
             this.data = null;
 
@@ -394,6 +415,13 @@
             // Set Name
             this.nameEl.textContent = this.data.name || this.capitalize(this.data.type);
             this.loveEl.textContent = this.data.petted || 0;
+
+            // Calculate Days
+            const msPerDay = 1000 * 60 * 60 * 24;
+            // Handle legacy data where obtainedAt might be missing
+            const start = this.data.obtainedAt || Date.now();
+            const days = Math.floor((Date.now() - start) / msPerDay);
+            if (this.daysEl) this.daysEl.textContent = days.toString();
 
             // Set Type Class
             this.el.className = `pixel-pet pet-type-${this.data.type}`;
