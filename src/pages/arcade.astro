@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import GameCenter from '../components/GameCenter.astro';
+---
+
+<Layout title="AI Arcade | Bubble Burst Clock">
+    <div class="arcade-page-container">
+        <!-- We pass a prop 'mode="embedded"' to GameCenter to tell it to behave as a page content -->
+        <GameCenter mode="embedded" />
+    </div>
+</Layout>
+
+<style>
+    .arcade-page-container {
+        padding-top: 2rem;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
