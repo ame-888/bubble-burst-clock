@@ -386,6 +386,15 @@ const t = translations[lang];
         });
 
         // Secret Input Logic
+        // Listen for real-time unlocks
+        window.addEventListener('achievement-unlocked', (e) => {
+            const id = (e as CustomEvent).detail.id;
+            const card = document.querySelector(`.achievement-card[data-id="${id}"]`);
+            if (card) {
+                unlockCard(card);
+            }
+        });
+
         const input = document.getElementById('secret-input');
         if (input) {
             input.addEventListener('input', (e) => {

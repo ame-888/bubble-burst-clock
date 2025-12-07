@@ -161,12 +161,6 @@ const bubblesConfig = [
                         el.classList.add('golden-egg');
                     }
 
-                    // Add click handler to pop bubble
-                    el.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        popBubble(el, bInstance);
-                    });
-
                     const bInstance = {
                         el,
                         size,

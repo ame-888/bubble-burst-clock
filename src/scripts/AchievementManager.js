@@ -134,6 +134,10 @@ class AchievementManager {
         this.save();
         this.playUnlockSound();
         this.showNotification(achievement);
+
+        // Dispatch global event for instant UI updates
+        window.dispatchEvent(new CustomEvent('achievement-unlocked', { detail: { id } }));
+
         this.checkCompletionist();
     }
 
