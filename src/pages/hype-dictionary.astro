@@ -17,22 +17,22 @@ const translations = {
 const lang = 'en';
 const t = translations[lang];
 
-const terms = ['agentic', 'agi', 'alignment', 'asi', 'chain_of_thought', 'collapse', 'hallucination', 'multimodality', 'prompt', 'reasoning_model', 'singularity', 'slop', 'ubi', 'world_model'];
+const terms = ['agentic', 'agi', 'alignment', 'asi', 'chain_of_thought', 'collapse', 'graph_of_thought', 'hallucination', 'multimodality', 'prompt', 'reasoning_model', 'singularity', 'slop', 'token', 'transformer', 'tree_of_thought', 'ubi', 'world_model'];
 
 // Hint logic: Wraps a specific letter in a span with 'secret-char' class
 // "TRUTH"
-// T: prompT (last)
+// T: Transformer (first)
 // R: Reasoning_model (first)
 // U: Ubi (first)
-// T: thoughT (last in chain_of_thought)
+// T: Token (first)
 // H: Hallucination (first)
 
 // Map term to { index: i, char: 'X' } where index is character index in the string
 const secretMap = {
-    'prompt': { char: 't', pos: 'last' },
+    'transformer': { char: 'T', pos: 0 },
     'reasoning_model': { char: 'R', pos: 0 },
     'ubi': { char: 'U', pos: 0 },
-    'chain_of_thought': { char: 't', pos: 'last' },
+    'token': { char: 'T', pos: 0 },
     'hallucination': { char: 'H', pos: 0 }
 };
 ---
