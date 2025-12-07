@@ -111,6 +111,9 @@ const bubblesConfig = [
                 const container = document.getElementById('bubbles-container');
                 const bubbleEls = document.querySelectorAll('.bubble');
 
+                // Shared Audio Context
+                let audioCtx = null;
+
                 // Mouse position
                 let mouseX = -1000;
                 let mouseY = -1000;
@@ -129,7 +132,13 @@ const bubblesConfig = [
                     // Randomize vertical start positions to distribute them across the screen initially
                     const startY = Math.random() * window.innerHeight;
 
-                    return {
+                    // Add click handler to pop bubble
+                    el.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        popBubble(el, bInstance);
+                    });
+
+                    const bInstance = {
                         el,
                         size,
                         x: (startXPercent / 100) * window.innerWidth, // Actual pixels
@@ -137,21 +146,92 @@ const bubblesConfig = [
                         speed: speed * 0.5, // Base rising speed
                         vx: 0,
                         vy: 0,
-                        baseX: (startXPercent / 100) * window.innerWidth
+                        baseX: (startXPercent / 100) * window.innerWidth,
+                        popped: false
                     };
+                    return bInstance;
                 });
+
+                function popBubble(el, bubble) {
+                    if (bubble.popped) return;
+                    bubble.popped = true;
+
+                    // Sound Effect (Synthesized Pop)
+                    try {
+                        const AudioContext = window.AudioContext || window.webkitAudioContext;
+                        if (AudioContext) {
+                            if (!audioCtx) audioCtx = new AudioContext();
+                            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.1);
+
+                            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start();
+                            osc.stop(audioCtx.currentTime + 0.1);
+                        }
+                    } catch (e) { console.warn('Audio play failed', e); }
+
+                    // Visual Pop Animation
+                    el.style.transition = 'transform 0.15s ease-out, opacity 0.15s ease-out';
+                    el.style.transform = `translate3d(${bubble.x}px, ${bubble.y}px, 0) scale(1.4)`;
+                    el.style.opacity = '0';
+
+                    // Track Pop Count
+                    let pops = 0;
+                    try {
+                        pops = parseInt(localStorage.getItem('bubbles_popped') || '0') + 1;
+                        localStorage.setItem('bubbles_popped', pops);
+
+                        // Unlock Achievement (Check every pop)
+                         // Import handled at module level but we can access global if attached or dispatch event
+                         // We'll rely on global manager if available
+                        if (window.AchievementManager) {
+                            if (pops >= 10) window.AchievementManager.unlock('bubble_popper');
+                        }
+                    } catch (e) {}
+
+                    // Reset Bubble after animation
+                    setTimeout(() => {
+                        const height = window.innerHeight;
+                        const width = window.innerWidth;
+                        bubble.y = height + 50;
+                        bubble.baseX = Math.random() * width;
+                        bubble.x = bubble.baseX;
+                        bubble.vx = 0;
+                        bubble.vy = 0;
+                        bubble.popped = false;
+
+                        // Reset Styles
+                        el.style.transition = '';
+                        el.style.opacity = '1';
+                        // Position will be updated by loop
+                    }, 200);
+                }
 
                 function update() {
                     const width = window.innerWidth;
                     const height = window.innerHeight;
+
                     const repulsionRadius = 150;
                     const repulsionStrength = 2.0;
 
                     bubbles.forEach(b => {
+                        if (b.popped) return; // Skip logic if currently popping
+
                         // Rising
                         b.y -= b.speed;
 
                         // Reset if off top
+                        // We use b.size + buffer to ensure it is fully off screen
                         if (b.y < -b.size - 50) {
                             b.y = height + 50;
                             // Randomize x slightly on reset
@@ -185,11 +265,7 @@ const bubblesConfig = [
                         b.vx *= 0.95;
                         b.vy *= 0.95;
 
-                        // Optional: Slight return to baseX force (sway)?
-                        // User said "permanently displaced", so maybe no return force.
-                        // But we need to keep them on screen horizontally at least?
-                        // Let's just wrap horizontally.
-
+                        // Wrap horizontally
                         if (b.x < -b.size) b.x = width + b.size;
                         if (b.x > width + b.size) b.x = -b.size;
 
@@ -322,8 +398,8 @@ const bubblesConfig = [
         display: flex;
         align-items: center;
         justify-content: center;
-        /* Removed cursor: pointer and pointer-events: auto since they are not clickable */
-        pointer-events: none;
+        cursor: crosshair;
+        pointer-events: auto; /* Enable clicks */
         box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         backdrop-filter: blur(2px);
         border: 1px solid rgba(255, 255, 255, 0.1);

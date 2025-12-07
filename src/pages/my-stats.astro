@@ -611,12 +611,19 @@ const allPredictions = predictions;
                 }
 
                 const history = loadHistory();
+                const isFirst = history.length === 0;
+
                 history.push({
                     timestamp: Date.now(),
                     agi,
                     asi
                 });
                 saveHistory(history);
+
+                // Unlock Achievement for first prediction
+                if (isFirst && window.AchievementManager) {
+                    window.AchievementManager.unlock('oracle_training');
+                }
 
                 // Clear inputs
                 agiInput.value = '';
