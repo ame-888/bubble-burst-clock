@@ -107,8 +107,7 @@
     "stat_luck": "LUCK",
     "total_predictions": "Total Predictions",
     "success_rate": "Success Rate",
-    "class_label": "Class"
-    ,
+    "class_label": "Class",
     "achievements_button": "CONQUISTAS",
     "my_stats_button": "MINHAS ESTATÍSTICAS",
     "bet_correct": "Afirmação Correta",
@@ -128,5 +127,13 @@
     "reset_modal_title": "RESET ACHIEVEMENTS?",
     "reset_modal_msg": "WARNING: This action cannot be undone. All your unlocked achievements will be lost forever.",
     "reset_modal_confirm": "YES, WIPE THEM",
-    "reset_modal_cancel": "Cancel"
+    "reset_modal_cancel": "Cancel",
+    "pet_section_title": "Bubble Pet Habitat",
+    "pet_name_label": "Name Your Pet",
+    "pet_name_placeholder": "e.g. Blobby",
+    "pet_button_save": "Save Name",
+    "pet_button_pet": "Pet",
+    "pet_button_release": "Release",
+    "pet_release_confirm": "Are you sure you want to release your pet? It will be gone forever.",
+    "pet_found_toast": "You found a Rare Bubble Egg! Check your Achievements page!"
 }
