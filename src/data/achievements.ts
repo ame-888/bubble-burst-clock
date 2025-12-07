@@ -164,5 +164,26 @@ export const achievements = [
         description: 'Shared your prediction stats on X.',
         icon: '🐦',
         secret: true
+    },
+    {
+        id: 'oracle_training',
+        title: 'Oracle in Training',
+        description: 'Saved your first AGI/ASI prediction.',
+        icon: '🔮',
+        secret: true
+    },
+    {
+        id: 'bubble_popper',
+        title: 'Bubble Popper',
+        description: 'Popped 10 bubbles.',
+        icon: '🫧',
+        secret: true
+    },
+    {
+        id: 'stan',
+        title: 'Stan',
+        description: 'Selected a favorite player.',
+        icon: '⭐',
+        secret: true
     }
 ];
