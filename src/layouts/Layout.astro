@@ -204,6 +204,34 @@ const bubblesConfig = [
                          // We'll rely on global manager if available
                         if (window.AchievementManager) {
                             if (pops >= 10) window.AchievementManager.unlock('bubble_popper');
+
+                            // PET DROP LOGIC
+                            // 1% chance to get a pet if user doesn't have one
+                            try {
+                                if (!localStorage.getItem('pixel_pet')) {
+                                    if (Math.random() < 0.01) { // 1% chance
+                                        const types = ['dog', 'cat', 'monkey', 'rhino', 'dragon', 'fish'];
+                                        const type = types[Math.floor(Math.random() * types.length)];
+                                        const pet = {
+                                            type: type,
+                                            name: null,
+                                            petted: 0,
+                                            obtainedAt: Date.now()
+                                        };
+                                        localStorage.setItem('pixel_pet', JSON.stringify(pet));
+                                        window.AchievementManager.unlock('pet_owner');
+
+                                        // Custom notification for the specific pet type
+                                        const icons = { dog: '🐕', cat: '🐈', monkey: '🐒', rhino: '🦏', dragon: '🐉', fish: '🐠' };
+                                        setTimeout(() => {
+                                             window.AchievementManager.showNotification({
+                                                icon: icons[type],
+                                                title: `You found a stray ${type}!`
+                                            });
+                                        }, 3000); // Delay slightly to appear after the achievement toast
+                                    }
+                                }
+                            } catch(e) { console.warn('Pet drop failed', e); }
                         }
                     } catch (e) {}
 
