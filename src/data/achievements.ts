@@ -185,5 +185,27 @@ export const achievements = [
         description: 'Selected a favorite player.',
         icon: '⭐',
         secret: true
+    },
+    // Pet Achievements
+    {
+        id: 'pet_owner',
+        title: 'Pixel Companion',
+        description: 'You found a stray pixel pet!',
+        icon: '🐾',
+        secret: true
+    },
+    {
+        id: 'pet_namer',
+        title: 'Name Tag',
+        description: 'You gave your pet a name.',
+        icon: '🏷️',
+        secret: true
+    },
+    {
+        id: 'pet_loved',
+        title: 'Best Friends',
+        description: 'You petted your companion 10 times.',
+        icon: '❤️',
+        secret: true
     }
 ];
