@@ -24,8 +24,8 @@ const t = translations[lang];
         <div class="about-container">
             <p id="about-welcome" class="welcome-text">{t.about_welcome}</p>
             <div class="divider"></div>
-            <p id="about-desc1">{t.about_desc1}</p>
-            <p id="about-desc2">{t.about_desc2}</p>
+            <p id="about-desc1" class="about-text">{t.about_desc1}</p>
+            <p id="about-desc2" class="about-text">{t.about_desc2}</p>
             <p class="secret-hint"><em id="secret-hint">{t.secret_hint}</em></p>
         </div>
     </main>
@@ -102,8 +102,8 @@ const t = translations[lang];
 
         if (title) title.textContent = t.about_title;
         if (welcome) welcome.textContent = t.about_welcome;
-        if (desc1) desc1.textContent = t.about_desc1;
-        if (desc2) desc2.textContent = t.about_desc2;
+        if (desc1) desc1.innerHTML = t.about_desc1;
+        if (desc2) desc2.innerHTML = t.about_desc2.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         if (hint) hint.textContent = t.secret_hint;
     }
 

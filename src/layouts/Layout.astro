@@ -73,6 +73,14 @@ const bubblesConfig = [
         <slot name="head" />
 	</head>
 	<body>
+        <!-- Spikes -->
+        <div class="spike-wall left">
+            {Array.from({ length: 20 }).map(() => <div class="spike" />)}
+        </div>
+        <div class="spike-wall right">
+            {Array.from({ length: 20 }).map(() => <div class="spike" />)}
+        </div>
+
         <div id="bubbles-container" class="background-bubbles">
             {bubblesConfig.map((b, i) => (
                 <div
@@ -217,12 +225,42 @@ const bubblesConfig = [
                     }, 200);
                 }
 
+                function playSpikeSound() {
+                     try {
+                        const AudioContext = window.AudioContext || window.webkitAudioContext;
+                        if (AudioContext) {
+                            if (!audioCtx) audioCtx = new AudioContext();
+                            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+
+                            osc.type = 'sawtooth'; // Sharp sound
+                            osc.frequency.setValueAtTime(800, audioCtx.currentTime); // Higher pitch
+                            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1); // Quick drop
+
+                            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start();
+                            osc.stop(audioCtx.currentTime + 0.1);
+                        }
+                    } catch (e) { console.warn('Audio play failed', e); }
+                }
+
                 function update() {
                     const width = window.innerWidth;
                     const height = window.innerHeight;
 
                     const repulsionRadius = 150;
                     const repulsionStrength = 2.0;
+
+                    // Spike Logic
+                    const spikeWidth = 40; // Approx visual width
+                    const safeMargin = 80; // Distance to start "natural" repulsion
+                    const wallForce = 0.5; // Natural containment force
 
                     bubbles.forEach(b => {
                         if (b.popped) return; // Skip logic if currently popping
@@ -234,8 +272,8 @@ const bubblesConfig = [
                         // We use b.size + buffer to ensure it is fully off screen
                         if (b.y < -b.size - 50) {
                             b.y = height + 50;
-                            // Randomize x slightly on reset
-                            b.baseX = Math.random() * width;
+                            // Randomize x slightly on reset but keep within safe zone
+                            b.baseX = spikeWidth + Math.random() * (width - 2 * spikeWidth - b.size);
                             b.x = b.baseX;
                             b.vx = 0;
                             b.vy = 0;
@@ -257,6 +295,15 @@ const bubblesConfig = [
                             b.vy += Math.sin(angle) * force * repulsionStrength;
                         }
 
+                        // Wall Repulsion (Natural Containment)
+                        // If near wall and moving towards it, apply corrective force
+                        if (b.x < safeMargin) {
+                             b.vx += wallForce * (1 - (b.x / safeMargin));
+                        } else if (b.x > width - safeMargin - b.size) {
+                             const distToWall = (width - b.x - b.size);
+                             b.vx -= wallForce * (1 - (distToWall / safeMargin));
+                        }
+
                         // Apply velocity (permanent displacement + damping)
                         b.x += b.vx;
                         b.y += b.vy;
@@ -265,9 +312,19 @@ const bubblesConfig = [
                         b.vx *= 0.95;
                         b.vy *= 0.95;
 
-                        // Wrap horizontally
-                        if (b.x < -b.size) b.x = width + b.size;
-                        if (b.x > width + b.size) b.x = -b.size;
+                        // Spike Collision & Pop
+                        if (b.x <= spikeWidth || b.x >= width - spikeWidth - b.size) {
+                            playSpikeSound();
+                            popBubble(b.el, b);
+                            return;
+                        }
+
+                        // Fallback constraint (if managed to get past spike without popping - unlikely but safe)
+                        // Or if we want them to pop, we just let them pop.
+                        // But let's prevent horizontal wrapping now since we have walls.
+                        // We do strictly clamp for rendering to avoid scrollbars if something glitches
+                        if (b.x < -b.size) b.x = -b.size;
+                        if (b.x > width) b.x = width;
 
                         // Render
                         b.el.style.transform = `translate3d(${b.x}px, ${b.y}px, 0)`;
@@ -413,4 +470,40 @@ const bubblesConfig = [
     }
 
     /* Removed pop animation styles */
+
+    /* Spike Walls */
+    .spike-wall {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+        z-index: 5;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+    }
+
+    .spike-wall.left { left: 0; }
+    .spike-wall.right { right: 0; }
+
+    .spike {
+        width: 0;
+        height: 0;
+        border-top: 15px solid transparent;
+        border-bottom: 15px solid transparent;
+        margin-bottom: 5px;
+    }
+
+    .spike-wall.left .spike {
+        border-left: 30px solid rgba(139, 92, 246, 0.6); /* Purple/Neon tint */
+        filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.8));
+    }
+
+    .spike-wall.right .spike {
+        border-right: 30px solid rgba(139, 92, 246, 0.6);
+        filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.8));
+        margin-left: auto; /* Align right */
+    }
 </style>
