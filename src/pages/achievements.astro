@@ -26,6 +26,12 @@ const t = translations[lang];
         <h1 id="achievements-title">Achievements</h1>
         <p class="subtitle" id="achievements-subtitle">Uncover the secrets of the Bubble Burst Clock.</p>
 
+        <!-- Warning for disabled bubbles -->
+        <div id="bubbles-warning" class="warning-banner hidden">
+            ⚠️ Bubbles are disabled. Some achievements require interacting with bubbles to unlock.
+            <br>Enable them in the top-right menu.
+        </div>
+
         <!-- The key is hidden in the dictionary -->
 
         <div class="achievements-grid" id="achievements-grid">
@@ -103,6 +109,17 @@ const t = translations[lang];
         color: #9CA3AF;
         margin-bottom: 3rem;
         font-size: 1.2rem;
+    }
+
+    .warning-banner {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid #F59E0B;
+        color: #FBBF24;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-weight: 600;
     }
 
     .achievements-grid {
@@ -335,6 +352,15 @@ const t = translations[lang];
     import { achievementManager } from '../scripts/AchievementManager';
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Check bubbles status for warning
+        try {
+            const bubblesEnabled = localStorage.getItem('bubbles_enabled');
+            if (bubblesEnabled === 'false') {
+                const warning = document.getElementById('bubbles-warning');
+                if (warning) warning.classList.remove('hidden');
+            }
+        } catch(e) {}
+
         // Force a check on load to ensure sync
         achievementManager.init();
 

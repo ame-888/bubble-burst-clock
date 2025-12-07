@@ -1,5 +1,7 @@
 ---
 import Navbar from '../components/Navbar.astro';
+import '../styles/mtg-card.css';
+
 const { lang = 'en', title = 'Bubble Burst Clock' } = Astro.props;
 
 const companies = [
@@ -117,6 +119,19 @@ const bubblesConfig = [
 
             document.addEventListener('DOMContentLoaded', () => {
                 const container = document.getElementById('bubbles-container');
+
+                // Check preference for bubbles
+                let bubblesEnabled = true;
+                try {
+                    const pref = localStorage.getItem('bubbles_enabled');
+                    if (pref === 'false') bubblesEnabled = false;
+                } catch(e) {}
+
+                if (!bubblesEnabled) {
+                    if (container) container.classList.add('hidden');
+                    return; // Stop script execution for bubbles
+                }
+
                 const bubbleEls = document.querySelectorAll('.bubble');
 
                 // Shared Audio Context
@@ -140,6 +155,12 @@ const bubblesConfig = [
                     // Randomize vertical start positions to distribute them across the screen initially
                     const startY = Math.random() * window.innerHeight;
 
+                    // Randomly decide if this is a golden egg (1% chance)
+                    const isGolden = Math.random() < 0.01;
+                    if (isGolden) {
+                        el.classList.add('golden-egg');
+                    }
+
                     // Add click handler to pop bubble
                     el.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -155,7 +176,8 @@ const bubblesConfig = [
                         vx: 0,
                         vy: 0,
                         baseX: (startXPercent / 100) * window.innerWidth,
-                        popped: false
+                        popped: false,
+                        isGolden: isGolden
                     };
                     return bInstance;
                 });
@@ -205,11 +227,10 @@ const bubblesConfig = [
                         if (window.AchievementManager) {
                             if (pops >= 10) window.AchievementManager.unlock('bubble_popper');
 
-                            // PET DROP LOGIC
-                            // 1% chance to get a pet if user doesn't have one
-                            try {
-                                if (!localStorage.getItem('pixel_pet')) {
-                                    if (Math.random() < 0.01) { // 1% chance
+                            // PET DROP LOGIC - ONLY ON GOLDEN EGG
+                            if (bubble.isGolden) {
+                                try {
+                                    if (!localStorage.getItem('pixel_pet')) {
                                         const types = ['dog', 'cat', 'monkey', 'rhino', 'dragon', 'fish'];
                                         const type = types[Math.floor(Math.random() * types.length)];
                                         const pet = {
@@ -228,10 +249,10 @@ const bubblesConfig = [
                                                 icon: icons[type],
                                                 title: `You found a stray ${type}!`
                                             });
-                                        }, 3000); // Delay slightly to appear after the achievement toast
+                                        }, 1000);
                                     }
-                                }
-                            } catch(e) { console.warn('Pet drop failed', e); }
+                                } catch(e) { console.warn('Pet drop failed', e); }
+                            }
                         }
                     } catch (e) {}
 
@@ -249,6 +270,13 @@ const bubblesConfig = [
                         // Reset Styles
                         el.style.transition = '';
                         el.style.opacity = '1';
+
+                        // Recalculate Golden Status on Reset
+                        const isGolden = Math.random() < 0.01;
+                        bubble.isGolden = isGolden;
+                        if (isGolden) el.classList.add('golden-egg');
+                        else el.classList.remove('golden-egg');
+
                         // Position will be updated by loop
                     }, 200);
                 }
@@ -305,6 +333,12 @@ const bubblesConfig = [
                             b.x = b.baseX;
                             b.vx = 0;
                             b.vy = 0;
+
+                            // Re-roll Golden Egg status on loop reset
+                            const isGolden = Math.random() < 0.01;
+                            b.isGolden = isGolden;
+                            if (isGolden) b.el.classList.add('golden-egg');
+                            else b.el.classList.remove('golden-egg');
                         }
 
                         // Mouse Repulsion
@@ -473,6 +507,10 @@ const bubblesConfig = [
         pointer-events: none;
     }
 
+    .background-bubbles.hidden {
+        display: none !important;
+    }
+
     .bubble {
         position: absolute;
         /* Positioning handled by JS transform */
@@ -495,6 +533,26 @@ const bubblesConfig = [
         width: 60%;
         height: 60%;
         opacity: 0.8;
+    }
+
+    /* Golden Egg Bubble */
+    .bubble.golden-egg {
+        background: radial-gradient(circle at 30% 30%, #FFD700, #FDB931);
+        border: 2px solid #FFF8DC;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 165, 0, 0.5);
+        z-index: 10;
+        animation: pulseGolden 2s infinite ease-in-out;
+    }
+
+    .bubble.golden-egg svg {
+        filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+        opacity: 0.9;
+    }
+
+    @keyframes pulseGolden {
+        0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
+        50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 215, 0, 1); }
+        100% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
     }
 
     /* Removed pop animation styles */
