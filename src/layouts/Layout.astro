@@ -85,8 +85,8 @@ const bubblesConfig = [
                         '--bubble-color': b.color,
                         width: `${b.size}px`,
                         height: `${b.size}px`,
-                        // Initial positioning handled by JS for smoothness, but we set starting bottom
-                        bottom: '-150px',
+                        // Positioning handled by JS, default to off-screen
+                        top: '-200px',
                         left: '0px'
                     }}
                     set:html={b.logo}
@@ -192,18 +192,39 @@ const bubblesConfig = [
                         localStorage.setItem('bubbles_popped', pops);
 
                         // Unlock Achievement (Check every pop)
-                         // Import handled at module level but we can access global if attached or dispatch event
-                         // We'll rely on global manager if available
                         if (window.AchievementManager) {
                             if (pops >= 10) window.AchievementManager.unlock('bubble_popper');
                         }
+
+                        // RARE EGG DROP (1% Chance)
+                        if (Math.random() < 0.01) {
+                            const hasPet = localStorage.getItem('has_pet');
+                            if (!hasPet) {
+                                localStorage.setItem('has_pet', 'true');
+                                if (window.AchievementManager) {
+                                    window.AchievementManager.unlock('rare_bubble_egg');
+                                    // Custom toast for egg
+                                    setTimeout(() => {
+                                        // We can reuse achievement toast or just alert.
+                                        // The achievement manager handles the toast for the unlock itself.
+                                        // But let's verify if we need extra notification. The achievement toast says "THE ULTRA RARE BUBBLE EGG".
+                                        // That should be enough.
+                                    }, 500);
+                                }
+                            }
+                        }
+
                     } catch (e) {}
 
                     // Reset Bubble after animation
                     setTimeout(() => {
                         const height = window.innerHeight;
                         const width = window.innerWidth;
-                        bubble.y = height + 50;
+
+                        // Reset to bottom (height + size)
+                        bubble.y = height + bubble.size + 50;
+
+                        // Randomize X again
                         bubble.baseX = Math.random() * width;
                         bubble.x = bubble.baseX;
                         bubble.vx = 0;
@@ -227,13 +248,14 @@ const bubblesConfig = [
                     bubbles.forEach(b => {
                         if (b.popped) return; // Skip logic if currently popping
 
-                        // Rising
+                        // Rising (Y decreases)
                         b.y -= b.speed;
 
                         // Reset if off top
-                        // We use b.size + buffer to ensure it is fully off screen
+                        // If y < -size - 50, it is above the screen
                         if (b.y < -b.size - 50) {
-                            b.y = height + 50;
+                            // Reset to bottom
+                            b.y = height + b.size + 50;
                             // Randomize x slightly on reset
                             b.baseX = Math.random() * width;
                             b.x = b.baseX;
@@ -391,7 +413,8 @@ const bubblesConfig = [
     .bubble {
         position: absolute;
         /* Positioning handled by JS transform */
-        /* top: 0; Removed to prevent initial flash at top-left */
+        /* Start off-screen at top to avoid flash, JS puts them in place */
+        top: -200px;
         left: 0;
         background-color: var(--bubble-color, rgba(255, 255, 255, 0.1));
         border-radius: 50%;

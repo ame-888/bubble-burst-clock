@@ -185,5 +185,12 @@ export const achievements = [
         description: 'Selected a favorite player.',
         icon: '⭐',
         secret: true
+    },
+    {
+        id: 'rare_bubble_egg',
+        title: 'THE ULTRA RARE BUBBLE EGG',
+        description: 'You found a mysterious egg while popping bubbles.',
+        icon: '🥚',
+        secret: true
     }
 ];
