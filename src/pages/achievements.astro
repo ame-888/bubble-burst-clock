@@ -25,32 +25,7 @@ const t = translations[lang];
         <h1 id="achievements-title">Achievements</h1>
         <p class="subtitle" id="achievements-subtitle">Uncover the secrets of the Bubble Burst Clock.</p>
 
-        <!-- Pet Section (Hidden by default, shown via JS) -->
-        <div id="pet-section" class="pet-section hidden">
-            <h2 class="pet-section-title" data-i18n-key="pet_section_title">{t.pet_section_title}</h2>
-            <div class="pet-container">
-                <div class="pet-display">
-                    <!-- Simple Pixel Art Egg / Dragon -->
-                    <svg id="pet-svg" width="100" height="100" viewBox="0 0 100 100" class="pet-sprite">
-                        <!-- Pixel art styling via rects will be injected by JS based on state -->
-                    </svg>
-                    <div id="pet-hearts" class="pet-hearts"></div>
-                </div>
-                <div class="pet-controls">
-                    <h3 id="pet-name-display" class="pet-name hidden"></h3>
-
-                    <div id="pet-name-input-container" class="pet-input-group">
-                        <input type="text" id="pet-name-input" data-i18n-placeholder="pet_name_placeholder" placeholder={t.pet_name_placeholder} maxlength="12" />
-                        <button id="pet-save-btn" class="pet-btn save" data-i18n-key="pet_button_save">{t.pet_button_save}</button>
-                    </div>
-
-                    <div id="pet-actions" class="pet-actions hidden">
-                        <button id="pet-action-pet" class="pet-btn action" data-i18n-key="pet_button_pet">{t.pet_button_pet}</button>
-                        <button id="pet-action-release" class="pet-btn release" data-i18n-key="pet_button_release">{t.pet_button_release}</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- The key is hidden in the dictionary -->
 
         <div class="achievements-grid" id="achievements-grid">
             {achievements.map(achievement => (
@@ -125,109 +100,6 @@ const t = translations[lang];
         margin-bottom: 3rem;
         font-size: 1.2rem;
     }
-
-    /* Pet Section Styles */
-    .pet-section {
-        background: rgba(16, 185, 129, 0.1);
-        border: 2px solid #10B981;
-        border-radius: 1rem;
-        padding: 2rem;
-        margin-bottom: 3rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        box-shadow: 0 0 30px rgba(16, 185, 129, 0.1);
-    }
-
-    .pet-section-title {
-        color: #10B981;
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-        font-size: 1.5rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-    }
-
-    .pet-container {
-        display: flex;
-        align-items: center;
-        gap: 3rem;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .pet-display {
-        position: relative;
-        width: 120px;
-        height: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .pet-sprite {
-        width: 100%;
-        height: 100%;
-        image-rendering: pixelated;
-        animation: float 3s ease-in-out infinite;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
-
-    .pet-hearts {
-        position: absolute;
-        top: -20px;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-    }
-
-    .pet-controls {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .pet-name {
-        font-size: 2rem;
-        font-weight: 900;
-        color: white;
-        margin: 0;
-    }
-
-    .pet-input-group {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    #pet-name-input {
-        background: rgba(0,0,0,0.3);
-        border: 1px solid #4B5563;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        font-family: inherit;
-    }
-
-    .pet-btn {
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 0.5rem;
-        font-weight: 700;
-        cursor: pointer;
-        text-transform: uppercase;
-        font-size: 0.9rem;
-    }
-
-    .pet-btn.save { background: #10B981; color: white; }
-    .pet-btn.action { background: #3B82F6; color: white; }
-    .pet-btn.release { background: transparent; border: 1px solid #EF4444; color: #EF4444; }
-    .pet-btn.release:hover { background: #EF4444; color: white; }
 
     .achievements-grid {
         display: grid;
@@ -483,131 +355,6 @@ const t = translations[lang];
             }
         });
 
-        // --- Pet Logic ---
-        const petSection = document.getElementById('pet-section');
-        const petNameInput = document.getElementById('pet-name-input');
-        const petSaveBtn = document.getElementById('pet-save-btn');
-        const petNameDisplay = document.getElementById('pet-name-display');
-        const petInputContainer = document.getElementById('pet-name-input-container');
-        const petActions = document.getElementById('pet-actions');
-        const petActionPet = document.getElementById('pet-action-pet');
-        const petActionRelease = document.getElementById('pet-action-release');
-        const petSvg = document.getElementById('pet-svg');
-
-        // Check for Pet
-        const hasPet = localStorage.getItem('has_pet');
-        if (hasPet) {
-            petSection.classList.remove('hidden');
-            renderPet();
-
-            // Check for name
-            const petName = localStorage.getItem('pet_name');
-            if (petName) {
-                showPetName(petName);
-            } else {
-                showPetNaming();
-            }
-        }
-
-        if (petSaveBtn) {
-            petSaveBtn.addEventListener('click', () => {
-                const name = (petNameInput as HTMLInputElement).value.trim();
-                if (name) {
-                    localStorage.setItem('pet_name', name);
-                    showPetName(name);
-                }
-            });
-        }
-
-        if (petActionPet) {
-            petActionPet.addEventListener('click', () => {
-                // Heart Animation
-                const container = document.getElementById('pet-hearts');
-                const heart = document.createElement('div');
-                heart.textContent = '❤️';
-                heart.style.position = 'absolute';
-                heart.style.left = '50%';
-                heart.style.bottom = '0';
-                heart.style.fontSize = '24px';
-                heart.style.transform = `translateX(-50%)`;
-                heart.style.animation = 'floatHeart 1s ease-out forwards';
-
-                // Add keyframes dynamically if not present
-                if (!document.getElementById('heart-anim')) {
-                    const style = document.createElement('style');
-                    style.id = 'heart-anim';
-                    style.textContent = `
-                        @keyframes floatHeart {
-                            0% { transform: translateX(-50%) translateY(0) scale(0.5); opacity: 1; }
-                            100% { transform: translateX(-50%) translateY(-50px) scale(1.2); opacity: 0; }
-                        }
-                    `;
-                    document.head.appendChild(style);
-                }
-
-                container.appendChild(heart);
-                setTimeout(() => heart.remove(), 1000);
-            });
-        }
-
-        if (petActionRelease) {
-            petActionRelease.addEventListener('click', () => {
-                // Confirmation
-                const t = {
-                    confirm: document.querySelector('[data-i18n-key="pet_release_confirm"]')?.textContent || "Are you sure?"
-                };
-                if (confirm(t.confirm)) {
-                    localStorage.removeItem('has_pet');
-                    localStorage.removeItem('pet_name');
-                    petSection.classList.add('hidden');
-                }
-            });
-        }
-
-        function showPetName(name) {
-            petNameDisplay.textContent = name;
-            petNameDisplay.classList.remove('hidden');
-            petActions.classList.remove('hidden');
-            petInputContainer.classList.add('hidden');
-        }
-
-        function showPetNaming() {
-            petNameDisplay.classList.add('hidden');
-            petActions.classList.add('hidden');
-            petInputContainer.classList.remove('hidden');
-        }
-
-        function renderPet() {
-            // Simple 8x8 Pixel Dragon/Egg thing
-            // Let's draw a cute little green guy
-            const pixels = [
-                "00000000",
-                "00011000",
-                "00111100",
-                "01100110",
-                "01100110",
-                "01111110",
-                "00111100",
-                "00100100"
-            ];
-            const size = 12.5; // 100 / 8
-            let svgContent = '';
-
-            pixels.forEach((row, y) => {
-                row.split('').forEach((pixel, x) => {
-                    if (pixel === '1') {
-                        svgContent += `<rect x="${x * size}" y="${y * size}" width="${size}" height="${size}" fill="#10B981" />`;
-                    }
-                });
-            });
-            // Eyes
-            svgContent += `<rect x="${3 * size}" y="${3 * size}" width="${size}" height="${size}" fill="black" />`;
-            svgContent += `<rect x="${6 * size}" y="${3 * size}" width="${size}" height="${size}" fill="black" />`;
-
-            petSvg.innerHTML = svgContent;
-        }
-
-
         // Secret Input Logic
         const input = document.getElementById('secret-input');
         if (input) {
@@ -644,8 +391,6 @@ const t = translations[lang];
             confirmBtn.addEventListener('click', () => {
                 try {
                     localStorage.removeItem('achievements_unlocked');
-                    localStorage.removeItem('has_pet');
-                    localStorage.removeItem('pet_name');
                     // We don't remove other data like clicks/time, just the unlocked status
                     // Reload to reflect changes
                     location.reload();
@@ -724,11 +469,6 @@ const t = translations[lang];
         document.querySelectorAll('[data-i18n-key]').forEach(el => {
             const key = el.getAttribute('data-i18n-key');
             if (t[key]) el.textContent = t[key];
-        });
-
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-            const key = el.getAttribute('data-i18n-placeholder');
-            if (t[key]) el.placeholder = t[key];
         });
     }
 
