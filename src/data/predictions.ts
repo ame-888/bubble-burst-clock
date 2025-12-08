@@ -196,5 +196,23 @@ export const predictions = [
         validityStart: "2024-08-02",
         validityEnd: "2024-09-06",
         news: "Government shelves £1.3bn UK tech and AI plans."
+    },
+    {
+        id: "zBvVGHZBpMw",
+        creator: "The Ben and Emil Show",
+        claim: {
+            "en": "The AI Bubble is Going to Pop / ft. Ed Zitron",
+            "pt-BR": "A Bolha da IA Vai Estourar / ft. Ed Zitron",
+            "es": "La Burbuja de la IA Va a Estallar / ft. Ed Zitron",
+            "ja": "AIバブルは弾けるだろう / ft. Ed Zitron",
+            "zh": "人工智能泡沫即将破裂 / ft. Ed Zitron"
+        },
+        videoUrl: "https://www.youtube.com/watch?v=zBvVGHZBpMw",
+        thumbnailUrl: "https://img.youtube.com/vi/zBvVGHZBpMw/maxresdefault.jpg",
+        dateRange: "2 Weeks",
+        uploadDate: "2025-03-13",
+        validityStart: "2025-03-13",
+        validityEnd: "2025-03-27",
+        news: "Devin AI goes public"
     }
 ];
