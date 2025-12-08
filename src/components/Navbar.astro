@@ -31,7 +31,7 @@ const t = translations[lang] || en;
             <a href="/players" class="nav-link" data-i18n-key="player_cards_button">{t.player_cards_button}</a>
             <a href="/leaderboard" class="nav-link" data-i18n-key="leaderboard_button">{t.leaderboard_button}</a>
             <a href="/my-stats" class="nav-link" data-i18n-key="my_stats_button">{t.my_stats_button || 'MY STATS'}</a>
-            <a href="/achievements" class="nav-link" data-i18n-key="achievements_button">Achievements</a>
+            <a href="/achievements" class="nav-link" id="nav-achievements" data-i18n-key="achievements_button">Achievements</a>
             <a href="/hype-dictionary" class="nav-link" data-i18n-key="hype_dictionary_button">{t.hype_dictionary_button}</a>
             <a href="/about" class="nav-link" data-i18n-key="about_button">{t.about_button}</a>
             <a href="/privacy" class="nav-link" data-i18n-key="privacy_policy_button">{t.privacy_policy_button}</a>
@@ -90,10 +90,27 @@ const t = translations[lang] || en;
         transition: color 0.2s;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        position: relative; /* For notification anchor */
     }
 
     .nav-link:hover {
         color: white;
+    }
+
+    /* Pet Notification Style */
+    .pet-notification {
+        display: inline-block;
+        margin-left: 0.5rem;
+        animation: bounce 1s infinite;
+        color: #FACC15;
+        font-size: 1.2em;
+        vertical-align: middle;
+        text-shadow: 0 0 5px rgba(250, 204, 21, 0.5);
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
     }
 
     .navbar-end {
@@ -184,12 +201,6 @@ const t = translations[lang] || en;
         .nav-link:last-child {
             border-bottom: none;
         }
-
-        /* Hide the language switcher in header if desired, or keep it.
-           Currently keeping it in .navbar-end which is flex.
-           On mobile, .navbar-container is space-between.
-           We might want to hide navbar-end on really small screens or move it into menu?
-           For now, let's keep it visible. */
     }
 </style>
 
@@ -258,8 +269,46 @@ const t = translations[lang] || en;
         });
     }
 
+    // Pet Notification Logic
+    function checkPetNotification() {
+        const achievementsLink = document.getElementById('nav-achievements');
+        if (!achievementsLink) return;
+
+        try {
+            // Check if we are currently ON the achievements page
+            if (window.location.pathname.includes('/achievements')) {
+                // If on achievements page, mark as seen immediately
+                localStorage.setItem('pet_notification_seen', 'true');
+                return; // Do nothing else
+            }
+
+            // Check if user has a pet
+            const hasPet = localStorage.getItem('pixel_pet');
+            // Check if notification already seen
+            const notificationSeen = localStorage.getItem('pet_notification_seen');
+
+            if (hasPet && !notificationSeen) {
+                // Create indicator
+                const indicator = document.createElement('span');
+                indicator.className = 'pet-notification';
+                indicator.textContent = '⬅'; // Or ✨
+                indicator.setAttribute('aria-label', 'New Pet!');
+
+                achievementsLink.appendChild(indicator);
+
+                // Add click listener to dismiss
+                achievementsLink.addEventListener('click', () => {
+                    localStorage.setItem('pet_notification_seen', 'true');
+                });
+            }
+        } catch (e) {
+            console.warn('Pet notification check failed:', e);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         updateNavbarTranslations();
+        checkPetNotification();
 
         // Check for Arcade Unlock
         const arcadeUnlocked = localStorage.getItem('arcade_unlocked') === 'true';
