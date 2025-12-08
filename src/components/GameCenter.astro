@@ -106,31 +106,40 @@ const { mode = 'modal' } = Astro.props;
                 <div id="leaderboard-content"></div>
             </div>
 
-            <div id="game-area" class="hidden fade-in">
-                <div id="pool-controls" class="hidden" style="margin-bottom: 0.5rem; display: flex; justify-content: center; gap: 1rem;">
-                    <button id="pool-mode-btn" style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: #374151; color: white; border: none; cursor: pointer;">Switch to VS AI</button>
-                </div>
-                <div class="game-canvas-wrapper">
-                    <canvas id="game-canvas" width="400" height="400"></canvas>
-                    <div id="game-overlay" class="hidden">
-                        <h3 id="game-overlay-title">Game Over</h3>
-                        <p id="game-overlay-score">Score: 0</p>
-                        <button id="game-restart-btn">Play Again</button>
-                        <button id="game-quit-btn">Quit to Menu</button>
+            <div id="game-area" class="hidden fade-in game-layout-wrapper">
+                <div class="game-left-col">
+                    <div id="pool-controls" class="hidden" style="margin-bottom: 0.5rem; display: flex; justify-content: center; gap: 1rem;">
+                        <button id="pool-mode-btn" style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: #374151; color: white; border: none; cursor: pointer;">Switch to VS AI</button>
                     </div>
-                    <!-- Cutscene Overlay -->
-                    <div id="cutscene-overlay" class="hidden">
-                        <div class="cutscene-content">
-                            <div class="glitch-text" data-text="WARNING">WARNING</div>
-                            <p class="cutscene-msg">UNAUTHORIZED WIN STREAK DETECTED</p>
-                            <p class="cutscene-sub">ENGAGING MAX DIFFICULTY PROTOCOL...</p>
+                    <div class="game-canvas-wrapper">
+                        <canvas id="game-canvas" width="400" height="400"></canvas>
+                        <div id="game-overlay" class="hidden">
+                            <h3 id="game-overlay-title">Game Over</h3>
+                            <p id="game-overlay-score">Score: 0</p>
+                            <button id="game-restart-btn">Play Again</button>
+                            <button id="game-quit-btn">Quit to Menu</button>
+                        </div>
+                        <!-- Cutscene Overlay -->
+                        <div id="cutscene-overlay" class="hidden">
+                            <div class="cutscene-content">
+                                <div class="glitch-text" data-text="WARNING">WARNING</div>
+                                <p class="cutscene-msg">UNAUTHORIZED WIN STREAK DETECTED</p>
+                                <p class="cutscene-sub">ENGAGING MAX DIFFICULTY PROTOCOL...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="game-controls-info">
-                    <div class="score-display">Score: <span id="current-score">0</span></div>
-                    <p id="controls-hint">Controls Info</p>
+                    <div class="score-card">
+                        <div class="score-label">SCORE</div>
+                        <div class="score-display" id="current-score">0</div>
+                    </div>
+                    <div class="info-card">
+                        <p id="controls-hint">Controls Info</p>
+                    </div>
+                    <!-- Duplicate Quit button for side access on large screens -->
+                    <button id="side-quit-btn" class="side-btn">Quit Game</button>
                 </div>
             </div>
         </div>
@@ -237,6 +246,11 @@ const { mode = 'modal' } = Astro.props;
         overflow-y: auto;
         transform: scale(0.95);
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Expand for Game View (Horizontal Layout) */
+    #game-modal:not(.hidden) .modal-content:has(#game-area:not(.hidden)) {
+        max-width: 800px;
     }
 
     #game-modal:not(.hidden) .modal-content {
@@ -494,25 +508,89 @@ const { mode = 'modal' } = Astro.props;
         filter: brightness(1.1);
     }
 
-    /* Info Panel */
-    .game-controls-info {
-        text-align: center;
+    /* Horizontal Game Layout */
+    .game-layout-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .game-layout-wrapper {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        .game-left-col {
+            flex: 2;
+            min-width: 0; /* Prevent overflow */
+        }
+
+        .game-controls-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            min-width: 200px;
+            text-align: left;
+            padding-top: 0;
+        }
+    }
+
+    /* Info Panel Styling */
+    .score-card, .info-card {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1rem;
+        padding: 1rem;
+    }
+
+    .score-label {
+        font-size: 0.8rem;
+        color: #9CA3AF;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        letter-spacing: 0.05em;
     }
 
     .score-display {
-        font-size: 2rem;
+        font-size: 2.5rem;
         font-weight: 900;
         color: #60A5FA;
-        margin-bottom: 0.5rem;
         font-family: 'Courier New', monospace;
         text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+        line-height: 1;
     }
 
     #controls-hint {
-        color: #9CA3AF;
+        color: #D1D5DB;
         font-size: 0.9rem;
-        margin-bottom: 1.5rem;
         font-style: italic;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .side-btn {
+        background: rgba(255, 255, 255, 0.05);
+        color: #F87171;
+        border: 1px solid rgba(248, 113, 113, 0.2);
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: none;
+    }
+
+    @media (min-width: 768px) {
+        .side-btn {
+            display: block;
+        }
+    }
+
+    .side-btn:hover {
+        background: rgba(248, 113, 113, 0.1);
+        border-color: rgba(248, 113, 113, 0.5);
     }
 
     /* Leaderboard */
@@ -624,6 +702,11 @@ const { mode = 'modal' } = Astro.props;
         });
 
         document.getElementById('game-quit-btn')?.addEventListener('click', () => {
+            stopGame(true);
+            showMenu();
+        });
+
+        document.getElementById('side-quit-btn')?.addEventListener('click', () => {
             stopGame(true);
             showMenu();
         });

@@ -34,9 +34,18 @@ const t = translations[lang];
 
         <!-- The key is hidden in the dictionary -->
 
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="all">All</button>
+            <button class="tab-btn" data-tab="general">General</button>
+            <button class="tab-btn" data-tab="games">Games</button>
+            <button class="tab-btn" data-tab="predictions">Predictions</button>
+            <button class="tab-btn" data-tab="pet">Pixel Pet</button>
+            <button class="tab-btn" data-tab="secrets">Secrets</button>
+        </div>
+
         <div class="achievements-grid" id="achievements-grid">
             {achievements.map(achievement => (
-                <div class="achievement-card locked" data-id={achievement.id}>
+                <div class="achievement-card locked" data-id={achievement.id} data-category={achievement.category || 'general'}>
                     <div class="achievement-icon-wrapper">
                         <div class="achievement-icon-placeholder">?</div>
                         <div class="achievement-icon-real hidden">{achievement.icon}</div>
@@ -120,6 +129,37 @@ const t = translations[lang];
         text-align: center;
         margin-bottom: 2rem;
         font-weight: 600;
+    }
+
+    .tabs-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        justify-content: center;
+    }
+
+    .tab-btn {
+        background: rgba(31, 41, 55, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #9CA3AF;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .tab-btn:hover {
+        background: rgba(31, 41, 55, 0.9);
+        color: white;
+    }
+
+    .tab-btn.active {
+        background: #F59E0B;
+        color: white;
+        border-color: #F59E0B;
     }
 
     .achievements-grid {
@@ -445,6 +485,27 @@ const t = translations[lang];
                 }
             });
         }
+
+        // Tab Logic
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update active state
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const category = tab.getAttribute('data-tab');
+                const cards = document.querySelectorAll('.achievement-card');
+
+                cards.forEach(card => {
+                    if (category === 'all' || card.getAttribute('data-category') === category) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            });
+        });
     });
 
     function unlockCard(card) {
