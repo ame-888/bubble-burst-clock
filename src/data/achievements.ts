@@ -236,5 +236,87 @@ export const achievements = [
         icon: '❤️',
         secret: true,
         category: 'pet'
+    },
+    {
+        id: 'pet_veteran',
+        title: 'Loyal Companion',
+        description: 'Kept the same pet for 3 days.',
+        icon: '📆',
+        secret: true,
+        category: 'pet'
+    },
+    {
+        id: 'pet_witness',
+        title: 'Trauma Bonding',
+        description: 'Pet witnessed 5 bubble bursts.',
+        icon: '💥',
+        secret: true,
+        category: 'pet'
+    },
+    // Game Achievements II
+    {
+        id: 'snake_survivor',
+        title: 'Data Stream Survivor',
+        description: 'Reached a score of 1000 in Data Stream.',
+        icon: '🐍',
+        secret: true,
+        category: 'games'
+    },
+    {
+        id: 'tetris_endurance',
+        title: 'Cluster Architect',
+        description: 'Reached a score of 3000 in Cluster Builder.',
+        icon: '🏗️',
+        secret: true,
+        category: 'games'
+    },
+    {
+        id: 'breakout_clean',
+        title: 'Flawless Security',
+        description: 'Scored 2000 in Firewall Breaker.',
+        icon: '🛡️',
+        secret: true,
+        category: 'games'
+    },
+    {
+        id: 'ttt_draw_master',
+        title: 'Stalemate',
+        description: 'Reached a streak of 10 in Neural Nodes.',
+        icon: '🤝',
+        secret: true,
+        category: 'games'
+    },
+    // Adventure Achievements
+    {
+        id: 'adventure_begins',
+        title: 'The Journey Begins',
+        description: 'Started the text adventure.',
+        icon: '📜',
+        secret: true,
+        category: 'games'
+    },
+    {
+        id: 'adventure_end_good',
+        title: 'Admin Privileges',
+        description: 'Found the Unpoppable Bubble and restored order.',
+        icon: '👑',
+        secret: true,
+        category: 'games'
+    },
+    {
+        id: 'adventure_end_bad',
+        title: 'Blue Screen of Death',
+        description: 'Met a terrible fate in the simulation.',
+        icon: '💀',
+        secret: true,
+        category: 'games'
+    },
+    {
+        id: 'adventure_explorer',
+        title: 'Glitch Hunter',
+        description: 'Found all the key items in the adventure.',
+        icon: '🎒',
+        secret: true,
+        category: 'games'
     }
 ];
