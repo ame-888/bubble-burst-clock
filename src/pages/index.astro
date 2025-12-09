@@ -23,9 +23,9 @@ let lang = 'en'; // Default language
 const t = translations[lang] || en;
 
 // --- Status Logic ---
-// SIMULATED TIME FOR STORY CONTEXT: Dec 3, 2025
+// SIMULATED TIME FOR STORY CONTEXT: Dec 8, 2025
 // In a real app, this would be new Date().
-const now = new Date('2025-12-03T00:00:00Z');
+const now = new Date('2025-12-08T00:00:00Z');
 
 // --- Serial Popper Logic (Only for isSerialPopper flag on cards) ---
 const creatorCounts: Record<string, number> = {};
@@ -138,7 +138,7 @@ const simulatedServerTime = now.getTime(); // Pass to client
 
         <div class="predictions-grid" id="predictions-grid">
             {processedPredictions.map(p => (
-                <PredictionCard prediction={p} t={t} status={p.status} isSerialPopper={p.isSerialPopper} />
+                <PredictionCard prediction={p} t={t} status={p.status} isSerialPopper={p.isSerialPopper} simulatedNow={now.toISOString()} />
             ))}
         </div>
 

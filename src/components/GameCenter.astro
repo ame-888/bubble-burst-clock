@@ -35,16 +35,14 @@ const { mode = 'modal' } = Astro.props;
                     </div>
                     Neural Pool
                 </button>
-                <button class="game-select-btn" data-game="idle">
+                <button class="game-select-btn" data-game="adventure">
                      <div class="game-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="8"/>
-                            <path d="M12 4v16"/>
-                            <path d="M4 12h16"/>
-                            <circle cx="16" cy="8" r="2" fill="currentColor"/>
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                         </svg>
                     </div>
-                    Idle Bubble
+                    The Unpoppable
                 </button>
                 <button class="game-select-btn" data-game="tetris">
                      <div class="game-icon">
@@ -111,7 +109,13 @@ const { mode = 'modal' } = Astro.props;
                     <div id="pool-controls" class="hidden" style="margin-bottom: 0.5rem; display: flex; justify-content: center; gap: 1rem;">
                         <button id="pool-mode-btn" style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: #374151; color: white; border: none; cursor: pointer;">Switch to VS AI</button>
                     </div>
-                    <div class="game-canvas-wrapper">
+
+                    <div id="adventure-container" class="hidden" style="width: 100%; aspect-ratio: 1; background: #000; border: 2px solid #374151; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; overflow: hidden;">
+                        <div id="adventure-text" style="flex-grow: 1; overflow-y: auto; color: #10B981; font-family: 'Courier New', monospace; font-size: 1rem; line-height: 1.5; margin-bottom: 1rem;"></div>
+                        <div id="adventure-choices" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                    </div>
+
+                    <div id="canvas-container" class="game-canvas-wrapper">
                         <canvas id="game-canvas" width="400" height="400"></canvas>
                         <div id="game-overlay" class="hidden">
                             <h3 id="game-overlay-title">Game Over</h3>
@@ -634,15 +638,18 @@ const { mode = 'modal' } = Astro.props;
 
 <script>
     import { SoundManager, MusicManager, ScoreManager, GameLogic } from '../scripts/GameEngine.js';
+    import { AdventureEngine } from '../scripts/AdventureEngine.js';
 
     // Initialize Managers
     const sound = new SoundManager();
     const music = new MusicManager();
     const scores = new ScoreManager();
+    const adventure = new AdventureEngine();
 
     // Elements
     let modal, joystickBtn;
     let canvas, ctx;
+    let adventureContainer, canvasContainer;
     let gameLoopId;
     let state = null;
     let currentGame = null;
@@ -654,6 +661,8 @@ const { mode = 'modal' } = Astro.props;
         joystickBtn = document.getElementById('joystick-btn');
         modal = document.getElementById('game-modal');
         canvas = document.getElementById('game-canvas');
+        adventureContainer = document.getElementById('adventure-container');
+        canvasContainer = document.getElementById('canvas-container');
         if (canvas) ctx = canvas.getContext('2d');
 
         if (joystickBtn) {
@@ -791,6 +800,46 @@ const { mode = 'modal' } = Astro.props;
         }
     }
 
+    function renderAdventure() {
+        const node = adventure.getCurrentNode();
+        const textEl = document.getElementById('adventure-text');
+        const choicesEl = document.getElementById('adventure-choices');
+
+        textEl.textContent = node.text;
+        choicesEl.innerHTML = '';
+
+        node.choices.forEach((c, i) => {
+            // Check reqs
+            if (c.req && !adventure.state.inventory.includes(c.req)) return;
+
+            const btn = document.createElement('button');
+            btn.textContent = c.text;
+            btn.className = 'adventure-btn';
+            btn.style.padding = '0.5rem';
+            btn.style.background = '#1F2937';
+            btn.style.color = '#E5E7EB';
+            btn.style.border = '1px solid #374151';
+            btn.style.borderRadius = '0.5rem';
+            btn.style.cursor = 'pointer';
+            btn.style.textAlign = 'left';
+
+            btn.onmouseover = () => btn.style.background = '#374151';
+            btn.onmouseout = () => btn.style.background = '#1F2937';
+
+            btn.onclick = () => {
+                const newNode = adventure.handleChoice(i, {
+                    onLoot: (item) => sound.play('score'),
+                    onAchievement: (id) => {
+                        if(window.AchievementManager) window.AchievementManager.unlock(id);
+                        sound.play('score');
+                    }
+                });
+                if (newNode) renderAdventure();
+            };
+            choicesEl.appendChild(btn);
+        });
+    }
+
     function showMenu() {
         document.getElementById('game-menu').classList.remove('hidden');
         document.getElementById('game-area').classList.add('hidden');
@@ -852,6 +901,16 @@ const { mode = 'modal' } = Astro.props;
             poolControls.classList.add('hidden');
         }
 
+        // Handle Adventure vs Canvas
+        if (game === 'adventure') {
+            adventureContainer.classList.remove('hidden');
+            canvasContainer.classList.add('hidden');
+            renderAdventure();
+        } else {
+            adventureContainer.classList.add('hidden');
+            canvasContainer.classList.remove('hidden');
+        }
+
         // Titles & Hints
         const titles = {
             snake: "Data Stream",
@@ -859,7 +918,7 @@ const { mode = 'modal' } = Astro.props;
             breakout: "Firewall Breaker",
             tictactoe: "Neural Nodes",
             pool: "Neural Pool",
-            idle: "Idle Bubble"
+            adventure: "The Unpoppable"
         };
         const hints = {
             snake: "Arrows to Move • P to Pause",
@@ -867,7 +926,7 @@ const { mode = 'modal' } = Astro.props;
             breakout: "Left/Right to Deflect • P to Pause",
             tictactoe: "Click empty nodes to capture",
             pool: "Drag/Hold to aim & shoot • Click button to switch mode",
-            idle: "Click Bubble to generate • Buy Companies/Upgrades to automate"
+            adventure: "Read text • Click choices to progress"
         };
         document.getElementById('modal-title').textContent = titles[game] || "Game";
         document.getElementById('controls-hint').textContent = hints[game] || "";
@@ -911,10 +970,18 @@ const { mode = 'modal' } = Astro.props;
 
         // Check Achievements
         if (window.AchievementManager) {
-            if (currentGame === 'snake' && s >= 500) window.AchievementManager.unlock('snake_charmer');
-            if (currentGame === 'tetris' && s >= 1000) window.AchievementManager.unlock('tetris_master');
-            if (currentGame === 'breakout' && s >= 500) window.AchievementManager.unlock('breakout_artist'); // fallback score check
-            if (currentGame === 'pool' && s >= 100) {/* handled in game over usually but pool score accumulates */}
+            if (currentGame === 'snake') {
+                if (s >= 500) window.AchievementManager.unlock('snake_charmer');
+                if (s >= 1000) window.AchievementManager.unlock('snake_survivor');
+            }
+            if (currentGame === 'tetris') {
+                if (s >= 1000) window.AchievementManager.unlock('tetris_master');
+                if (s >= 3000) window.AchievementManager.unlock('tetris_endurance');
+            }
+            if (currentGame === 'breakout') {
+                if (s >= 500) window.AchievementManager.unlock('breakout_artist');
+                if (s >= 2000) window.AchievementManager.unlock('breakout_clean');
+            }
         }
     }
 
@@ -925,10 +992,20 @@ const { mode = 'modal' } = Astro.props;
 
         // Check Achievements
         if (window.AchievementManager) {
-            if (currentGame === 'snake' && finalScore >= 500) window.AchievementManager.unlock('snake_charmer');
-            if (currentGame === 'tetris' && finalScore >= 1000) window.AchievementManager.unlock('tetris_master');
-            if (currentGame === 'pool' && finalScore > 0) window.AchievementManager.unlock('pool_shark'); // Win/Play
-            if (currentGame === 'breakout' && finalScore >= 500) window.AchievementManager.unlock('breakout_artist');
+            if (currentGame === 'snake') {
+                if (finalScore >= 500) window.AchievementManager.unlock('snake_charmer');
+                if (finalScore >= 1000) window.AchievementManager.unlock('snake_survivor');
+            }
+            if (currentGame === 'tetris') {
+                if (finalScore >= 1000) window.AchievementManager.unlock('tetris_master');
+                if (finalScore >= 3000) window.AchievementManager.unlock('tetris_endurance');
+            }
+            if (currentGame === 'breakout') {
+                if (finalScore >= 500) window.AchievementManager.unlock('breakout_artist');
+                if (finalScore >= 2000) window.AchievementManager.unlock('breakout_clean');
+            }
+            if (currentGame === 'pool' && finalScore > 0) window.AchievementManager.unlock('pool_shark');
+            if (currentGame === 'tictactoe' && finalScore >= 10) window.AchievementManager.unlock('ttt_draw_master');
         }
 
         document.getElementById('game-overlay-score').textContent = `Score: ${finalScore}`;

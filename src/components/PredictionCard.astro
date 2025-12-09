@@ -1,5 +1,27 @@
 ---
-const { prediction, t, status, isSerialPopper } = Astro.props;
+const { prediction, t, status, isSerialPopper, simulatedNow } = Astro.props;
+
+// Time Ago Logic
+let timeAgoLabel = '';
+if (simulatedNow && prediction.uploadDate) {
+    const now = new Date(simulatedNow);
+    const upload = new Date(prediction.uploadDate);
+    const diffTime = Math.abs(now - upload);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 7) {
+        timeAgoLabel = `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    } else if (diffDays < 30) {
+        const weeks = Math.floor(diffDays / 7);
+        timeAgoLabel = `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
+    } else if (diffDays < 365) {
+        const months = Math.floor(diffDays / 30);
+        timeAgoLabel = `${months} month${months !== 1 ? 's' : ''} ago`;
+    } else {
+        const years = Math.floor(diffDays / 365);
+        timeAgoLabel = `${years} year${years !== 1 ? 's' : ''} ago`;
+    }
+}
 
 // Map status to translation key and style class
 let statusLabel = status;
@@ -86,6 +108,10 @@ const canBet = status !== 'EXPIRED';
                 </div>
                 <span class={`status-badge ${statusClass}`}>{statusLabel}</span>
             </div>
+
+            {timeAgoLabel && (
+                <div class="time-ago-label">{timeAgoLabel}</div>
+            )}
 
             <!-- Add data-prediction-id and a class for JS targeting -->
             <p class="claim prediction-claim-text" data-prediction-id={prediction.id}>"{claimText}"</p>
@@ -340,6 +366,19 @@ const canBet = status !== 'EXPIRED';
 
     .bet-btn:hover {
         background: rgba(255,255,255,0.05);
+    }
+
+    .time-ago-label {
+        font-size: 0.75rem;
+        color: #FCD34D;
+        font-weight: 600;
+        background: rgba(245, 158, 11, 0.1);
+        display: inline-block;
+        padding: 0.1rem 0.4rem;
+        border-radius: 0.25rem;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        margin-bottom: 0.25rem;
+        align-self: flex-start;
     }
 
     /* Active States - applied via JS */
