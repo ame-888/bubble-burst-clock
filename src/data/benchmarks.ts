@@ -28,6 +28,14 @@ export const benchmarks = {
                 'lvl2': 60,
                 'lvl3': 54
             }
+        },
+        {
+            name: 'Gemini 2.5 Flash',
+            scores: {
+                'lvl1': 6,
+                'lvl2': 11,
+                'lvl3': 13
+            }
         }
     ]
 };
