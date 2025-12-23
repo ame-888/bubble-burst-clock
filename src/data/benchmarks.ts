@@ -14,11 +14,19 @@ export const benchmarks = {
             }
         },
         {
-            name: 'Gemini 3.0 Pro',
+            name: 'Gemini 3.0 Pro Preview',
             scores: {
                 'lvl1': 42,
                 'lvl2': 50,
                 'lvl3': 35
+            }
+        },
+        {
+            name: 'Gemini 3.0 Flash Preview',
+            scores: {
+                'lvl1': 81,
+                'lvl2': 60,
+                'lvl3': 54
             }
         }
     ]
