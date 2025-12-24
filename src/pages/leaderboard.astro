@@ -29,6 +29,9 @@ const easyModeBenchmarks = benchmarks.models.map(m => {
 // Hard Mode Logic
 const hardModeBenchmarks = [...benchmarks.hardMode].sort((a, b) => b.score - a.score);
 
+// Impossible Mode Logic
+const impossibleModeBenchmarks = [...benchmarks.impossibleMode];
+
 // Serial Popper Logic
 const creatorCounts: Record<string, number> = {};
 predictions.forEach(p => {
@@ -88,6 +91,24 @@ function getRankEmoji(index) {
                                     <div class="model-name">{m.name}</div>
                                 </div>
                                 <div class="model-score">{m.score}%</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div class="spacer"></div>
+
+                    <!-- Impossible Mode -->
+                    <div class="mode-header impossible-header">
+                        <h3>IMPOSSIBLE MODE</h3>
+                    </div>
+                    <div class="benchmark-list">
+                        {impossibleModeBenchmarks.map((m, index) => (
+                            <div class="benchmark-item">
+                                <div class="rank impossible-rank">{getRankEmoji(index)}</div>
+                                <div class="model-info">
+                                    <div class="model-name impossible-text">{m.name}</div>
+                                </div>
+                                <div class="model-score impossible-score">{m.score}%</div>
                             </div>
                         ))}
                     </div>
@@ -239,6 +260,36 @@ function getRankEmoji(index) {
         text-align: center;
         color: #9CA3AF;
         font-style: italic;
+    }
+
+    /* Impossible Mode Styles */
+    .impossible-header h3 {
+        color: #ef4444;
+        text-shadow:
+            0 0 4px #7f1d1d,
+            0 -5px 4px #ff9c00,
+            2px -10px 6px #fd3e3e,
+            -2px -15px 11px #f00;
+        animation: burn 1.5s ease-in-out infinite alternate;
+        border-color: #ef4444;
+    }
+
+    @keyframes burn {
+        from { text-shadow: 0 0 4px #7f1d1d, 0 -5px 4px #ff9c00, 2px -10px 6px #fd3e3e, -2px -15px 11px #f00; }
+        to { text-shadow: 0 0 4px #7f1d1d, 0 -2px 4px #ff9c00, 2px -5px 6px #fd3e3e, -2px -10px 11px #f00; }
+    }
+
+    .impossible-rank {
+        color: #ef4444;
+    }
+
+    .impossible-score {
+        color: #ef4444;
+        text-shadow: 0 0 5px #7f1d1d;
+    }
+
+    .impossible-text {
+        color: #fee2e2; /* Light red/white for contrast */
     }
 </style>
 

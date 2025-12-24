@@ -43,5 +43,11 @@ export const benchmarks = {
         { name: 'Gemini 3.0 Pro Preview', score: 2 },
         { name: 'Gemini 2.5 Pro', score: 0 },
         { name: 'Gemini 2.5 Flash', score: 0 }
+    ],
+    impossibleMode: [
+        { name: 'Gemini 3.0 Flash Preview', score: 0 },
+        { name: 'Gemini 3.0 Pro Preview', score: 0 },
+        { name: 'Gemini 2.5 Pro', score: 0 },
+        { name: 'Gemini 2.5 Flash', score: 0 }
     ]
 };
