@@ -1,6 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { predictions } from '../data/predictions';
+import { creators } from '../data/creators';
+import { getRarity } from '../data/RaritySystem';
 import en from '../locales/en.json';
 import ptBR from '../locales/pt-BR.json';
 import ja from '../locales/ja.json';
@@ -19,7 +21,7 @@ const lang = 'en';
 const t = translations[lang];
 
 // --- Status Logic for counts ---
-const now = new Date('2025-12-03T00:00:00Z');
+const now = new Date('2026-01-02T00:00:00Z');
 
 const processedPredictions = predictions.map(p => {
     let status = 'FUTURE PREDICTION';
@@ -63,7 +65,7 @@ processedPredictions.forEach(p => {
     }
 });
 
-// Deterministic RPG Stats Generator
+// Deterministic RPG Stats Generator (Preserved)
 function getRPGStats(name) {
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
@@ -99,26 +101,14 @@ const players = Object.values(creatorsData).map(c => {
     else if (stats.STR > 85) rpgClass = "Bubble Burster";
     else if (stats.LUCK > 85) rpgClass = "Oracle";
 
-    // Rarity Map
-    const rarityMap = {
-        "Gary Marcus": "Legendary",
-        "O Primo Rico": "Legendary",
-        "Sabine Hossenfelder": "Legendary",
-        "Adam Conover": "Epic",
-        "Brianne Worth": "Epic",
-        "Cole Hastings": "Epic",
-        "Man Carrying Thing": "Epic",
-        "Georg Rockall-Schmidt": "Epic",
-        "Sasha Yanshin": "Epic",
-        "OverEasy": "Rare",
-        "Shade of Code": "Rare",
-        "The Ben and Emil Show": "Rare"
-    };
-
+    // --- NEW RARITY LOGIC ---
     // @ts-ignore
-    const rarity = rarityMap[c.name] || "Common";
+    const creatorInfo = creators[c.name] || { subscriberCount: 0, isLegacy: false };
+    const rarityObj = getRarity(creatorInfo.subscriberCount, creatorInfo.isLegacy);
+    const rarity = rarityObj.label;
+    const tierTitle = rarityObj.tierTitle; // "Scrappy Skeptic", etc.
 
-    // MTG Color Mapping
+    // MTG Color Mapping (Preserved logic, unrelated to rarity)
     let mtgColor = "white"; // Doomer/Default
     if (rpgClass === "Technomancer") mtgColor = "blue";
     else if (rpgClass === "Cult Leader") mtgColor = "black";
@@ -141,7 +131,7 @@ const players = Object.values(creatorsData).map(c => {
         return d.getTime();
     }));
 
-    return { ...c, stats, successRate, rpgClass, rarity, mtgColor, flavorText, latestDate };
+    return { ...c, stats, successRate, rpgClass, rarity, tierTitle, mtgColor, flavorText, latestDate };
     // @ts-ignore
 }).sort((a, b) => b.total - a.total); // Default sort
 ---
@@ -284,6 +274,45 @@ const players = Object.values(creatorsData).map(c => {
                 </div>
             </div>
         </div>
+
+        <!-- RARITY GUIDE -->
+        <section class="rarity-guide-section">
+            <h2 class="guide-title">Player Card Rarity Guide</h2>
+            <div class="guide-table-wrapper">
+                <table class="rarity-table">
+                    <thead>
+                        <tr>
+                            <th>Tier</th>
+                            <th>Status</th>
+                            <th>Requirement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-common">
+                            <td><span class="rarity-pill common">Common</span></td>
+                            <td>⚪ Scrappy Skeptic</td>
+                            <td>&lt; 10k Followers/Subs</td>
+                        </tr>
+                        <tr class="row-rare">
+                            <td><span class="rarity-pill rare">Rare</span></td>
+                            <td>🔵 Rising Bear</td>
+                            <td>10k - 100k Followers/Subs</td>
+                        </tr>
+                        <tr class="row-epic">
+                            <td><span class="rarity-pill epic">Epic</span></td>
+                            <td>🟣 Industry Prophet</td>
+                            <td>100k - 1M Followers/Subs</td>
+                        </tr>
+                        <tr class="row-legendary">
+                            <td><span class="rarity-pill legendary">Legendary</span></td>
+                            <td>🟠 The Arch-Doom</td>
+                            <td>+1M Subs OR "Legacy Status"</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </main>
 </Layout>
 
@@ -292,6 +321,7 @@ const players = Object.values(creatorsData).map(c => {
         max-width: 80rem;
         margin: 4rem auto;
         padding: 0 1rem;
+        padding-bottom: 6rem;
     }
 
     h1 {
@@ -397,6 +427,64 @@ const players = Object.values(creatorsData).map(c => {
     .side-arrow:hover {
         background: rgba(0, 0, 0, 0.8);
     }
+
+    /* Rarity Guide Styles */
+    .rarity-guide-section {
+        margin-top: 6rem;
+        background: rgba(17, 24, 39, 0.6);
+        border-radius: 1rem;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .guide-title {
+        text-align: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+    }
+
+    .guide-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .rarity-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #D1D5DB;
+        min-width: 600px; /* Ensure table doesn't squash on mobile */
+    }
+
+    .rarity-table th {
+        text-align: left;
+        padding: 1rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        color: #9CA3AF;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+    }
+
+    .rarity-table td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .rarity-pill {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: white;
+    }
+
+    .rarity-pill.common { background: rgba(156, 163, 175, 0.2); border: 1px solid #9CA3AF; color: #D1D5DB; }
+    .rarity-pill.rare { background: rgba(59, 130, 246, 0.2); border: 1px solid #3B82F6; color: #93C5FD; }
+    .rarity-pill.epic { background: rgba(139, 92, 246, 0.2); border: 1px solid #8B5CF6; color: #C4B5FD; }
+    .rarity-pill.legendary { background: rgba(245, 158, 11, 0.2); border: 1px solid #F59E0B; color: #FCD34D; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
 
     /* Mobile responsiveness for arrows */
     @media (max-width: 600px) {
@@ -582,7 +670,7 @@ const players = Object.values(creatorsData).map(c => {
             if (dName) dName.textContent = player.name;
 
             const dType = document.getElementById('detail-type-text');
-            if (dType) dType.textContent = `${player.rarity} ${player.rpgClass}`;
+            if (dType) dType.textContent = `${player.tierTitle} — ${player.rpgClass}`;
 
             const dMana = document.getElementById('detail-mana');
             if (dMana) dMana.textContent = player.total;

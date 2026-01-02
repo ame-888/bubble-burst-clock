@@ -214,5 +214,23 @@ export const predictions = [
         validityStart: "2025-03-13",
         validityEnd: "2025-03-27",
         news: "Devin AI goes public"
+    },
+    {
+        id: "JFlH9isWT68",
+        creator: "Lattice",
+        claim: {
+            "en": "The AI bubble is bursting (maybe)",
+            "pt-BR": "A bolha da IA está estourando (talvez)",
+            "es": "La burbuja de la IA está estallando (talvez)",
+            "ja": "AIバブルは崩壊している（たぶん）",
+            "zh": "人工智能泡沫正在破裂（也许）"
+        },
+        videoUrl: "https://www.youtube.com/watch?v=JFlH9isWT68",
+        thumbnailUrl: "https://img.youtube.com/vi/JFlH9isWT68/maxresdefault.jpg",
+        dateRange: "2 Weeks",
+        uploadDate: "2025-12-27",
+        validityStart: "2025-12-27",
+        validityEnd: "2026-01-10",
+        news: "Mauritania rolls out AI system to strengthen road safety nationwide"
     }
 ];
