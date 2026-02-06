@@ -43,6 +43,7 @@
     "status_future_tooltip": "A validade da previsão começa no futuro. A contagem regressiva não começou.",
     "status_active_tooltip": "A previsão está sendo rastreada. A janela de validação de 2 semanas está aberta.",
     "status_expired_tooltip": "A janela de 2 semanas passou. A previsão não se concretizou.",
+    "benchmark_impossible_disclaimer": "Não foi possível testar o Modo Impossível devido a problemas técnicos (mas provavelmente ainda é 0%)",
     "serial_popper_button": "HALL DA FAMA DOS ESTRAGA-PRAZERES",
     "serial_popper_modal_title": "Hall da Fama dos Estraga-Prazeres",
     "serial_popper_count_label": "Alegações",

@@ -43,6 +43,7 @@
     "status_future_tooltip": "予測の有効性は将来始まります。カウントダウンはまだ始まっていません。",
     "status_active_tooltip": "予測は現在追跡されています。2週間の検証期間が開いています。",
     "status_expired_tooltip": "2週間の期間が過ぎました。予測は実現しませんでした。",
+    "benchmark_impossible_disclaimer": "技術的な問題によりインポッシブルモードをテストできませんでした（おそらくまだ0％です）",
     "serial_popper_button": "連続ポッパーの殿堂",
     "serial_popper_modal_title": "連続ポッパーの殿堂",
     "serial_popper_count_label": "主張数",

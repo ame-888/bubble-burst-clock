@@ -6,6 +6,15 @@ export const benchmarks = {
     ],
     models: [
         {
+            name: 'Gemini 3 Flash (with code execution)',
+            scores: {
+                'lvl1': 70.6,
+                'lvl2': 70.6,
+                'lvl3': 70.6
+            },
+            releaseDate: '2026-02-06'
+        },
+        {
             name: 'Gemini 2.5 Pro',
             scores: {
                 'lvl1': 40,
@@ -39,12 +48,14 @@ export const benchmarks = {
         }
     ],
     hardMode: [
+        { name: 'Gemini 3 Flash (with code execution)', score: 4, releaseDate: '2026-02-06' },
         { name: 'Gemini 3.0 Flash Preview', score: 3 },
         { name: 'Gemini 3.0 Pro Preview', score: 2 },
         { name: 'Gemini 2.5 Pro', score: 0 },
         { name: 'Gemini 2.5 Flash', score: 0 }
     ],
     impossibleMode: [
+        { name: 'Gemini 3 Flash (with code execution)', score: 0, releaseDate: '2026-02-06' },
         { name: 'Gemini 3.0 Flash Preview', score: 0 },
         { name: 'Gemini 3.0 Pro Preview', score: 0 },
         { name: 'Gemini 2.5 Pro', score: 0 },
