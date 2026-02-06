@@ -43,6 +43,7 @@
     "status_future_tooltip": "预测有效性始于未来。倒计时尚未开始。",
     "status_active_tooltip": "目前正在追踪预测。2 周验证窗口已开启。",
     "status_expired_tooltip": "2 周窗口期已过。预测未能实现。",
+    "benchmark_impossible_disclaimer": "由于技术问题无法测试不可能模式（但也可能仍然是0%）",
     "serial_popper_button": "连环戳破者名人堂",
     "serial_popper_modal_title": "连环戳破者名人堂",
     "serial_popper_count_label": "主张",
