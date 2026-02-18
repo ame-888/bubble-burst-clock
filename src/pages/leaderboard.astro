@@ -19,10 +19,13 @@ const translations = {
 const lang = 'en';
 const t = translations[lang];
 
+// --- Simulated Time for Context ---
+const SIMULATED_NOW = new Date('2026-02-18T00:00:00Z');
+
 function isNew(dateStr) {
     if (!dateStr) return false;
     const release = new Date(dateStr);
-    const now = new Date();
+    const now = new Date(SIMULATED_NOW);
     // Reset hours to compare just dates
     release.setHours(0,0,0,0);
     now.setHours(0,0,0,0);

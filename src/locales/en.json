@@ -43,7 +43,7 @@
     "status_future_tooltip": "Prediction validity starts in the future. Countdown hasn't begun.",
     "status_active_tooltip": "Prediction is currently being tracked. The 2-week validation window is open.",
     "status_expired_tooltip": "The 2-week window has passed. The prediction failed to materialize.",
-    "benchmark_impossible_disclaimer": "It wasn't possible to test Impossible Mode due to technical problems (but most likely it's still 0%)",
+    "benchmark_impossible_disclaimer": "It wasn't possible to test Impossible Mode due to technical problems with Gemini 3.0 Flash Preview (with code execution) (but most likely it's still 0%)",
     "serial_popper_button": "SERIAL POPPERS HALL OF FAME",
     "serial_popper_modal_title": "Serial Poppers Hall of Fame",
     "serial_popper_count_label": "Claims",
