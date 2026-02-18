@@ -140,6 +140,7 @@ function getRankEmoji(index) {
                         ))}
                     </div>
                     <p class="disclaimer" id="benchmark-disclaimer">{t.benchmark_impossible_disclaimer}</p>
+                    <p class="disclaimer" id="benchmark-grok-note">{t.benchmark_grok_note}</p>
                 </div>
             </section>
 
@@ -369,12 +370,14 @@ function getRankEmoji(index) {
         const popperTitle = document.getElementById('serial-popper-title');
         const popperLabel = document.getElementById('serial-popper-count-label');
         const disclaimer = document.getElementById('benchmark-disclaimer');
+        const grokNote = document.getElementById('benchmark-grok-note');
 
         if (mainTitle) mainTitle.textContent = t.leaderboard_button;
         if (benchTitle) benchTitle.textContent = t.benchmark_title;
         if (popperTitle) popperTitle.textContent = t.serial_popper_modal_title;
         if (popperLabel) popperLabel.textContent = t.serial_popper_count_label;
         if (disclaimer) disclaimer.textContent = t.benchmark_impossible_disclaimer;
+        if (grokNote) grokNote.textContent = t.benchmark_grok_note;
     }
 
     document.addEventListener('DOMContentLoaded', updateTranslations);
