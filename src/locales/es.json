@@ -43,7 +43,7 @@
     "status_future_tooltip": "La validez de la predicción comienza en el futuro. La cuenta regresiva no ha comenzado.",
     "status_active_tooltip": "La predicción está siendo rastreada. La ventana de validación de 2 semanas está abierta.",
     "status_expired_tooltip": "La ventana de 2 semanas ha pasado. La predicción no se materializó.",
-    "benchmark_impossible_disclaimer": "No fue posible probar el Modo Imposible debido a problemas técnicos (pero probablemente siga siendo 0%)",
+    "benchmark_impossible_disclaimer": "It wasn't possible to test Impossible Mode due to technical problems with Gemini 3.0 Flash Preview (with code execution) (but most likely it's still 0%)",
     "serial_popper_button": "SALÓN DE LA FAMA DE AGUAFIESTAS",
     "serial_popper_modal_title": "Salón de la Fama de Aguafiestas",
     "serial_popper_count_label": "Afirmaciones",
