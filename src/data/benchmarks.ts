@@ -45,6 +45,14 @@ export const benchmarks = {
                 'lvl2': 11,
                 'lvl3': 13
             }
+        },
+        {
+            name: 'Grok 4.20 (chat)*',
+            scores: {
+                'lvl1': 5.41,
+                'lvl2': 5.41,
+                'lvl3': 5.41
+            }
         }
     ],
     hardMode: [
