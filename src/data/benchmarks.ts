@@ -47,11 +47,11 @@ export const benchmarks = {
             }
         },
         {
-            name: 'Grok 4.20 (chat)*',
+            name: 'Grok 4.20 (chat)',
             scores: {
-                'lvl1': 6,
-                'lvl2': 6,
-                'lvl3': 6
+                'lvl1': 6.66,
+                'lvl2': 6.66,
+                'lvl3': 6.66
             },
             releaseDate: '2026-02-18'
         }
@@ -60,6 +60,7 @@ export const benchmarks = {
         { name: 'Gemini 3.0 Flash Preview (with code execution)', score: 4, releaseDate: '2026-02-06' },
         { name: 'Gemini 3.0 Flash Preview', score: 3 },
         { name: 'Gemini 3.0 Pro Preview', score: 2 },
+        { name: 'Grok 4.20 (chat)', score: 0, releaseDate: '2026-02-18' },
         { name: 'Gemini 2.5 Pro', score: 0 },
         { name: 'Gemini 2.5 Flash', score: 0 }
     ],
@@ -67,6 +68,7 @@ export const benchmarks = {
         { name: 'Gemini 3.0 Flash Preview (with code execution)', score: 0, releaseDate: '2026-02-06' },
         { name: 'Gemini 3.0 Flash Preview', score: 0 },
         { name: 'Gemini 3.0 Pro Preview', score: 0 },
+        { name: 'Grok 4.20 (chat)', score: 0, releaseDate: '2026-02-18' },
         { name: 'Gemini 2.5 Pro', score: 0 },
         { name: 'Gemini 2.5 Flash', score: 0 }
     ]

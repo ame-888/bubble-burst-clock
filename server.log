@@ -1,16 +1,24 @@
-127.0.0.1 - - [19/Feb/2026 01:58:44] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 01:58:45] "GET /_astro/about.Kpprmclt.css HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 01:58:45] "GET /_astro/index.D_eysWCx.css HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 01:58:45] "GET /_astro/Layout.astro_astro_type_script_index_0_lang.Cd1RfpdZ.js HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 01:58:45] "GET /_astro/index.astro_astro_type_script_index_0_lang.C4wgW4Ye.js HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 01:58:45] "GET /images/predictions/gary_marcus_tweet.png HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 01:58:45] "GET /_astro/AchievementManager.C_4GO7wl.js HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 01:58:50] "GET /leaderboard/ HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 02:05:05] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 02:05:05] "GET /_astro/index.D_eysWCx.css HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 02:05:05] "GET /_astro/Layout.astro_astro_type_script_index_0_lang.Cd1RfpdZ.js HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 02:05:05] "GET /_astro/about.Kpprmclt.css HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 02:05:05] "GET /_astro/index.astro_astro_type_script_index_0_lang.C4wgW4Ye.js HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 02:05:05] "GET /images/predictions/gary_marcus_tweet.png HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 02:05:05] "GET /_astro/AchievementManager.C_4GO7wl.js HTTP/1.1" 200 -
-127.0.0.1 - - [19/Feb/2026 02:05:08] "GET /leaderboard/ HTTP/1.1" 200 -
+
+> bubble-burst-clock@0.0.1 dev
+> astro dev
+
+▶ Astro collects anonymous usage data.
+  This information helps us improve Astro.
+  Run "astro telemetry disable" to opt-out.
+  https://astro.build/telemetry
+
+22:57:59 [types] Generated 1ms
+22:57:59 [content] Syncing content
+22:57:59 [content] Synced content
+
+ astro  v5.16.4 ready in 417 ms
+
+┃ Local    http://localhost:4321/
+┃ Network  use --host to expose
+
+22:57:59 watching for file changes...
+
+ update  ▶ New version of Astro available: 5.17.3
+  Run npx @astrojs/upgrade to update
+
+22:58:15 [200] /leaderboard 46ms
