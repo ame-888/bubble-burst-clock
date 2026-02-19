@@ -4,6 +4,7 @@ import Layout from '../layouts/Layout.astro';
 import PredictionCard from '../components/PredictionCard.astro';
 import { bettingManager } from '../scripts/BettingManager';
 import { predictions } from '../data/predictions';
+import { getSimulatedDate, TIME_OFFSET } from '../scripts/TimeUtils';
 import en from '../locales/en.json';
 import ptBR from '../locales/pt-BR.json';
 import ja from '../locales/ja.json';
@@ -23,9 +24,9 @@ let lang = 'en'; // Default language
 const t = translations[lang] || en;
 
 // --- Status Logic ---
-// SIMULATED TIME FOR STORY CONTEXT: Jan 2, 2026
+// SIMULATED TIME FOR STORY CONTEXT: Dynamic based on TimeUtils
 // In a real app, this would be new Date().
-const now = new Date('2026-02-18T00:00:00Z');
+const now = getSimulatedDate();
 
 // --- Serial Popper Logic (Only for isSerialPopper flag on cards) ---
 const creatorCounts: Record<string, number> = {};
@@ -63,7 +64,6 @@ const expiredPredictions = processedPredictions.filter(p => p.status === 'EXPIRE
 expiredPredictions.sort((a, b) => b.failureDate - a.failureDate);
 const latestExpired = expiredPredictions.length > 0 ? expiredPredictions[0] : null;
 const latestClaimDate = latestExpired ? latestExpired.failureDate.toISOString() : null;
-const simulatedServerTime = now.getTime(); // Pass to client
 
 ---
 
@@ -652,70 +652,222 @@ const simulatedServerTime = now.getTime(); // Pass to client
     import '../scripts/BettingManager.js';
 </script>
 
-<script define:vars={{ lang, t, translations, latestClaimDate, simulatedServerTime, predictions }}>
+<script define:vars={{ lang, t, translations, latestClaimDate, TIME_OFFSET, predictions }}>
     function init() {
+        let currentLang = lang;
+        let currentTranslations = t;
+        let activeClockInterval = null;
+        let clientSimulatedDate = new Date();
+
         // --- Betting Logic ---
         function setupBetting() {
             const controls = document.querySelectorAll('.betting-controls');
-
-            // Initial render state
             updateBettingUI();
-
             controls.forEach(control => {
                 const id = control.getAttribute('data-prediction-id');
                 const btnCorrect = control.querySelector('.bet-correct');
                 const btnIncorrect = control.querySelector('.bet-incorrect');
-
                 if (btnCorrect) {
                     btnCorrect.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation(); // Prevent card click
+                        e.preventDefault(); e.stopPropagation();
                         window.BettingManager.placeBet(id, 'correct');
                     });
                 }
-
                 if (btnIncorrect) {
                     btnIncorrect.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                        e.preventDefault(); e.stopPropagation();
                         window.BettingManager.placeBet(id, 'incorrect');
                     });
                 }
             });
-
-            // Listen for updates
             window.addEventListener('bets-updated', updateBettingUI);
         }
 
         function updateBettingUI() {
             if (!window.BettingManager) return;
-
             document.querySelectorAll('.betting-controls').forEach(control => {
                 const id = control.getAttribute('data-prediction-id');
                 const userBet = window.BettingManager.getBet(id);
                 const btnCorrect = control.querySelector('.bet-correct');
                 const btnIncorrect = control.querySelector('.bet-incorrect');
-
-                // Reset classes
                 if (btnCorrect) btnCorrect.classList.remove('bet-active-correct');
                 if (btnIncorrect) btnIncorrect.classList.remove('bet-active-incorrect');
+                if (userBet === 'correct' && btnCorrect) btnCorrect.classList.add('bet-active-correct');
+                else if (userBet === 'incorrect' && btnIncorrect) btnIncorrect.classList.add('bet-active-incorrect');
+            });
+        }
 
-                if (userBet === 'correct' && btnCorrect) {
-                    btnCorrect.classList.add('bet-active-correct');
-                } else if (userBet === 'incorrect' && btnIncorrect) {
-                    btnIncorrect.classList.add('bet-active-incorrect');
+        // --- Clock Logic ---
+        function startClock(targetDateStr) {
+            const clockElement = document.getElementById('big-clock');
+            const clockContainer = document.getElementById('clock-container');
+
+            if (activeClockInterval) clearInterval(activeClockInterval);
+
+            if (!targetDateStr) {
+                if(clockContainer) clockContainer.classList.add('hidden');
+                return;
+            } else {
+                if(clockContainer) clockContainer.classList.remove('hidden');
+            }
+
+            if (!clockElement) return;
+
+            // Achievement: Click Clock
+            clockElement.onclick = () => window.dispatchEvent(new CustomEvent('clock-clicked'));
+
+            const startDate = new Date(targetDateStr);
+            // Use the fixed time offset from TimeUtils (passed via define:vars)
+            // This ensures consistent daily progression relative to real time
+            const timeOffset = TIME_OFFSET;
+
+            function updateClock() {
+                // Effective Now = Client Current Time + Offset
+                const now = new Date(new Date().getTime() + timeOffset);
+                clientSimulatedDate = now; // Store for other uses
+
+                const diff = now - startDate;
+
+                if (diff < 0) {
+                    clockElement.textContent = "00d 00h 00m 00s";
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                const pad = (n) => n.toString().padStart(2, '0');
+
+                clockElement.textContent = `${pad(days)}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+            }
+
+            updateClock();
+            activeClockInterval = setInterval(updateClock, 1000);
+        }
+
+        // --- Dynamic Status Update Logic ---
+        function updatePredictionStatuses() {
+            // Re-calculate client simulated date to be sure
+            const timeOffset = TIME_OFFSET;
+            const simNow = new Date(new Date().getTime() + timeOffset);
+
+            const grid = document.getElementById('predictions-grid');
+            if (!grid) return;
+
+            let latestFailDate = null;
+
+            Array.from(grid.children).forEach(card => {
+                const startStr = card.getAttribute('data-validity-start');
+                const endStr = card.getAttribute('data-validity-end');
+                const uploadStr = card.getAttribute('data-upload-date');
+
+                if (!startStr || !endStr) return;
+
+                const start = new Date(startStr);
+                const end = new Date(endStr);
+
+                let newStatus = 'FUTURE PREDICTION';
+
+                if (simNow < start) {
+                    newStatus = 'FUTURE PREDICTION';
+                } else if (simNow >= start && simNow <= end) {
+                    newStatus = 'ACTIVE';
+                } else {
+                    newStatus = 'EXPIRED';
+                    // Track latest failure
+                    if (!latestFailDate || end > latestFailDate) {
+                        latestFailDate = end;
+                    }
+                }
+
+                // Update DOM Attributes
+                card.setAttribute('data-status', newStatus);
+
+                // Update Badge
+                const badge = card.querySelector('.status-badge');
+                if (badge) {
+                    badge.classList.remove('status-badge-future', 'status-badge-active', 'status-badge-expired');
+
+                    let label = '';
+                    let tooltip = '';
+                    let cls = '';
+
+                    if (newStatus === 'FUTURE PREDICTION') {
+                        label = currentTranslations.future_prediction || 'FUTURE PREDICTION';
+                        tooltip = currentTranslations.status_future_tooltip || '';
+                        cls = 'status-badge-future';
+                    } else if (newStatus === 'ACTIVE') {
+                        label = currentTranslations.active_prediction || 'ACTIVE';
+                        tooltip = currentTranslations.status_active_tooltip || '';
+                        cls = 'status-badge-active';
+                    } else {
+                        label = currentTranslations.expired_prediction || 'EXPIRED';
+                        tooltip = currentTranslations.status_expired_tooltip || '';
+                        cls = 'status-badge-expired';
+                    }
+
+                    badge.textContent = label;
+                    badge.classList.add(cls);
+                    // Badge in card doesn't use tooltip attr currently in CSS, but good to have
+                }
+
+                // Update Betting Controls Visibility
+                const bettingControls = card.querySelector('.betting-controls');
+                if (bettingControls) {
+                    if (newStatus === 'EXPIRED') {
+                        bettingControls.style.display = 'none';
+                    } else {
+                        bettingControls.style.display = 'flex';
+                    }
+                }
+
+                // Update Time Ago
+                const timeAgoLabel = card.querySelector('.time-ago-label');
+                if (timeAgoLabel && uploadStr) {
+                    const upload = new Date(uploadStr);
+                    const diffTime = Math.abs(simNow - upload);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    let text = '';
+
+                    if (diffDays < 7) {
+                        text = `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+                    } else if (diffDays < 30) {
+                        const weeks = Math.floor(diffDays / 7);
+                        text = `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
+                    } else if (diffDays < 365) {
+                        const months = Math.floor(diffDays / 30);
+                        text = `${months} month${months !== 1 ? 's' : ''} ago`;
+                    } else {
+                        const years = Math.floor(diffDays / 365);
+                        text = `${years} year${years !== 1 ? 's' : ''} ago`;
+                    }
+                    timeAgoLabel.textContent = text;
                 }
             });
+
+            // Restart clock if latest failure changed
+            if (latestFailDate) {
+                const newLatestStr = latestFailDate.toISOString();
+                // Compare with current latestClaimDate (variable in closure)
+                // We can't easily update the `latestClaimDate` variable for the clock function
+                // unless we restart it with the new date.
+                // But we don't want to restart it constantly.
+                // Let's check against what the clock is currently running on.
+                // Actually, the clock interval just calcs diff.
+                // We just need to call startClock again with the new date.
+                startClock(newLatestStr);
+            } else {
+                startClock(null); // Hide clock if no failures
+            }
         }
 
         // --- Modal Logic ---
         const overlay = document.getElementById('modal-overlay');
         const submissionModal = document.getElementById('submission-modal');
         const bugModal = document.getElementById('bug-modal');
-
         const btnSubmit = document.getElementById('fab-submit');
         const btnBug = document.getElementById('fab-bug');
-
         const closeButtons = document.querySelectorAll('.close-modal');
 
         function openModal(modal) {
@@ -740,7 +892,6 @@ const simulatedServerTime = now.getTime(); // Pass to client
                 if (btn) btn.textContent = currentTranslations.report_bug_button;
                 if (inputType) inputType.value = "bug_report";
                 openModal(bugModal);
-                // Achievement: Open Bug Report
                 window.dispatchEvent(new CustomEvent('bug-report-opened'));
             });
         }
@@ -749,46 +900,31 @@ const simulatedServerTime = now.getTime(); // Pass to client
             const title = document.getElementById('report-bug-title');
             const btn = document.getElementById('report-bug-button');
             const inputType = document.querySelector('input[name="type"]');
-
-            // Use localized strings if available, fallback to hardcoded (added to en.json)
             const suggestionTitle = currentTranslations.suggest_game_title || "Suggest a Game";
             const suggestionBtn = currentTranslations.suggest_game_button || "Suggest Game";
-
             if (title) title.textContent = suggestionTitle;
             if (btn) btn.textContent = suggestionBtn;
             if (inputType) inputType.value = "game_suggestion";
-
             openModal(bugModal);
         });
 
         if (overlay) overlay.addEventListener('click', closeModal);
-
         closeButtons.forEach(btn => btn.addEventListener('click', closeModal));
 
         // --- Easter Egg Logic ---
         let titleClickCount = 0;
         const mainTitle = document.getElementById('main-title');
-
         if (mainTitle) {
             mainTitle.addEventListener('click', () => {
                 titleClickCount++;
                 if (titleClickCount === 5) {
-                    // Unlock Arcade Mode
                     localStorage.setItem('arcade_unlocked', 'true');
-
-                    // Show Link
                     const arcadeLink = document.getElementById('nav-arcade');
                     if (arcadeLink) arcadeLink.classList.remove('hidden');
-
-                    // Achievement: Open Game Center (Trigger logic still valid for unlock)
                     window.dispatchEvent(new CustomEvent('game-center-opened'));
-
                     console.log('Arcade Mode Unlocked! 🎮');
-
-                    // Visual Feedback
-                    mainTitle.style.color = '#FACC15'; // Bright Yellow
+                    mainTitle.style.color = '#FACC15';
                     mainTitle.style.textShadow = '0 0 20px rgba(250, 204, 21, 0.5)';
-
                     setTimeout(() => {
                         mainTitle.style.color = '';
                         mainTitle.style.textShadow = '';
@@ -798,16 +934,12 @@ const simulatedServerTime = now.getTime(); // Pass to client
             });
         }
 
-        let currentLang = lang;
-        let currentTranslations = t;
-
-        // Function to get translations
         function getTranslations(langCode) {
             return translations[langCode] || translations['en'];
         }
 
         function updateStaticTranslations() {
-            if (!mainTitle) return; // Basic check
+            if (!mainTitle) return;
 
             document.title = currentTranslations.title;
             mainTitle.textContent = currentTranslations.title;
@@ -841,8 +973,6 @@ const simulatedServerTime = now.getTime(); // Pass to client
             // Clock & Main
             const clockLabel = document.getElementById('clock-label');
             if (clockLabel) clockLabel.textContent = currentTranslations.clock_label;
-            const clockExplanation = document.getElementById('clock-explanation');
-            if (clockExplanation) clockExplanation.textContent = currentTranslations.clock_explanation;
 
             // Footer
             const footerContactLabel = document.getElementById('footer-contact-label');
@@ -868,18 +998,15 @@ const simulatedServerTime = now.getTime(); // Pass to client
             const statusExpiredDesc = document.getElementById('status-expired-desc');
             if (statusExpiredDesc) statusExpiredDesc.textContent = currentTranslations.status_expired_desc;
 
-            // Update Tooltips
             document.querySelector('.status-badge.future')?.setAttribute('data-tooltip', currentTranslations.status_future_tooltip || '');
             document.querySelector('.status-badge.active')?.setAttribute('data-tooltip', currentTranslations.status_active_tooltip || '');
             document.querySelector('.status-badge.expired')?.setAttribute('data-tooltip', currentTranslations.status_expired_tooltip || '');
 
-            // FABs
             if (btnBug) btnBug.textContent = currentTranslations.fab_report_bug;
             if (btnSubmit) btnSubmit.textContent = currentTranslations.fab_submit_prediction;
 
             const sortSelect = document.getElementById('sort-select');
             if (sortSelect) {
-                // Update options text while preserving selection
                 const options = sortSelect.options;
                 if (options.length >= 3) {
                     options[0].text = currentTranslations.sort_newest;
@@ -888,7 +1015,6 @@ const simulatedServerTime = now.getTime(); // Pass to client
                 }
             }
 
-            // Update prediction claim texts dynamically
             const claimElements = document.querySelectorAll('.prediction-claim-text');
             claimElements.forEach(el => {
                 const id = el.getAttribute('data-prediction-id');
@@ -901,54 +1027,10 @@ const simulatedServerTime = now.getTime(); // Pass to client
                         newText = prediction.claim[currentLang] || prediction.claim['en'] || Object.values(prediction.claim)[0];
                     }
                     if (newText) {
-                         // Wrap in quotes to match server-side styling
                         el.textContent = `"${newText}"`;
                     }
                 }
             });
-        }
-
-        // --- Clock Logic ---
-        function startClock() {
-            const clockElement = document.getElementById('big-clock');
-            if (!clockElement || !latestClaimDate) return;
-
-            // Achievement: Click Clock
-            clockElement.addEventListener('click', () => {
-                window.dispatchEvent(new CustomEvent('clock-clicked'));
-            });
-
-            const startDate = new Date(latestClaimDate);
-
-            // Calculate time offset: Simulated Server Time - Client Real Time
-            // This forces the client to perceive "now" as the simulated server time (Dec 1, 2025)
-            // plus whatever seconds pass while the user is on the page.
-            const serverTime = simulatedServerTime;
-            const clientTime = new Date().getTime();
-            const timeOffset = serverTime - clientTime;
-
-            function updateClock() {
-                // Effective Now = Client Current Time + Offset
-                const now = new Date(new Date().getTime() + timeOffset);
-                const diff = now - startDate;
-
-                if (diff < 0) {
-                    clockElement.textContent = "00d 00h 00m 00s";
-                    return;
-                }
-
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-                const pad = (n) => n.toString().padStart(2, '0');
-
-                clockElement.textContent = `${pad(days)}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
-            }
-
-            updateClock(); // Initial call
-            setInterval(updateClock, 1000);
         }
 
         // --- Sort and Search Logic ---
@@ -964,22 +1046,14 @@ const simulatedServerTime = now.getTime(); // Pass to client
                 const query = searchInput.value.toLowerCase().trim();
                 const cards = Array.from(grid.children);
 
-                // Filter
                 cards.forEach(card => {
                    const claimText = (card.querySelector('.claim')?.textContent || '').toLowerCase();
                    const creatorText = (card.getAttribute('data-creator') || '').toLowerCase();
-
-                   // Remove quotes from claim text for cleaner search if needed, but keeping simple
                    const matches = claimText.includes(query) || creatorText.includes(query);
-
-                   if (matches) {
-                       card.classList.remove('hidden');
-                   } else {
-                       card.classList.add('hidden');
-                   }
+                   if (matches) card.classList.remove('hidden');
+                   else card.classList.add('hidden');
                 });
 
-                // Sort (only visible cards matters, but we sort all)
                 cards.sort((a, b) => {
                     const dateA = new Date(a.getAttribute('data-upload-date') || 0);
                     const dateB = new Date(b.getAttribute('data-upload-date') || 0);
@@ -988,13 +1062,9 @@ const simulatedServerTime = now.getTime(); // Pass to client
                     const creatorA = (a.getAttribute('data-creator') || '').toLowerCase();
                     const creatorB = (b.getAttribute('data-creator') || '').toLowerCase();
 
-
-                    if (criteria === 'newest') {
-                        return dateB - dateA;
-                    } else if (criteria === 'oldest') {
-                        return dateA - dateB;
-                    } else if (criteria === 'status') {
-                        // Priority: Active (1) > Future (2) > Expired (3)
+                    if (criteria === 'newest') return dateB - dateA;
+                    else if (criteria === 'oldest') return dateA - dateB;
+                    else if (criteria === 'status') {
                         const getPriority = (s) => {
                             if (s === 'ACTIVE') return 1;
                             if (s === 'FUTURE PREDICTION') return 2;
@@ -1003,35 +1073,30 @@ const simulatedServerTime = now.getTime(); // Pass to client
                         };
                         const pA = getPriority(statusA);
                         const pB = getPriority(statusB);
-
                         if (pA !== pB) return pA - pB;
-                        return dateB - dateA; // Fallback to newest
-                    } else if (criteria === 'creator_asc') {
-                        return creatorA.localeCompare(creatorB);
-                    } else if (criteria === 'creator_desc') {
-                        return creatorB.localeCompare(creatorA);
-                    }
+                        return dateB - dateA;
+                    } else if (criteria === 'creator_asc') return creatorA.localeCompare(creatorB);
+                    else if (criteria === 'creator_desc') return creatorB.localeCompare(creatorA);
                     return 0;
                 });
-
-                // Detach and re-append in new order
                 cards.forEach(card => grid.appendChild(card));
             }
 
             sortSelect.addEventListener('change', filterAndSort);
             searchInput.addEventListener('input', filterAndSort);
 
-            // Initial sort
-            filterAndSort();
+            // Listen for changes in status to re-sort if needed (though we only update status once on load/timer)
+            // Actually, if we update statuses, we should trigger a re-sort if sort is 'status'
+            if (sortSelect.value === 'status') {
+                 filterAndSort();
+            }
         }
 
         // --- Initial Load ---
         let savedLanguage = lang;
         try {
             savedLanguage = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
-        } catch (e) {
-            console.warn('Language detection failed:', e);
-        }
+        } catch (e) { console.warn('Language detection failed:', e); }
 
         if (savedLanguage && savedLanguage !== currentLang) {
             currentLang = savedLanguage;
@@ -1040,9 +1105,17 @@ const simulatedServerTime = now.getTime(); // Pass to client
 
         try {
             updateStaticTranslations();
-            startClock();
-            setupSortAndSearch();
             setupBetting();
+
+            // Run status update immediately, which will start the clock
+            updatePredictionStatuses();
+
+            // Setup sorting AFTER statuses are updated
+            setupSortAndSearch();
+
+            // Periodically check statuses (every minute)
+            setInterval(updatePredictionStatuses, 60000);
+
         } catch (e) {
             console.error('Error updating static translations:', e);
         }

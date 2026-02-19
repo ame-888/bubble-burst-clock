@@ -75,7 +75,7 @@ const cardTypeClass = `card-${predictionType}`;
 const canBet = status !== 'EXPIRED';
 ---
 
-<div class={`card-container ${cardTypeClass}`} data-upload-date={prediction.uploadDate} data-status={status} data-creator={prediction.creator}>
+<div class={`card-container ${cardTypeClass}`} data-upload-date={prediction.uploadDate} data-status={status} data-creator={prediction.creator} data-validity-start={prediction.validityStart} data-validity-end={prediction.validityEnd}>
     <a href={prediction.videoUrl} target="_blank" rel="noopener noreferrer" class="card-link">
         <div class="thumbnail-wrapper">
             <img src={prediction.thumbnailUrl} alt={claimText} class="thumbnail" />

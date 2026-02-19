@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { benchmarks } from '../data/benchmarks';
 import { predictions } from '../data/predictions';
+import { getSimulatedDate, TIME_OFFSET } from '../scripts/TimeUtils';
 import en from '../locales/en.json';
 import ptBR from '../locales/pt-BR.json';
 import ja from '../locales/ja.json';
@@ -20,7 +21,7 @@ const lang = 'en';
 const t = translations[lang];
 
 // --- Simulated Time for Context ---
-const SIMULATED_NOW = new Date('2026-02-18T00:00:00Z');
+const SIMULATED_NOW = getSimulatedDate();
 
 function isNew(dateStr) {
     if (!dateStr) return false;
@@ -91,7 +92,7 @@ function getRankEmoji(index) {
                             <div class="benchmark-item">
                                 <div class="rank">{getRankEmoji(index)}</div>
                                 <div class="model-info">
-                                    <div class="model-name">
+                                    <div class="model-name" data-release-date={m.releaseDate}>
                                         {m.name}
                                         {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
                                     </div>
@@ -112,7 +113,7 @@ function getRankEmoji(index) {
                             <div class="benchmark-item">
                                 <div class="rank">{getRankEmoji(index)}</div>
                                 <div class="model-info">
-                                    <div class="model-name">
+                                    <div class="model-name" data-release-date={m.releaseDate}>
                                         {m.name}
                                         {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
                                     </div>
@@ -133,7 +134,7 @@ function getRankEmoji(index) {
                             <div class="benchmark-item">
                                 <div class="rank impossible-rank">{getRankEmoji(index)}</div>
                                 <div class="model-info">
-                                    <div class="model-name impossible-text">
+                                    <div class="model-name impossible-text" data-release-date={m.releaseDate}>
                                         {m.name}
                                         {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
                                     </div>
@@ -357,8 +358,9 @@ function getRankEmoji(index) {
     }
 </style>
 
-<script define:vars={{ translations, lang }}>
-    function updateTranslations() {
+<script define:vars={{ translations, lang, TIME_OFFSET }}>
+    function init() {
+        // --- Translations ---
         let currentLang = lang;
         try {
             currentLang = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
@@ -381,7 +383,40 @@ function getRankEmoji(index) {
         if (popperLabel) popperLabel.textContent = t.serial_popper_count_label;
         if (disclaimer) disclaimer.textContent = t.benchmark_impossible_disclaimer;
         if (grokNote) grokNote.textContent = t.benchmark_grok_note;
+
+        // --- Dynamic "NEW" Badge Logic ---
+        const timeOffset = TIME_OFFSET;
+        const simNow = new Date(new Date().getTime() + timeOffset);
+
+        document.querySelectorAll('.model-name[data-release-date]').forEach(el => {
+            const dateStr = el.getAttribute('data-release-date');
+            if (!dateStr) return;
+
+            const release = new Date(dateStr);
+            // Reset hours
+            release.setHours(0,0,0,0);
+            const today = new Date(simNow);
+            today.setHours(0,0,0,0);
+
+            const diffTime = today.getTime() - release.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            // Should be new if within 30 days
+            const isNew = diffDays >= -1 && diffDays <= 30;
+
+            let badge = el.querySelector('.new-badge');
+            if (isNew) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'new-badge';
+                    badge.textContent = 'NEW';
+                    el.appendChild(badge);
+                }
+            } else {
+                if (badge) badge.remove();
+            }
+        });
     }
 
-    document.addEventListener('DOMContentLoaded', updateTranslations);
+    document.addEventListener('DOMContentLoaded', init);
 </script>

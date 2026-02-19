@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { predictions } from '../data/predictions';
 import { creators } from '../data/creators';
 import { getRarity } from '../data/RaritySystem';
+import { getSimulatedDate, TIME_OFFSET } from '../scripts/TimeUtils';
 import en from '../locales/en.json';
 import ptBR from '../locales/pt-BR.json';
 import ja from '../locales/ja.json';
@@ -21,7 +22,7 @@ const lang = 'en';
 const t = translations[lang];
 
 // --- Status Logic for counts ---
-const now = new Date('2026-02-18T00:00:00Z');
+const now = getSimulatedDate();
 
 const processedPredictions = predictions.map(p => {
     let status = 'FUTURE PREDICTION';
@@ -503,11 +504,33 @@ const players = Object.values(creatorsData).map(c => {
     }
 </style>
 
-<script define:vars={{ translations, lang, players }}>
+<script define:vars={{ translations, lang, players, TIME_OFFSET }}>
     // We need to inject the logic to handle the card interactions here
     // It is almost identical to the modal logic but scoped to this page
 
     function init() {
+        // --- Hydrate Players Data with Client-Side Date ---
+        const timeOffset = TIME_OFFSET;
+        const simNow = new Date(new Date().getTime() + timeOffset);
+
+        // Update statuses in the players array
+        players.forEach(player => {
+            player.predictions.forEach(p => {
+                const start = p.validityStart ? new Date(p.validityStart) : null;
+                const end = p.validityEnd ? new Date(p.validityEnd) : null;
+
+                if (start && end) {
+                    if (simNow < start) {
+                        p.status = 'FUTURE PREDICTION';
+                    } else if (simNow >= start && simNow <= end) {
+                        p.status = 'ACTIVE';
+                    } else {
+                        p.status = 'EXPIRED';
+                    }
+                }
+            });
+        });
+
         let currentLang = lang;
         try {
             currentLang = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
