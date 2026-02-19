@@ -49,9 +49,9 @@ export const benchmarks = {
         {
             name: 'Grok 4.20 (chat)*',
             scores: {
-                'lvl1': 5.41,
-                'lvl2': 5.41,
-                'lvl3': 5.41
+                'lvl1': 6,
+                'lvl2': 6,
+                'lvl3': 6
             },
             releaseDate: '2026-02-18'
         }
