@@ -6,6 +6,15 @@ export const benchmarks = {
     ],
     models: [
         {
+            name: 'Gemini 3.1 Pro Preview',
+            scores: {
+                'lvl1': 67,
+                'lvl2': 67,
+                'lvl3': 67
+            },
+            releaseDate: '2026-02-20'
+        },
+        {
             name: 'Gemini 3.0 Flash Preview (with code execution)',
             scores: {
                 'lvl1': 70.6,
