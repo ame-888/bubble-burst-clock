@@ -100,7 +100,7 @@ export const predictions = [
             "zh": "人工智能泡沫正在破裂……"
         },
         videoUrl: "https://www.youtube.com/watch?v=5os_nalLwvI&t=14s",
-        thumbnailUrl: "https://img.youtube.com/vi/5os_nalLwvI/maxresdefault.jpg",
+        thumbnailUrl: "https://img.youtube.com/vi/5os_nalLwvI/hqdefault.jpg",
         dateRange: "2 Weeks",
         uploadDate: "2025-09-09",
         validityStart: "2025-09-09",
