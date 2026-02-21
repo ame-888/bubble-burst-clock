@@ -206,19 +206,48 @@ function computeRanks(items, scoreKey) {
     return rankedItems;
 }
 
+function getZone(score) {
+    if (score >= 90) return 'saturated';
+    if (score >= 50) return 'impressive';
+    if (score >= 10) return 'competent';
+    return 'noise';
+}
+
+function injectZones(items, scoreKey) {
+    const result = [];
+    let currentZone = null;
+
+    items.forEach(item => {
+        let score = item[scoreKey];
+        if (item.isFail) score = 0;
+        if (item.name === 'Human Baseline') score = 100;
+
+        const zone = getZone(score);
+        if (zone !== currentZone) {
+             result.push({ type: 'separator', zone: zone });
+             currentZone = zone;
+        }
+        result.push(item);
+    });
+    return result;
+}
+
 // Easy Mode Logic (Averages)
 const rawEasy = benchmarks.models.map(m => {
     const scores = Object.values(m.scores);
     const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
     return { ...m, avg };
 });
-const easyModeBenchmarks = computeRanks(rawEasy, 'avg');
+const easyModeBenchmarksRanked = computeRanks(rawEasy, 'avg');
+const easyModeBenchmarks = injectZones(easyModeBenchmarksRanked, 'avg');
 
 // Hard Mode Logic
-const hardModeBenchmarks = computeRanks(benchmarks.hardMode, 'score');
+const hardModeBenchmarksRanked = computeRanks(benchmarks.hardMode, 'score');
+const hardModeBenchmarks = injectZones(hardModeBenchmarksRanked, 'score');
 
 // Impossible Mode Logic
-const impossibleModeBenchmarks = computeRanks(benchmarks.impossibleMode, 'score');
+const impossibleModeBenchmarksRanked = computeRanks(benchmarks.impossibleMode, 'score');
+const impossibleModeBenchmarks = injectZones(impossibleModeBenchmarksRanked, 'score');
 
 function getRankDisplay(rank) {
     if (rank === '-') return '-';
@@ -246,18 +275,22 @@ function getRankDisplay(rank) {
                     </div>
                     <div class="benchmark-list">
                         {easyModeBenchmarks.map((m) => (
-                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
-                                    {getRankDisplay(m.rank)}
-                                </div>
-                                <div class="model-info">
-                                    <div class="model-name" data-release-date={m.releaseDate}>
-                                        {m.name}
-                                        {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                            m.type === 'separator' ? (
+                                <div class={`zone-separator zone-${m.zone}`}>{t[`zone_${m.zone}`]}</div>
+                            ) : (
+                                <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                    <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
+                                        {getRankDisplay(m.rank)}
                                     </div>
+                                    <div class="model-info">
+                                        <div class="model-name" data-release-date={m.releaseDate}>
+                                            {m.name}
+                                            {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                                        </div>
+                                    </div>
+                                    <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.avg.toFixed(1)}%</div>
                                 </div>
-                                <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.avg.toFixed(1)}%</div>
-                            </div>
+                            )
                         ))}
                     </div>
 
@@ -269,18 +302,22 @@ function getRankDisplay(rank) {
                     </div>
                     <div class="benchmark-list">
                         {hardModeBenchmarks.map((m) => (
-                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
-                                    {getRankDisplay(m.rank)}
-                                </div>
-                                <div class="model-info">
-                                    <div class="model-name" data-release-date={m.releaseDate}>
-                                        {m.name}
-                                        {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                            m.type === 'separator' ? (
+                                <div class={`zone-separator zone-${m.zone}`}>{t[`zone_${m.zone}`]}</div>
+                            ) : (
+                                <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                    <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
+                                        {getRankDisplay(m.rank)}
                                     </div>
+                                    <div class="model-info">
+                                        <div class="model-name" data-release-date={m.releaseDate}>
+                                            {m.name}
+                                            {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                                        </div>
+                                    </div>
+                                    <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.score}%</div>
                                 </div>
-                                <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.score}%</div>
-                            </div>
+                            )
                         ))}
                     </div>
 
@@ -292,18 +329,22 @@ function getRankDisplay(rank) {
                     </div>
                     <div class="benchmark-list">
                         {impossibleModeBenchmarks.map((m) => (
-                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                <div class={`rank ${m.isFail ? 'fail-rank' : ''} ${m.isFail ? '' : 'impossible-rank'}`}>
-                                    {getRankDisplay(m.rank)}
-                                </div>
-                                <div class="model-info">
-                                    <div class={`model-name ${m.isFail ? '' : 'impossible-text'}`} data-release-date={m.releaseDate}>
-                                        {m.name}
-                                        {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                            m.type === 'separator' ? (
+                                <div class={`zone-separator zone-${m.zone}`}>{t[`zone_${m.zone}`]}</div>
+                            ) : (
+                                <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                    <div class={`rank ${m.isFail ? 'fail-rank' : ''} ${m.isFail ? '' : 'impossible-rank'}`}>
+                                        {getRankDisplay(m.rank)}
                                     </div>
+                                    <div class="model-info">
+                                        <div class={`model-name ${m.isFail ? '' : 'impossible-text'}`} data-release-date={m.releaseDate}>
+                                            {m.name}
+                                            {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                                        </div>
+                                    </div>
+                                    <div class={`model-score ${m.isFail ? 'fail-score' : 'impossible-score'}`}>{m.score}%</div>
                                 </div>
-                                <div class={`model-score ${m.isFail ? 'fail-score' : 'impossible-score'}`}>{m.score}%</div>
-                            </div>
+                            )
                         ))}
                     </div>
                     <p class="disclaimer" id="benchmark-disclaimer">{t.benchmark_impossible_disclaimer}</p>
@@ -504,6 +545,21 @@ function getRankDisplay(rank) {
         margin-top: 1rem;
         color: #60A5FA;
     }
+
+    .zone-separator {
+        font-size: 0.9rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 0.5rem 0;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        letter-spacing: 0.1em;
+    }
+    .zone-noise { color: #EF4444; border-color: rgba(239, 68, 68, 0.3); }
+    .zone-competent { color: #F59E0B; border-color: rgba(245, 158, 11, 0.3); }
+    .zone-impressive { color: #10B981; border-color: rgba(16, 185, 129, 0.3); }
+    .zone-saturated { color: #3B82F6; border-color: rgba(59, 130, 246, 0.3); }
 </style>
 
 <script define:vars={{ translations, lang, TIME_OFFSET }}>

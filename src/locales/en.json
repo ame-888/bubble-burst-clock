@@ -137,5 +137,9 @@
     "reset_modal_title": "RESET ACHIEVEMENTS?",
     "reset_modal_msg": "WARNING: This action cannot be undone. All your unlocked achievements will be lost forever.",
     "reset_modal_confirm": "YES, WIPE THEM",
-    "reset_modal_cancel": "Cancel"
+    "reset_modal_cancel": "Cancel",
+    "zone_noise": "NOISE ZONE",
+    "zone_competent": "COMPETENT ZONE",
+    "zone_impressive": "IMPRESSIVE ZONE",
+    "zone_saturated": "SATURATED ZONE"
 }

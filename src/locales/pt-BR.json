@@ -137,5 +137,9 @@
     "reset_modal_msg": "WARNING: This action cannot be undone. All your unlocked achievements will be lost forever.",
     "reset_modal_confirm": "YES, WIPE THEM",
     "reset_modal_cancel": "Cancel",
-    "benchmark_grok_note": "* Grok 4.20 (chat) score for EASY MODE is an early result and not yet complete. HARD MODE and IMPOSSIBLE MODE scores will be added soon."
+    "benchmark_grok_note": "* Grok 4.20 (chat) score for EASY MODE is an early result and not yet complete. HARD MODE and IMPOSSIBLE MODE scores will be added soon.",
+    "zone_noise": "ZONA DE RUÍDO",
+    "zone_competent": "ZONA COMPETENTE",
+    "zone_impressive": "ZONA IMPRESSIONANTE",
+    "zone_saturated": "ZONA SATURADA"
 }
