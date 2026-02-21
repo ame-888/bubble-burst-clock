@@ -32,6 +32,15 @@ export const benchmarks = {
             releaseDate: '2026-02-20'
         },
         {
+            name: 'Gemini 3.1 Pro Preview (with code execution)',
+            scores: {
+                'lvl1': 71,
+                'lvl2': 71,
+                'lvl3': 71
+            },
+            releaseDate: '2026-02-20'
+        },
+        {
             name: 'Gemini 3.0 Flash Preview (with code execution)',
             scores: {
                 'lvl1': 70.6,
@@ -85,6 +94,7 @@ export const benchmarks = {
     hardMode: [
         { name: 'Human Baseline', score: 100 },
         { name: 'Claude 4.6 Sonnet (with extended reasoning)', score: 0, releaseDate: '2026-02-21' },
+        { name: 'Gemini 3.1 Pro Preview (with code execution)', score: 0, releaseDate: '2026-02-20' },
         { name: 'Gemini 3.1 Pro Preview', score: 0, releaseDate: '2026-02-20' },
         { name: 'Gemini 3.0 Flash Preview (with code execution)', score: 4, releaseDate: '2026-02-06' },
         { name: 'Gemini 3.0 Flash Preview', score: 3 },
@@ -96,6 +106,7 @@ export const benchmarks = {
     impossibleMode: [
         { name: 'Human Baseline', score: 100 },
         { name: 'Claude 4.6 Sonnet (with extended reasoning)', score: 0, releaseDate: '2026-02-21' },
+        { name: 'Gemini 3.1 Pro Preview (with code execution)', score: 0, releaseDate: '2026-02-20' },
         { name: 'Gemini 3.1 Pro Preview', score: 0, releaseDate: '2026-02-20' },
         { name: 'Gemini 3.0 Flash Preview (with code execution)', score: 0, releaseDate: '2026-02-06' },
         { name: 'Gemini 3.0 Flash Preview', score: 0 },
