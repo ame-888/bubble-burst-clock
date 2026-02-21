@@ -35,26 +35,80 @@ function isNew(dateStr) {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     // Show new for items released in the last 30 days
-    // Also handling the case where it might be slightly in the future due to timezone differences or sandbox time weirdness
-    // by allowing a small negative buffer (-1 day) or just ensuring it's not TOO far in future.
-    // Given the sandbox time issues, we'll strict check <= 30.
     return diffDays >= -1 && diffDays <= 30;
 }
 
+// --- Statistical Significance Logic ---
+
+function zTest(score1, score2) {
+    // Scores can be floats (averages) or ints.
+    // If scores are identical, it's a tie.
+    if (score1 === score2) return true;
+
+    const n = 100; // Sample size
+    // Proportions
+    const p1 = score1 / 100;
+    const p2 = score2 / 100;
+
+    // Pooled sample proportion
+    const pPool = (score1 + score2) / 200;
+
+    // Standard Error
+    const se = Math.sqrt(pPool * (1 - pPool) * (2 / n));
+
+    // If SE is 0 (both 0% or both 100%), it's a tie.
+    if (se === 0) return true;
+
+    const z = (p1 - p2) / se;
+
+    // 95% Confidence Level (Two-tailed) -> critical value ~1.96
+    return Math.abs(z) < 1.96;
+}
+
+function calculateSignificantRank(items, scoreKey) {
+    // 1. Sort by score descending
+    const sorted = [...items].sort((a, b) => b[scoreKey] - a[scoreKey]);
+
+    let currentRank = 1;
+    let groupLeader = sorted[0];
+
+    return sorted.map((item, index) => {
+        if (index === 0) {
+            return { ...item, rank: 1, isTied: false };
+        }
+
+        // Compare current item with the leader of the current rank group
+        const isTied = zTest(groupLeader[scoreKey], item[scoreKey]);
+
+        if (isTied) {
+            // Statistically tied with the group leader -> same rank
+            return { ...item, rank: currentRank, isTied: true };
+        } else {
+            // Significant difference -> new rank
+            // Rank is based on position (Competition Ranking), so index + 1
+            currentRank = index + 1;
+            groupLeader = item; // New leader
+            return { ...item, rank: currentRank, isTied: false };
+        }
+    });
+}
+
 // Easy Mode Logic (Averages)
-const easyModeBenchmarks = benchmarks.models.map(m => {
+const rawEasy = benchmarks.models.map(m => {
     const scores = Object.values(m.scores);
     const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
     return { ...m, avg };
-}).sort((a, b) => b.avg - a.avg);
+});
+const easyModeBenchmarks = calculateSignificantRank(rawEasy, 'avg');
 
 // Hard Mode Logic
-const hardModeBenchmarks = [...benchmarks.hardMode].sort((a, b) => b.score - a.score);
+const hardModeBenchmarks = calculateSignificantRank(benchmarks.hardMode, 'score');
 
 // Impossible Mode Logic
-const impossibleModeBenchmarks = [...benchmarks.impossibleMode];
+// User requested strict sorting and ranking for this mode too ("Absolutamente sim")
+const impossibleModeBenchmarks = calculateSignificantRank(benchmarks.impossibleMode, 'score');
 
-// Serial Popper Logic
+// Serial Popper Logic (Standard Ranking)
 const creatorCounts: Record<string, number> = {};
 predictions.forEach(p => {
     creatorCounts[p.creator] = (creatorCounts[p.creator] || 0) + 1;
@@ -65,11 +119,11 @@ const serialPoppers = Object.entries(creatorCounts)
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
 
-function getRankEmoji(index) {
-    if (index === 0) return '🥇';
-    if (index === 1) return '🥈';
-    if (index === 2) return '🥉';
-    return `#${index + 1}`;
+function getRankEmoji(rank) {
+    if (rank === 1) return '🥇';
+    if (rank === 2) return '🥈';
+    if (rank === 3) return '🥉';
+    return `#${rank}`;
 }
 ---
 
@@ -88,9 +142,12 @@ function getRankEmoji(index) {
                         <h3>EASY MODE</h3>
                     </div>
                     <div class="benchmark-list">
-                        {easyModeBenchmarks.map((m, index) => (
+                        {easyModeBenchmarks.map((m) => (
                             <div class="benchmark-item">
-                                <div class="rank">{getRankEmoji(index)}</div>
+                                <div class="rank">
+                                    {getRankEmoji(m.rank)}
+                                    {m.isTied && <span class="tie-symbol">≈</span>}
+                                </div>
                                 <div class="model-info">
                                     <div class="model-name" data-release-date={m.releaseDate}>
                                         {m.name}
@@ -109,9 +166,12 @@ function getRankEmoji(index) {
                         <h3>HARD MODE</h3>
                     </div>
                     <div class="benchmark-list">
-                        {hardModeBenchmarks.map((m, index) => (
+                        {hardModeBenchmarks.map((m) => (
                             <div class="benchmark-item">
-                                <div class="rank">{getRankEmoji(index)}</div>
+                                <div class="rank">
+                                    {getRankEmoji(m.rank)}
+                                    {m.isTied && <span class="tie-symbol">≈</span>}
+                                </div>
                                 <div class="model-info">
                                     <div class="model-name" data-release-date={m.releaseDate}>
                                         {m.name}
@@ -130,9 +190,12 @@ function getRankEmoji(index) {
                         <h3>IMPOSSIBLE MODE</h3>
                     </div>
                     <div class="benchmark-list">
-                        {impossibleModeBenchmarks.map((m, index) => (
+                        {impossibleModeBenchmarks.map((m) => (
                             <div class="benchmark-item">
-                                <div class="rank impossible-rank">{getRankEmoji(index)}</div>
+                                <div class="rank impossible-rank">
+                                    {getRankEmoji(m.rank)}
+                                    {m.isTied && <span class="tie-symbol">≈</span>}
+                                </div>
                                 <div class="model-info">
                                     <div class="model-name impossible-text" data-release-date={m.releaseDate}>
                                         {m.name}
@@ -155,7 +218,7 @@ function getRankEmoji(index) {
                         {serialPoppers.length > 0 ? (
                             serialPoppers.map((sp, index) => (
                                 <div class="serial-popper-item">
-                                    <div class="rank">{getRankEmoji(index)}</div>
+                                    <div class="rank">{getRankEmoji(index + 1)}</div>
                                     <div class="popper-info">
                                         <div class="popper-name">{sp.name} 🍿</div>
                                         <div class="popper-count"><span id="serial-popper-count-label">{t.serial_popper_count_label}</span>: {sp.count}</div>
@@ -260,6 +323,15 @@ function getRankEmoji(index) {
         color: #F59E0B;
         min-width: 40px;
         text-align: center;
+        /* Allow tie symbol to sit next to emoji */
+        white-space: nowrap;
+    }
+
+    .tie-symbol {
+        font-size: 1rem;
+        margin-left: 0.2rem;
+        vertical-align: super;
+        opacity: 0.8;
     }
 
     .serial-popper-item .rank {
