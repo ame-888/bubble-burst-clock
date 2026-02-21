@@ -66,6 +66,7 @@ export const benchmarks = {
         }
     ],
     hardMode: [
+        { name: 'Gemini 3.1 Pro Preview', score: 0, releaseDate: '2026-02-20' },
         { name: 'Gemini 3.0 Flash Preview (with code execution)', score: 4, releaseDate: '2026-02-06' },
         { name: 'Gemini 3.0 Flash Preview', score: 3 },
         { name: 'Gemini 3.0 Pro Preview', score: 2 },
@@ -74,6 +75,7 @@ export const benchmarks = {
         { name: 'Gemini 2.5 Flash', score: 0 }
     ],
     impossibleMode: [
+        { name: 'Gemini 3.1 Pro Preview', score: 0, releaseDate: '2026-02-20' },
         { name: 'Gemini 3.0 Flash Preview (with code execution)', score: 0, releaseDate: '2026-02-06' },
         { name: 'Gemini 3.0 Flash Preview', score: 0 },
         { name: 'Gemini 3.0 Pro Preview', score: 0 },
