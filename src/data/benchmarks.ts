@@ -6,6 +6,14 @@ export const benchmarks = {
     ],
     models: [
         {
+            name: 'Human Baseline',
+            scores: {
+                'lvl1': 100,
+                'lvl2': 100,
+                'lvl3': 100
+            }
+        },
+        {
             name: 'Gemini 3.1 Pro Preview',
             scores: {
                 'lvl1': 67,
@@ -66,6 +74,7 @@ export const benchmarks = {
         }
     ],
     hardMode: [
+        { name: 'Human Baseline', score: 100 },
         { name: 'Gemini 3.1 Pro Preview', score: 0, releaseDate: '2026-02-20' },
         { name: 'Gemini 3.0 Flash Preview (with code execution)', score: 4, releaseDate: '2026-02-06' },
         { name: 'Gemini 3.0 Flash Preview', score: 3 },
@@ -75,6 +84,7 @@ export const benchmarks = {
         { name: 'Gemini 2.5 Flash', score: 0 }
     ],
     impossibleMode: [
+        { name: 'Human Baseline', score: 100 },
         { name: 'Gemini 3.1 Pro Preview', score: 0, releaseDate: '2026-02-20' },
         { name: 'Gemini 3.0 Flash Preview (with code execution)', score: 0, releaseDate: '2026-02-06' },
         { name: 'Gemini 3.0 Flash Preview', score: 0 },

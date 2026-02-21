@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { benchmarks } from '../data/benchmarks';
-import { predictions } from '../data/predictions';
 import { getSimulatedDate, TIME_OFFSET } from '../scripts/TimeUtils';
 import en from '../locales/en.json';
 import ptBR from '../locales/pt-BR.json';
@@ -38,59 +37,173 @@ function isNew(dateStr) {
     return diffDays >= -1 && diffDays <= 30;
 }
 
-// --- Statistical Significance Logic ---
-
-function zTest(score1, score2) {
-    // Scores can be floats (averages) or ints.
-    // If scores are identical, it's a tie.
-    if (score1 === score2) return true;
-
-    const n = 100; // Sample size
-    // Proportions
-    const p1 = score1 / 100;
-    const p2 = score2 / 100;
-
-    // Pooled sample proportion
-    const pPool = (score1 + score2) / 200;
-
-    // Standard Error
-    const se = Math.sqrt(pPool * (1 - pPool) * (2 / n));
-
-    // If SE is 0 (both 0% or both 100%), it's a tie.
-    if (se === 0) return true;
-
-    const z = (p1 - p2) / se;
-
-    // 95% Confidence Level (Two-tailed) -> critical value ~1.96
-    return Math.abs(z) < 1.96;
-}
-
-function calculateSignificantRank(items, scoreKey) {
+// --- New Ranking Logic ---
+function calculateRank(items, scoreKey) {
     // 1. Sort by score descending
-    const sorted = [...items].sort((a, b) => b[scoreKey] - a[scoreKey]);
+    let sorted = [...items].sort((a, b) => b[scoreKey] - a[scoreKey]);
+
+    // 2. Separate 0 scores and move to bottom, sorted alphabetically
+    const nonZero = sorted.filter(item => item[scoreKey] > 0);
+    const zeroScores = sorted.filter(item => item[scoreKey] === 0);
+
+    zeroScores.sort((a, b) => a.name.localeCompare(b.name));
+
+    sorted = [...nonZero, ...zeroScores];
 
     let currentRank = 1;
-    let groupLeader = sorted[0];
 
     return sorted.map((item, index) => {
-        if (index === 0) {
-            return { ...item, rank: 1, isTied: false };
+        // Human Baseline Logic
+        if (item.name === 'Human Baseline') {
+            return { ...item, rank: '-', isFail: false, displayScore: item[scoreKey] };
         }
 
-        // Compare current item with the leader of the current rank group
-        const isTied = zTest(groupLeader[scoreKey], item[scoreKey]);
-
-        if (isTied) {
-            // Statistically tied with the group leader -> same rank
-            return { ...item, rank: currentRank, isTied: true };
-        } else {
-            // Significant difference -> new rank
-            // Rank is based on position (Competition Ranking), so index + 1
-            currentRank = index + 1;
-            groupLeader = item; // New leader
-            return { ...item, rank: currentRank, isTied: false };
+        // Zero Score Logic (EPIC FAIL)
+        if (item[scoreKey] === 0) {
+            return { ...item, rank: 'EPIC FAIL', isFail: true, displayScore: item[scoreKey] };
         }
+
+        // Calculate Rank
+        // If exact tie with previous non-special item, share rank
+        // We need to look back at previous items to find the last valid rank assignment
+        // But simpler: just track the last score and rank assigned.
+
+        let rankToAssign = currentRank;
+
+        // Check if tied with PREVIOUS item (that wasn't special)
+        // Note: Human Baseline is special, so we skip it for tie checks usually,
+        // but here it's effectively removed from the rank counter flow or treated as separate.
+        // Actually, "Human Baseline" has 100 score, so it will be at top.
+        // The prompt says: "Human Baseline" ... received a rank of "-" and no medals or emojis.
+        // It implies it doesn't consume a rank number? Or does it?
+        // "The scores should be numbers in sequential order (1, 2, 3, 4...) individually."
+        // If Human Baseline is top, and has "-", then the next one is 1? Or 2?
+        // Usually baselines are outside the competition. I will assume it doesn't consume a rank.
+
+        // Let's re-iterate to assign ranks properly
+        return { ...item, rawScore: item[scoreKey] };
+    }).map((item, index, array) => {
+         if (item.rank === '-') return item; // Already processed Human Baseline
+         if (item.rank === 'EPIC FAIL') return item; // Already processed Fail
+
+         // Find rank
+         // We filter out special items to determine the sequential rank index
+         // But "sequential order (1, 2, 3, 4...)" implies competition ranking or dense ranking?
+         // "There will be no ties between similar scores anymore. If, and only if, 2 models get the exact same score, only then they tie."
+         // This implies Standard Competition Ranking (1224) or Dense Ranking (1223)?
+         // "scores should be numbers in sequential order (1, 2, 3, 4...) individually" suggests Dense Ranking or just 1, 2, 3, 4 based on position if no ties?
+         // If A=90, B=90, C=80.
+         // Option A: 1, 1, 3 (Standard)
+         // Option B: 1, 1, 2 (Dense)
+         // The prompt says "sequential order... individually". This strongly suggests 1, 2, 3, 4... so if no ties, it's just index+1.
+         // If ties: "only then they tie".
+         // Let's assume Dense Ranking for "sequential order" preservation if ties exist?
+         // Or maybe just Standard Ranking but ensuring we don't use the Z-test.
+         // Let's look at "The scores should be numbers in sequential order (1, 2, 3, 4...)".
+         // If A=10, B=10, C=5.
+         // If I give 1, 1, 2 -> That is sequential (1, 2).
+         // If I give 1, 1, 3 -> That skips 2.
+         // So I will use Dense Ranking (1, 1, 2).
+
+         // Check against previous item to see if tied
+         // We need to find the "effective" previous item (ignoring Human Baseline)
+
+         // Actually, let's simplify.
+         // Filter out Human Baselines and Fails to determine ranks.
+         return item;
     });
+}
+
+function processBenchmarks(items, scoreKey) {
+     // 1. Sort by score descending
+    let sorted = [...items].sort((a, b) => b[scoreKey] - a[scoreKey]);
+
+    // 2. Separate 0 scores
+    const nonZero = sorted.filter(item => item[scoreKey] > 0);
+    const zeroScores = sorted.filter(item => item[scoreKey] === 0);
+    zeroScores.sort((a, b) => a.name.localeCompare(b.name));
+
+    const finalOrder = [...nonZero, ...zeroScores];
+
+    let rankCounter = 1;
+    let lastScore = -1;
+
+    return finalOrder.map((item) => {
+        // Special Case: Human Baseline
+        if (item.name === 'Human Baseline') {
+            return { ...item, rank: '-', isFail: false, displayScore: item[scoreKey] };
+        }
+
+        // Special Case: 0 Score
+        if (item[scoreKey] === 0) {
+            return { ...item, rank: 'EPIC FAIL', isFail: true, displayScore: item[scoreKey] };
+        }
+
+        // Regular Rank
+        const score = item[scoreKey];
+        if (score === lastScore) {
+            // It's a tie with the previous rank assigned (since we are sorted)
+            // rankCounter doesn't increment
+        } else {
+            // New score, increment rank if it's not the very first one (or first after baseline)
+            // But wait, if Human Baseline was first, lastScore is -1.
+            // If we have multiple different scores, we want 1, 2, 3...
+            // If we have ties 1, 1, 2...
+
+            // If this is the first item that gets a rank, it should be 1.
+            // If previous was Human Baseline, this is still 1? Yes.
+            if (lastScore !== -1) {
+                 rankCounter++;
+            }
+        }
+
+        lastScore = score;
+        // Adjust for first item logic: if lastScore was -1 and we just set it, rankCounter is 1.
+        // But if we had a tie at the top (unlikely but possible), rank is 1.
+
+        // Wait, the logic above:
+        // Item 1 (Score 90). lastScore=-1. score!=lastScore -> rankCounter++? No, rank starts at 1.
+        // Let's reset the logic.
+
+        return { ...item, rawScore: score };
+    });
+}
+
+function computeRanks(items, scoreKey) {
+    // 1. Sort
+    let sorted = [...items].sort((a, b) => b[scoreKey] - a[scoreKey]);
+
+    // 2. Separate Zeroes
+    const eligible = sorted.filter(i => i[scoreKey] > 0);
+    const fails = sorted.filter(i => i[scoreKey] === 0).sort((a,b) => a.name.localeCompare(b.name));
+
+    // 3. Assign ranks to eligible
+    let currentRank = 1;
+    let previousScore = null;
+    let rankedItems = [];
+
+    eligible.forEach((item) => {
+        if (item.name === 'Human Baseline') {
+            rankedItems.push({ ...item, rank: '-', isFail: false });
+            return;
+        }
+
+        const score = item[scoreKey];
+
+        if (previousScore !== null && score < previousScore) {
+            currentRank++;
+        }
+
+        rankedItems.push({ ...item, rank: currentRank, isFail: false });
+        previousScore = score;
+    });
+
+    // 4. Append Fails
+    fails.forEach(item => {
+        rankedItems.push({ ...item, rank: 'EPIC FAIL', isFail: true });
+    });
+
+    return rankedItems;
 }
 
 // Easy Mode Logic (Averages)
@@ -99,27 +212,17 @@ const rawEasy = benchmarks.models.map(m => {
     const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
     return { ...m, avg };
 });
-const easyModeBenchmarks = calculateSignificantRank(rawEasy, 'avg');
+const easyModeBenchmarks = computeRanks(rawEasy, 'avg');
 
 // Hard Mode Logic
-const hardModeBenchmarks = calculateSignificantRank(benchmarks.hardMode, 'score');
+const hardModeBenchmarks = computeRanks(benchmarks.hardMode, 'score');
 
 // Impossible Mode Logic
-// User requested strict sorting and ranking for this mode too ("Absolutamente sim")
-const impossibleModeBenchmarks = calculateSignificantRank(benchmarks.impossibleMode, 'score');
+const impossibleModeBenchmarks = computeRanks(benchmarks.impossibleMode, 'score');
 
-// Serial Popper Logic (Standard Ranking)
-const creatorCounts: Record<string, number> = {};
-predictions.forEach(p => {
-    creatorCounts[p.creator] = (creatorCounts[p.creator] || 0) + 1;
-});
-
-const serialPoppers = Object.entries(creatorCounts)
-    .filter(([name, count]) => count > 1)
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count);
-
-function getRankEmoji(rank) {
+function getRankDisplay(rank) {
+    if (rank === '-') return '-';
+    if (rank === 'EPIC FAIL') return 'EPIC FAIL';
     if (rank === 1) return '🥇';
     if (rank === 2) return '🥈';
     if (rank === 3) return '🥉';
@@ -133,7 +236,7 @@ function getRankEmoji(rank) {
 
         <div class="leaderboard-grid">
             <!-- Benchmarks Section -->
-            <section class="leaderboard-section">
+            <section class="leaderboard-section full-width">
                 <h2 id="benchmark-title">{t.benchmark_title}</h2>
 
                 <div class="benchmark-container">
@@ -143,10 +246,9 @@ function getRankEmoji(rank) {
                     </div>
                     <div class="benchmark-list">
                         {easyModeBenchmarks.map((m) => (
-                            <div class="benchmark-item">
-                                <div class="rank">
-                                    {getRankEmoji(m.rank)}
-                                    {m.isTied && <span class="tie-symbol">≈</span>}
+                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
+                                    {getRankDisplay(m.rank)}
                                 </div>
                                 <div class="model-info">
                                     <div class="model-name" data-release-date={m.releaseDate}>
@@ -154,7 +256,7 @@ function getRankEmoji(rank) {
                                         {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
                                     </div>
                                 </div>
-                                <div class="model-score">{m.avg.toFixed(1)}%</div>
+                                <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.avg.toFixed(1)}%</div>
                             </div>
                         ))}
                     </div>
@@ -167,10 +269,9 @@ function getRankEmoji(rank) {
                     </div>
                     <div class="benchmark-list">
                         {hardModeBenchmarks.map((m) => (
-                            <div class="benchmark-item">
-                                <div class="rank">
-                                    {getRankEmoji(m.rank)}
-                                    {m.isTied && <span class="tie-symbol">≈</span>}
+                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
+                                    {getRankDisplay(m.rank)}
                                 </div>
                                 <div class="model-info">
                                     <div class="model-name" data-release-date={m.releaseDate}>
@@ -178,7 +279,7 @@ function getRankEmoji(rank) {
                                         {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
                                     </div>
                                 </div>
-                                <div class="model-score">{m.score}%</div>
+                                <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.score}%</div>
                             </div>
                         ))}
                     </div>
@@ -191,44 +292,22 @@ function getRankEmoji(rank) {
                     </div>
                     <div class="benchmark-list">
                         {impossibleModeBenchmarks.map((m) => (
-                            <div class="benchmark-item">
-                                <div class="rank impossible-rank">
-                                    {getRankEmoji(m.rank)}
-                                    {m.isTied && <span class="tie-symbol">≈</span>}
+                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                <div class={`rank ${m.isFail ? 'fail-rank' : ''} ${m.isFail ? '' : 'impossible-rank'}`}>
+                                    {getRankDisplay(m.rank)}
                                 </div>
                                 <div class="model-info">
-                                    <div class="model-name impossible-text" data-release-date={m.releaseDate}>
+                                    <div class={`model-name ${m.isFail ? '' : 'impossible-text'}`} data-release-date={m.releaseDate}>
                                         {m.name}
                                         {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
                                     </div>
                                 </div>
-                                <div class="model-score impossible-score">{m.score}%</div>
+                                <div class={`model-score ${m.isFail ? 'fail-score' : 'impossible-score'}`}>{m.score}%</div>
                             </div>
                         ))}
                     </div>
                     <p class="disclaimer" id="benchmark-disclaimer">{t.benchmark_impossible_disclaimer}</p>
-                </div>
-            </section>
-
-            <!-- Serial Poppers Section -->
-            <section class="leaderboard-section">
-                <h2 id="serial-popper-title">{t.serial_popper_modal_title}</h2>
-                <div class="serial-popper-container">
-                    <div class="serial-popper-list">
-                        {serialPoppers.length > 0 ? (
-                            serialPoppers.map((sp, index) => (
-                                <div class="serial-popper-item">
-                                    <div class="rank">{getRankEmoji(index + 1)}</div>
-                                    <div class="popper-info">
-                                        <div class="popper-name">{sp.name} 🍿</div>
-                                        <div class="popper-count"><span id="serial-popper-count-label">{t.serial_popper_count_label}</span>: {sp.count}</div>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p class="no-data">No serial poppers yet...</p>
-                        )}
-                    </div>
+                    <p class="disclaimer contact-disclaimer" id="benchmark-contact">{t.benchmark_contact_disclaimer}</p>
                 </div>
             </section>
         </div>
@@ -275,74 +354,66 @@ function getRankEmoji(rank) {
     }
 
     .leaderboard-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 4rem;
+        display: flex; /* Changed from grid to flex to center the single column */
+        justify-content: center;
     }
 
-    @media (min-width: 900px) {
-        .leaderboard-grid {
-            grid-template-columns: 1fr 1fr;
-            align-items: start;
-        }
+    .leaderboard-section.full-width {
+        width: 100%;
+        max-width: 800px; /* Limit width for readability */
     }
 
-    .benchmark-container, .serial-popper-container {
+    .benchmark-container {
         background: rgba(31, 41, 55, 0.5);
         border-radius: 1rem;
         padding: 2rem;
         box-shadow: 0 0 30px rgba(0,0,0,0.2);
-    }
-
-    .benchmark-container {
         border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
-    .serial-popper-container {
-        border: 1px solid rgba(248, 113, 113, 0.3);
-    }
-
-    .benchmark-list, .serial-popper-list {
+    .benchmark-list {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
     }
 
-    .benchmark-item, .serial-popper-item {
+    .benchmark-item {
         display: flex;
         gap: 1rem;
         align-items: center;
         padding-bottom: 1rem;
         border-bottom: 1px solid rgba(255,255,255,0.05);
     }
-    .benchmark-item:last-child, .serial-popper-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .benchmark-item:last-child { border-bottom: none; padding-bottom: 0; }
 
     .rank {
         font-size: 1.5rem;
         font-weight: 900;
         color: #F59E0B;
-        min-width: 40px;
+        min-width: 50px;
         text-align: center;
-        /* Allow tie symbol to sit next to emoji */
         white-space: nowrap;
     }
 
-    .tie-symbol {
-        font-size: 1rem;
-        margin-left: 0.2rem;
-        vertical-align: super;
+    .human-baseline {
         opacity: 0.8;
     }
 
-    .serial-popper-item .rank {
-        color: #EF4444;
+    .human-baseline .rank {
+        color: #9CA3AF; /* Gray rank for baseline */
     }
 
-    .model-info, .popper-info {
+    .fail-rank {
+        color: #EF4444;
+        font-size: 1.2rem; /* Slightly smaller to fit */
+        min-width: 100px; /* More space for text */
+    }
+
+    .model-info {
         flex: 1;
     }
 
-    .model-name, .popper-name {
+    .model-name {
         font-size: 1.1rem;
         font-weight: 700;
         color: white;
@@ -354,16 +425,8 @@ function getRankEmoji(rank) {
         color: #F59E0B;
     }
 
-    .popper-count {
-        font-size: 0.9rem;
-        color: #9CA3AF;
-        margin-bottom: 0.5rem;
-    }
-
-    .no-data {
-        text-align: center;
-        color: #9CA3AF;
-        font-style: italic;
+    .fail-score {
+        color: #6B7280; /* Dimmed score for fails */
     }
 
     /* Impossible Mode Styles */
@@ -394,6 +457,15 @@ function getRankEmoji(rank) {
 
     .impossible-text {
         color: #fee2e2; /* Light red/white for contrast */
+    }
+
+    /* Override for Fail in Impossible Mode */
+    .fail-item .impossible-score {
+        color: #6B7280;
+        text-shadow: none;
+    }
+    .fail-item .impossible-text {
+         color: white; /* Reset to normal if it's a fail? Or keep it? Keeping it simple. */
     }
 
     /* New Badge Styles */
@@ -427,6 +499,11 @@ function getRankEmoji(rank) {
         text-align: center;
         opacity: 0.8;
     }
+
+    .contact-disclaimer {
+        margin-top: 1rem;
+        color: #60A5FA;
+    }
 </style>
 
 <script define:vars={{ translations, lang, TIME_OFFSET }}>
@@ -443,15 +520,13 @@ function getRankEmoji(rank) {
 
         const mainTitle = document.getElementById('leaderboard-title');
         const benchTitle = document.getElementById('benchmark-title');
-        const popperTitle = document.getElementById('serial-popper-title');
-        const popperLabel = document.getElementById('serial-popper-count-label');
         const disclaimer = document.getElementById('benchmark-disclaimer');
+        const contact = document.getElementById('benchmark-contact');
 
         if (mainTitle) mainTitle.textContent = t.leaderboard_button;
         if (benchTitle) benchTitle.textContent = t.benchmark_title;
-        if (popperTitle) popperTitle.textContent = t.serial_popper_modal_title;
-        if (popperLabel) popperLabel.textContent = t.serial_popper_count_label;
         if (disclaimer) disclaimer.textContent = t.benchmark_impossible_disclaimer;
+        if (contact) contact.textContent = t.benchmark_contact_disclaimer;
 
         // --- Dynamic "NEW" Badge Logic ---
         const timeOffset = TIME_OFFSET;
