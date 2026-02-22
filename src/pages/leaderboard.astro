@@ -243,7 +243,7 @@ function getRankDisplay(rank) {
     /* Header Row */
     .header-row {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         /* No border bottom here, headers have their own style */
     }
 
@@ -260,7 +260,7 @@ function getRankDisplay(rank) {
     /* Benchmark Rows */
     .benchmark-row {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Horizontal line */
     }
 
@@ -439,6 +439,26 @@ function getRankDisplay(rank) {
                 }
             } else {
                 if (badge) badge.remove();
+            }
+        });
+
+        adjustFontSizes();
+        window.addEventListener('resize', adjustFontSizes);
+    }
+
+    function adjustFontSizes() {
+        const models = document.querySelectorAll('.model-name');
+        models.forEach(el => {
+            // Reset to original size to allow growth on resize
+            el.style.fontSize = '0.95rem';
+
+            let size = 0.95;
+            const minSize = 0.75;
+
+            // Reduce size while content overflows
+            while (el.scrollWidth > el.clientWidth && size > minSize) {
+                size -= 0.05;
+                el.style.fontSize = `${size}rem`;
             }
         });
     }
