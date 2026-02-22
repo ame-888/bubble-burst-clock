@@ -37,138 +37,7 @@ function isNew(dateStr) {
     return diffDays >= -1 && diffDays <= 30;
 }
 
-// --- New Ranking Logic ---
-function calculateRank(items, scoreKey) {
-    // 1. Sort by score descending
-    let sorted = [...items].sort((a, b) => b[scoreKey] - a[scoreKey]);
-
-    // 2. Separate 0 scores and move to bottom, sorted alphabetically
-    const nonZero = sorted.filter(item => item[scoreKey] > 0);
-    const zeroScores = sorted.filter(item => item[scoreKey] === 0);
-
-    zeroScores.sort((a, b) => a.name.localeCompare(b.name));
-
-    sorted = [...nonZero, ...zeroScores];
-
-    let currentRank = 1;
-
-    return sorted.map((item, index) => {
-        // Human Baseline Logic
-        if (item.name === 'Human Baseline') {
-            return { ...item, rank: '-', isFail: false, displayScore: item[scoreKey] };
-        }
-
-        // Zero Score Logic (EPIC FAIL)
-        if (item[scoreKey] === 0) {
-            return { ...item, rank: 'EPIC FAIL', isFail: true, displayScore: item[scoreKey] };
-        }
-
-        // Calculate Rank
-        // If exact tie with previous non-special item, share rank
-        // We need to look back at previous items to find the last valid rank assignment
-        // But simpler: just track the last score and rank assigned.
-
-        let rankToAssign = currentRank;
-
-        // Check if tied with PREVIOUS item (that wasn't special)
-        // Note: Human Baseline is special, so we skip it for tie checks usually,
-        // but here it's effectively removed from the rank counter flow or treated as separate.
-        // Actually, "Human Baseline" has 100 score, so it will be at top.
-        // The prompt says: "Human Baseline" ... received a rank of "-" and no medals or emojis.
-        // It implies it doesn't consume a rank number? Or does it?
-        // "The scores should be numbers in sequential order (1, 2, 3, 4...) individually."
-        // If Human Baseline is top, and has "-", then the next one is 1? Or 2?
-        // Usually baselines are outside the competition. I will assume it doesn't consume a rank.
-
-        // Let's re-iterate to assign ranks properly
-        return { ...item, rawScore: item[scoreKey] };
-    }).map((item, index, array) => {
-         if (item.rank === '-') return item; // Already processed Human Baseline
-         if (item.rank === 'EPIC FAIL') return item; // Already processed Fail
-
-         // Find rank
-         // We filter out special items to determine the sequential rank index
-         // But "sequential order (1, 2, 3, 4...)" implies competition ranking or dense ranking?
-         // "There will be no ties between similar scores anymore. If, and only if, 2 models get the exact same score, only then they tie."
-         // This implies Standard Competition Ranking (1224) or Dense Ranking (1223)?
-         // "scores should be numbers in sequential order (1, 2, 3, 4...) individually" suggests Dense Ranking or just 1, 2, 3, 4 based on position if no ties?
-         // If A=90, B=90, C=80.
-         // Option A: 1, 1, 3 (Standard)
-         // Option B: 1, 1, 2 (Dense)
-         // The prompt says "sequential order... individually". This strongly suggests 1, 2, 3, 4... so if no ties, it's just index+1.
-         // If ties: "only then they tie".
-         // Let's assume Dense Ranking for "sequential order" preservation if ties exist?
-         // Or maybe just Standard Ranking but ensuring we don't use the Z-test.
-         // Let's look at "The scores should be numbers in sequential order (1, 2, 3, 4...)".
-         // If A=10, B=10, C=5.
-         // If I give 1, 1, 2 -> That is sequential (1, 2).
-         // If I give 1, 1, 3 -> That skips 2.
-         // So I will use Dense Ranking (1, 1, 2).
-
-         // Check against previous item to see if tied
-         // We need to find the "effective" previous item (ignoring Human Baseline)
-
-         // Actually, let's simplify.
-         // Filter out Human Baselines and Fails to determine ranks.
-         return item;
-    });
-}
-
-function processBenchmarks(items, scoreKey) {
-     // 1. Sort by score descending
-    let sorted = [...items].sort((a, b) => b[scoreKey] - a[scoreKey]);
-
-    // 2. Separate 0 scores
-    const nonZero = sorted.filter(item => item[scoreKey] > 0);
-    const zeroScores = sorted.filter(item => item[scoreKey] === 0);
-    zeroScores.sort((a, b) => a.name.localeCompare(b.name));
-
-    const finalOrder = [...nonZero, ...zeroScores];
-
-    let rankCounter = 1;
-    let lastScore = -1;
-
-    return finalOrder.map((item) => {
-        // Special Case: Human Baseline
-        if (item.name === 'Human Baseline') {
-            return { ...item, rank: '-', isFail: false, displayScore: item[scoreKey] };
-        }
-
-        // Special Case: 0 Score
-        if (item[scoreKey] === 0) {
-            return { ...item, rank: 'EPIC FAIL', isFail: true, displayScore: item[scoreKey] };
-        }
-
-        // Regular Rank
-        const score = item[scoreKey];
-        if (score === lastScore) {
-            // It's a tie with the previous rank assigned (since we are sorted)
-            // rankCounter doesn't increment
-        } else {
-            // New score, increment rank if it's not the very first one (or first after baseline)
-            // But wait, if Human Baseline was first, lastScore is -1.
-            // If we have multiple different scores, we want 1, 2, 3...
-            // If we have ties 1, 1, 2...
-
-            // If this is the first item that gets a rank, it should be 1.
-            // If previous was Human Baseline, this is still 1? Yes.
-            if (lastScore !== -1) {
-                 rankCounter++;
-            }
-        }
-
-        lastScore = score;
-        // Adjust for first item logic: if lastScore was -1 and we just set it, rankCounter is 1.
-        // But if we had a tie at the top (unlikely but possible), rank is 1.
-
-        // Wait, the logic above:
-        // Item 1 (Score 90). lastScore=-1. score!=lastScore -> rankCounter++? No, rank starts at 1.
-        // Let's reset the logic.
-
-        return { ...item, rawScore: score };
-    });
-}
-
+// --- Ranking Logic ---
 function computeRanks(items, scoreKey) {
     // 1. Sort
     let sorted = [...items].sort((a, b) => b[scoreKey] - a[scoreKey]);
@@ -213,23 +82,13 @@ function getZone(score) {
     return 'noise';
 }
 
-function injectZones(items, scoreKey) {
-    const result = [];
-    let currentZone = null;
-
-    items.forEach(item => {
+function attachZone(items, scoreKey) {
+    return items.map(item => {
         let score = item[scoreKey];
         if (item.isFail) score = 0;
         if (item.name === 'Human Baseline') score = 100;
-
-        const zone = getZone(score);
-        if (zone !== currentZone) {
-             result.push({ type: 'separator', zone: zone });
-             currentZone = zone;
-        }
-        result.push(item);
+        return { ...item, zone: getZone(score) };
     });
-    return result;
 }
 
 // Easy Mode Logic (Averages)
@@ -238,16 +97,15 @@ const rawEasy = benchmarks.models.map(m => {
     const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
     return { ...m, avg };
 });
-const easyModeBenchmarksRanked = computeRanks(rawEasy, 'avg');
-const easyModeBenchmarks = injectZones(easyModeBenchmarksRanked, 'avg');
+const easyZoned = attachZone(computeRanks(rawEasy, 'avg'), 'avg');
 
 // Hard Mode Logic
-const hardModeBenchmarksRanked = computeRanks(benchmarks.hardMode, 'score');
-const hardModeBenchmarks = injectZones(hardModeBenchmarksRanked, 'score');
+const hardZoned = attachZone(computeRanks(benchmarks.hardMode, 'score'), 'score');
 
 // Impossible Mode Logic
-const impossibleModeBenchmarksRanked = computeRanks(benchmarks.impossibleMode, 'score');
-const impossibleModeBenchmarks = injectZones(impossibleModeBenchmarksRanked, 'score');
+const impossibleZoned = attachZone(computeRanks(benchmarks.impossibleMode, 'score'), 'score');
+
+const ZONES = ['saturated', 'impressive', 'competent', 'noise'];
 
 function getRankDisplay(rank) {
     if (rank === '-') return '-';
@@ -268,87 +126,80 @@ function getRankDisplay(rank) {
             <section class="leaderboard-section full-width">
                 <h2 id="benchmark-title">{t.benchmark_title}</h2>
 
-                <div class="benchmark-container">
-                    <!-- Easy Mode -->
-                     <div class="mode-header">
-                        <h3>EASY MODE</h3>
-                    </div>
-                    <div class="benchmark-list">
-                        {easyModeBenchmarks.map((m) => (
-                            m.type === 'separator' ? (
-                                <div class={`zone-separator zone-${m.zone}`}>{t[`zone_${m.zone}`]}</div>
-                            ) : (
-                                <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                    <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
-                                        {getRankDisplay(m.rank)}
+                <div class="benchmark-scroll-container">
+                    <div class="benchmark-container">
+                        <!-- Header Row -->
+                        <div class="header-row">
+                            <div class="col-header"><h3>EASY MODE</h3></div>
+                            <div class="col-header"><h3>HARD MODE</h3></div>
+                            <div class="col-header impossible-header"><h3>IMPOSSIBLE MODE</h3></div>
+                        </div>
+
+                        <!-- Zones -->
+                        {ZONES.map(zone => (
+                            <div class="zone-section">
+                                <div class={`zone-header zone-${zone}`}>{t[`zone_${zone}`]}</div>
+                                <div class="zone-content">
+                                    <!-- Easy Column -->
+                                    <div class="zone-column">
+                                        {easyZoned.filter(m => m.zone === zone).map(m => (
+                                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                                <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
+                                                    {getRankDisplay(m.rank)}
+                                                </div>
+                                                <div class="model-info">
+                                                    <div class="model-name" data-release-date={m.releaseDate}>
+                                                        {m.name}
+                                                        {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                                                    </div>
+                                                </div>
+                                                <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.avg.toFixed(1)}%</div>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div class="model-info">
-                                        <div class="model-name" data-release-date={m.releaseDate}>
-                                            {m.name}
-                                            {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
-                                        </div>
+
+                                    <!-- Hard Column -->
+                                    <div class="zone-column">
+                                        {hardZoned.filter(m => m.zone === zone).map(m => (
+                                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                                <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
+                                                    {getRankDisplay(m.rank)}
+                                                </div>
+                                                <div class="model-info">
+                                                    <div class="model-name" data-release-date={m.releaseDate}>
+                                                        {m.name}
+                                                        {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                                                    </div>
+                                                </div>
+                                                <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.score}%</div>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.avg.toFixed(1)}%</div>
+
+                                    <!-- Impossible Column -->
+                                    <div class="zone-column">
+                                        {impossibleZoned.filter(m => m.zone === zone).map(m => (
+                                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                                <div class={`rank ${m.isFail ? 'fail-rank' : ''} ${m.isFail ? '' : 'impossible-rank'}`}>
+                                                    {getRankDisplay(m.rank)}
+                                                </div>
+                                                <div class="model-info">
+                                                    <div class={`model-name ${m.isFail ? '' : 'impossible-text'}`} data-release-date={m.releaseDate}>
+                                                        {m.name}
+                                                        {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                                                    </div>
+                                                </div>
+                                                <div class={`model-score ${m.isFail ? 'fail-score' : 'impossible-score'}`}>{m.score}%</div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            )
+                            </div>
                         ))}
-                    </div>
 
-                    <div class="spacer"></div>
-
-                    <!-- Hard Mode -->
-                    <div class="mode-header">
-                        <h3>HARD MODE</h3>
+                        <p class="disclaimer" id="benchmark-disclaimer">{t.benchmark_impossible_disclaimer}</p>
+                        <p class="disclaimer contact-disclaimer" id="benchmark-contact">{t.benchmark_contact_disclaimer}</p>
                     </div>
-                    <div class="benchmark-list">
-                        {hardModeBenchmarks.map((m) => (
-                            m.type === 'separator' ? (
-                                <div class={`zone-separator zone-${m.zone}`}>{t[`zone_${m.zone}`]}</div>
-                            ) : (
-                                <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                    <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
-                                        {getRankDisplay(m.rank)}
-                                    </div>
-                                    <div class="model-info">
-                                        <div class="model-name" data-release-date={m.releaseDate}>
-                                            {m.name}
-                                            {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
-                                        </div>
-                                    </div>
-                                    <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.score}%</div>
-                                </div>
-                            )
-                        ))}
-                    </div>
-
-                    <div class="spacer"></div>
-
-                    <!-- Impossible Mode -->
-                    <div class="mode-header impossible-header">
-                        <h3>IMPOSSIBLE MODE</h3>
-                    </div>
-                    <div class="benchmark-list">
-                        {impossibleModeBenchmarks.map((m) => (
-                            m.type === 'separator' ? (
-                                <div class={`zone-separator zone-${m.zone}`}>{t[`zone_${m.zone}`]}</div>
-                            ) : (
-                                <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                    <div class={`rank ${m.isFail ? 'fail-rank' : ''} ${m.isFail ? '' : 'impossible-rank'}`}>
-                                        {getRankDisplay(m.rank)}
-                                    </div>
-                                    <div class="model-info">
-                                        <div class={`model-name ${m.isFail ? '' : 'impossible-text'}`} data-release-date={m.releaseDate}>
-                                            {m.name}
-                                            {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
-                                        </div>
-                                    </div>
-                                    <div class={`model-score ${m.isFail ? 'fail-score' : 'impossible-score'}`}>{m.score}%</div>
-                                </div>
-                            )
-                        ))}
-                    </div>
-                    <p class="disclaimer" id="benchmark-disclaimer">{t.benchmark_impossible_disclaimer}</p>
-                    <p class="disclaimer contact-disclaimer" id="benchmark-contact">{t.benchmark_contact_disclaimer}</p>
                 </div>
             </section>
         </div>
@@ -357,7 +208,7 @@ function getRankDisplay(rank) {
 
 <style>
     main {
-        max-width: 80rem;
+        max-width: 90rem; /* Increased max-width to accommodate 3 columns */
         margin: 4rem auto;
         padding: 0 1rem;
     }
@@ -381,27 +232,10 @@ function getRankDisplay(rank) {
         text-align: center;
     }
 
-    .mode-header h3 {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #F59E0B;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid rgba(245, 158, 11, 0.3);
-        padding-bottom: 0.5rem;
-    }
-
-    .spacer {
-        height: 3rem;
-    }
-
-    .leaderboard-grid {
-        display: flex; /* Changed from grid to flex to center the single column */
-        justify-content: center;
-    }
-
-    .leaderboard-section.full-width {
-        width: 100%;
-        max-width: 800px; /* Limit width for readability */
+    /* Scroll Container for Mobile "Same as Desktop" */
+    .benchmark-scroll-container {
+        overflow-x: auto;
+        padding-bottom: 1rem; /* Space for scrollbar */
     }
 
     .benchmark-container {
@@ -410,65 +244,90 @@ function getRankDisplay(rank) {
         padding: 2rem;
         box-shadow: 0 0 30px rgba(0,0,0,0.2);
         border: 1px solid rgba(245, 158, 11, 0.3);
+        min-width: 900px; /* Ensure columns don't squish too much */
     }
 
-    .benchmark-list {
+    /* Grid Layout */
+    .header-row, .zone-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .col-header h3 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #F59E0B;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+        padding-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .zone-section {
+        margin-bottom: 2rem;
+    }
+
+    .zone-header {
+        grid-column: 1 / -1; /* Full width */
+        font-size: 1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 0.5rem 0;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        letter-spacing: 0.1em;
+        text-align: left;
+    }
+
+    .zone-column {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 0.5rem;
     }
 
     .benchmark-item {
         display: flex;
-        gap: 1rem;
+        gap: 0.5rem;
         align-items: center;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+        padding: 0.5rem;
+        background: rgba(255,255,255,0.02);
+        border-radius: 0.5rem;
+        border: 1px solid rgba(255,255,255,0.05);
     }
-    .benchmark-item:last-child { border-bottom: none; padding-bottom: 0; }
 
     .rank {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: 900;
         color: #F59E0B;
-        min-width: 50px;
+        min-width: 30px;
         text-align: center;
-        white-space: nowrap;
     }
 
-    .human-baseline {
-        opacity: 0.8;
-    }
+    .human-baseline { opacity: 0.8; }
+    .human-baseline .rank { color: #9CA3AF; }
+    .fail-rank { color: #EF4444; font-size: 1rem; min-width: 60px; }
 
-    .human-baseline .rank {
-        color: #9CA3AF; /* Gray rank for baseline */
-    }
-
-    .fail-rank {
-        color: #EF4444;
-        font-size: 1.2rem; /* Slightly smaller to fit */
-        min-width: 100px; /* More space for text */
-    }
-
-    .model-info {
-        flex: 1;
-    }
+    .model-info { flex: 1; min-width: 0; /* Allow text truncate if needed */ }
 
     .model-name {
-        font-size: 1.1rem;
+        font-size: 0.95rem;
         font-weight: 700;
         color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .model-score {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: 900;
         color: #F59E0B;
+        margin-left: auto;
     }
 
-    .fail-score {
-        color: #6B7280; /* Dimmed score for fails */
-    }
+    .fail-score { color: #6B7280; font-size: 1rem; }
 
     /* Impossible Mode Styles */
     .impossible-header h3 {
@@ -487,40 +346,26 @@ function getRankDisplay(rank) {
         to { text-shadow: 0 0 4px #7f1d1d, 0 -2px 4px #ff9c00, 2px -5px 6px #fd3e3e, -2px -10px 11px #f00; }
     }
 
-    .impossible-rank {
-        color: #ef4444;
-    }
-
-    .impossible-score {
-        color: #ef4444;
-        text-shadow: 0 0 5px #7f1d1d;
-    }
-
-    .impossible-text {
-        color: #fee2e2; /* Light red/white for contrast */
-    }
+    .impossible-rank { color: #ef4444; }
+    .impossible-score { color: #ef4444; text-shadow: 0 0 5px #7f1d1d; }
+    .impossible-text { color: #fee2e2; }
 
     /* Override for Fail in Impossible Mode */
-    .fail-item .impossible-score {
-        color: #6B7280;
-        text-shadow: none;
-    }
-    .fail-item .impossible-text {
-         color: white; /* Reset to normal if it's a fail? Or keep it? Keeping it simple. */
-    }
+    .fail-item .impossible-score { color: #6B7280; text-shadow: none; }
+    .fail-item .impossible-text { color: white; }
 
-    /* New Badge Styles */
+    /* New Badge */
     .new-badge {
         display: inline-block;
-        margin-left: 0.5rem;
-        font-size: 0.7rem;
+        margin-left: 0.3rem;
+        font-size: 0.6rem;
         font-weight: 800;
-        color: #713f12; /* Dark gold text */
+        color: #713f12;
         background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%);
-        padding: 0.1rem 0.4rem;
-        border-radius: 0.25rem;
+        padding: 0 0.3rem;
+        border-radius: 0.2rem;
         text-transform: uppercase;
-        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        box-shadow: 0 0 5px rgba(245, 158, 11, 0.5);
         animation: shine 2s infinite;
         vertical-align: middle;
         border: 1px solid #fbbf24;
@@ -541,21 +386,8 @@ function getRankDisplay(rank) {
         opacity: 0.8;
     }
 
-    .contact-disclaimer {
-        margin-top: 1rem;
-        color: #60A5FA;
-    }
+    .contact-disclaimer { margin-top: 1rem; color: #60A5FA; }
 
-    .zone-separator {
-        font-size: 0.9rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        padding: 0.5rem 0;
-        margin-top: 1rem;
-        margin-bottom: 0.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        letter-spacing: 0.1em;
-    }
     .zone-noise { color: #EF4444; border-color: rgba(239, 68, 68, 0.3); }
     .zone-competent { color: #F59E0B; border-color: rgba(245, 158, 11, 0.3); }
     .zone-impressive { color: #10B981; border-color: rgba(16, 185, 129, 0.3); }
