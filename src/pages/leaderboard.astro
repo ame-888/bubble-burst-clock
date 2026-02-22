@@ -130,9 +130,9 @@ function getRankDisplay(rank) {
                     <div class="benchmark-container">
                         <!-- Header Row -->
                         <div class="header-row">
-                            <div class="col-header"><h3>EASY MODE</h3></div>
-                            <div class="col-header"><h3>HARD MODE</h3></div>
-                            <div class="col-header impossible-header"><h3>IMPOSSIBLE MODE</h3></div>
+                            <div class="col-header col-easy"><h3>EASY MODE</h3></div>
+                            <div class="col-header col-hard"><h3>HARD MODE</h3></div>
+                            <div class="col-header col-impossible impossible-header"><h3>IMPOSSIBLE MODE</h3></div>
                         </div>
 
                         <!-- Zones -->
@@ -141,7 +141,7 @@ function getRankDisplay(rank) {
                                 <div class={`zone-header zone-${zone}`}>{t[`zone_${zone}`]}</div>
                                 <div class="zone-content">
                                     <!-- Easy Column -->
-                                    <div class="zone-column">
+                                    <div class="zone-column col-easy">
                                         {easyZoned.filter(m => m.zone === zone).map(m => (
                                             <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
                                                 <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
@@ -159,7 +159,7 @@ function getRankDisplay(rank) {
                                     </div>
 
                                     <!-- Hard Column -->
-                                    <div class="zone-column">
+                                    <div class="zone-column col-hard">
                                         {hardZoned.filter(m => m.zone === zone).map(m => (
                                             <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
                                                 <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
@@ -177,7 +177,7 @@ function getRankDisplay(rank) {
                                     </div>
 
                                     <!-- Impossible Column -->
-                                    <div class="zone-column">
+                                    <div class="zone-column col-impossible">
                                         {impossibleZoned.filter(m => m.zone === zone).map(m => (
                                             <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
                                                 <div class={`rank ${m.isFail ? 'fail-rank' : ''} ${m.isFail ? '' : 'impossible-rank'}`}>
@@ -208,7 +208,7 @@ function getRankDisplay(rank) {
 
 <style>
     main {
-        max-width: 90rem; /* Increased max-width to accommodate 3 columns */
+        max-width: 90rem;
         margin: 4rem auto;
         padding: 0 1rem;
     }
@@ -232,10 +232,10 @@ function getRankDisplay(rank) {
         text-align: center;
     }
 
-    /* Scroll Container for Mobile "Same as Desktop" */
+    /* Scroll Container for Mobile */
     .benchmark-scroll-container {
         overflow-x: auto;
-        padding-bottom: 1rem; /* Space for scrollbar */
+        padding-bottom: 1rem;
     }
 
     .benchmark-container {
@@ -244,24 +244,38 @@ function getRankDisplay(rank) {
         padding: 2rem;
         box-shadow: 0 0 30px rgba(0,0,0,0.2);
         border: 1px solid rgba(245, 158, 11, 0.3);
-        min-width: 900px; /* Ensure columns don't squish too much */
+        min-width: 1000px;
     }
 
     /* Grid Layout */
     .header-row, .zone-content {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        gap: 1.5rem;
+        /* No gap here, we use padding/borders */
     }
 
+    .col-header {
+        padding: 0 1.5rem;
+        border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+        margin-bottom: 1rem;
+    }
     .col-header h3 {
         font-size: 1.5rem;
         font-weight: 800;
         color: #F59E0B;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid rgba(245, 158, 11, 0.3);
-        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
         text-align: center;
+    }
+
+    /* Column Dividers */
+    .col-easy, .col-hard {
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .zone-column {
+        display: flex;
+        flex-direction: column;
+        padding: 0 1.5rem; /* Internal padding for content */
     }
 
     .zone-section {
@@ -269,65 +283,63 @@ function getRankDisplay(rank) {
     }
 
     .zone-header {
-        grid-column: 1 / -1; /* Full width */
+        grid-column: 1 / -1;
         font-size: 1rem;
         font-weight: 800;
         text-transform: uppercase;
         padding: 0.5rem 0;
         margin-top: 1.5rem;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
         border-bottom: 1px solid rgba(255,255,255,0.1);
         letter-spacing: 0.1em;
         text-align: left;
     }
 
-    .zone-column {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
+    /* Item Styling - Compact & Clean */
     .benchmark-item {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.75rem;
         align-items: center;
-        padding: 0.5rem;
-        background: rgba(255,255,255,0.02);
-        border-radius: 0.5rem;
-        border: 1px solid rgba(255,255,255,0.05);
+        padding: 0.3rem 0.5rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.2s;
+    }
+
+    .benchmark-item:hover {
+        background-color: rgba(255, 255, 255, 0.05);
     }
 
     .rank {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 900;
         color: #F59E0B;
-        min-width: 30px;
-        text-align: center;
+        min-width: 25px;
+        text-align: right;
     }
 
-    .human-baseline { opacity: 0.8; }
+    .human-baseline { opacity: 0.6; }
     .human-baseline .rank { color: #9CA3AF; }
-    .fail-rank { color: #EF4444; font-size: 1rem; min-width: 60px; }
+    .fail-rank { color: #EF4444; font-size: 0.9rem; min-width: 60px; text-align: left; }
 
-    .model-info { flex: 1; min-width: 0; /* Allow text truncate if needed */ }
+    .model-info { flex: 1; min-width: 0; }
 
     .model-name {
         font-size: 0.95rem;
-        font-weight: 700;
-        color: white;
+        font-weight: 600;
+        color: #e5e7eb; /* Slightly lighter gray-white */
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
     .model-score {
-        font-size: 1.2rem;
-        font-weight: 900;
+        font-size: 1.1rem;
+        font-weight: 800;
         color: #F59E0B;
         margin-left: auto;
     }
 
-    .fail-score { color: #6B7280; font-size: 1rem; }
+    .fail-score { color: #6B7280; font-size: 0.9rem; }
 
     /* Impossible Mode Styles */
     .impossible-header h3 {
@@ -352,20 +364,20 @@ function getRankDisplay(rank) {
 
     /* Override for Fail in Impossible Mode */
     .fail-item .impossible-score { color: #6B7280; text-shadow: none; }
-    .fail-item .impossible-text { color: white; }
+    .fail-item .impossible-text { color: #e5e7eb; }
 
     /* New Badge */
     .new-badge {
         display: inline-block;
         margin-left: 0.3rem;
-        font-size: 0.6rem;
+        font-size: 0.55rem;
         font-weight: 800;
         color: #713f12;
         background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%);
-        padding: 0 0.3rem;
-        border-radius: 0.2rem;
+        padding: 0 0.2rem;
+        border-radius: 0.15rem;
         text-transform: uppercase;
-        box-shadow: 0 0 5px rgba(245, 158, 11, 0.5);
+        box-shadow: 0 0 3px rgba(245, 158, 11, 0.5);
         animation: shine 2s infinite;
         vertical-align: middle;
         border: 1px solid #fbbf24;
