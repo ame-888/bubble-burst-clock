@@ -40,7 +40,12 @@ function isNew(dateStr) {
 // --- Ranking Logic ---
 function computeRanks(items, scoreKey) {
     // 1. Sort
-    let sorted = [...items].sort((a, b) => b[scoreKey] - a[scoreKey]);
+    let sorted = [...items].sort((a, b) => {
+        // Human Baseline always on top if it exists, though score usually handles it
+        if (a.name === 'Human Baseline') return -1;
+        if (b.name === 'Human Baseline') return 1;
+        return b[scoreKey] - a[scoreKey];
+    });
 
     // 2. Separate Zeroes
     const eligible = sorted.filter(i => i[scoreKey] > 0);
@@ -75,37 +80,22 @@ function computeRanks(items, scoreKey) {
     return rankedItems;
 }
 
-function getZone(score) {
-    if (score >= 90) return 'saturated';
-    if (score >= 50) return 'impressive';
-    if (score >= 10) return 'competent';
-    return 'noise';
-}
-
-function attachZone(items, scoreKey) {
-    return items.map(item => {
-        let score = item[scoreKey];
-        if (item.isFail) score = 0;
-        if (item.name === 'Human Baseline') score = 100;
-        return { ...item, zone: getZone(score) };
-    });
-}
-
 // Easy Mode Logic (Averages)
 const rawEasy = benchmarks.models.map(m => {
     const scores = Object.values(m.scores);
     const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
     return { ...m, avg };
 });
-const easyZoned = attachZone(computeRanks(rawEasy, 'avg'), 'avg');
+const easyList = computeRanks(rawEasy, 'avg');
 
 // Hard Mode Logic
-const hardZoned = attachZone(computeRanks(benchmarks.hardMode, 'score'), 'score');
+const hardList = computeRanks(benchmarks.hardMode, 'score');
 
 // Impossible Mode Logic
-const impossibleZoned = attachZone(computeRanks(benchmarks.impossibleMode, 'score'), 'score');
+const impossibleList = computeRanks(benchmarks.impossibleMode, 'score');
 
-const ZONES = ['saturated', 'impressive', 'competent', 'noise'];
+const maxRows = Math.max(easyList.length, hardList.length, impossibleList.length);
+const rows = Array.from({ length: maxRows }, (_, i) => i);
 
 function getRankDisplay(rank) {
     if (rank === '-') return '-';
@@ -135,67 +125,70 @@ function getRankDisplay(rank) {
                             <div class="col-header impossible-header"><h3>IMPOSSIBLE MODE</h3></div>
                         </div>
 
-                        <!-- Zones -->
-                        {ZONES.map(zone => (
-                            <div class="zone-section">
-                                <div class={`zone-header zone-${zone}`}>{t[`zone_${zone}`]}</div>
-                                <div class="zone-content">
-                                    <!-- Easy Column -->
-                                    <div class="zone-column">
-                                        {easyZoned.filter(m => m.zone === zone).map(m => (
-                                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                                <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
-                                                    {getRankDisplay(m.rank)}
+                        <!-- Rows Loop -->
+                        {rows.map(i => {
+                            const easyItem = easyList[i];
+                            const hardItem = hardList[i];
+                            const impossibleItem = impossibleList[i];
+
+                            return (
+                                <div class="benchmark-row">
+                                    {/* Easy Column */}
+                                    <div class="benchmark-cell easy-col">
+                                        {easyItem && (
+                                            <div class={`benchmark-content ${easyItem.isFail ? 'fail-item' : ''} ${easyItem.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                                <div class={`rank ${easyItem.isFail ? 'fail-rank' : ''}`}>
+                                                    {getRankDisplay(easyItem.rank)}
                                                 </div>
                                                 <div class="model-info">
-                                                    <div class="model-name" data-release-date={m.releaseDate}>
-                                                        {m.name}
-                                                        {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                                                    <div class="model-name" data-release-date={easyItem.releaseDate}>
+                                                        {easyItem.name}
+                                                        {isNew(easyItem.releaseDate) && <span class="new-badge">NEW</span>}
                                                     </div>
                                                 </div>
-                                                <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.avg.toFixed(1)}%</div>
+                                                <div class={`model-score ${easyItem.isFail ? 'fail-score' : ''}`}>{easyItem.avg.toFixed(1)}%</div>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
 
-                                    <!-- Hard Column -->
-                                    <div class="zone-column">
-                                        {hardZoned.filter(m => m.zone === zone).map(m => (
-                                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                                <div class={`rank ${m.isFail ? 'fail-rank' : ''}`}>
-                                                    {getRankDisplay(m.rank)}
+                                    {/* Hard Column */}
+                                    <div class="benchmark-cell hard-col">
+                                        {hardItem && (
+                                            <div class={`benchmark-content ${hardItem.isFail ? 'fail-item' : ''} ${hardItem.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                                <div class={`rank ${hardItem.isFail ? 'fail-rank' : ''}`}>
+                                                    {getRankDisplay(hardItem.rank)}
                                                 </div>
                                                 <div class="model-info">
-                                                    <div class="model-name" data-release-date={m.releaseDate}>
-                                                        {m.name}
-                                                        {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                                                    <div class="model-name" data-release-date={hardItem.releaseDate}>
+                                                        {hardItem.name}
+                                                        {isNew(hardItem.releaseDate) && <span class="new-badge">NEW</span>}
                                                     </div>
                                                 </div>
-                                                <div class={`model-score ${m.isFail ? 'fail-score' : ''}`}>{m.score}%</div>
+                                                <div class={`model-score ${hardItem.isFail ? 'fail-score' : ''}`}>{hardItem.score}%</div>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
 
-                                    <!-- Impossible Column -->
-                                    <div class="zone-column">
-                                        {impossibleZoned.filter(m => m.zone === zone).map(m => (
-                                            <div class={`benchmark-item ${m.isFail ? 'fail-item' : ''} ${m.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                                <div class={`rank ${m.isFail ? 'fail-rank' : ''} ${m.isFail ? '' : 'impossible-rank'}`}>
-                                                    {getRankDisplay(m.rank)}
+                                    {/* Impossible Column */}
+                                    <div class="benchmark-cell impossible-col">
+                                        {impossibleItem && (
+                                            <div class={`benchmark-content ${impossibleItem.isFail ? 'fail-item' : ''} ${impossibleItem.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                                <div class={`rank ${impossibleItem.isFail ? 'fail-rank' : ''} ${impossibleItem.isFail ? '' : 'impossible-rank'}`}>
+                                                    {getRankDisplay(impossibleItem.rank)}
                                                 </div>
                                                 <div class="model-info">
-                                                    <div class={`model-name ${m.isFail ? '' : 'impossible-text'}`} data-release-date={m.releaseDate}>
-                                                        {m.name}
-                                                        {isNew(m.releaseDate) && <span class="new-badge">NEW</span>}
+                                                    <div class={`model-name ${impossibleItem.isFail ? '' : 'impossible-text'}`} data-release-date={impossibleItem.releaseDate}>
+                                                        {impossibleItem.name}
+                                                        {isNew(impossibleItem.releaseDate) && <span class="new-badge">NEW</span>}
                                                     </div>
                                                 </div>
-                                                <div class={`model-score ${m.isFail ? 'fail-score' : 'impossible-score'}`}>{m.score}%</div>
+                                                <div class={`model-score ${impossibleItem.isFail ? 'fail-score' : 'impossible-score'}`}>{impossibleItem.score}%</div>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
 
                         <p class="disclaimer" id="benchmark-disclaimer">{t.benchmark_impossible_disclaimer}</p>
                         <p class="disclaimer contact-disclaimer" id="benchmark-contact">{t.benchmark_contact_disclaimer}</p>
@@ -208,7 +201,7 @@ function getRankDisplay(rank) {
 
 <style>
     main {
-        max-width: 90rem; /* Increased max-width to accommodate 3 columns */
+        max-width: 90rem; /* Wide layout */
         margin: 4rem auto;
         padding: 0 1rem;
     }
@@ -232,10 +225,10 @@ function getRankDisplay(rank) {
         text-align: center;
     }
 
-    /* Scroll Container for Mobile "Same as Desktop" */
+    /* Scroll Container for Mobile */
     .benchmark-scroll-container {
         overflow-x: auto;
-        padding-bottom: 1rem; /* Space for scrollbar */
+        padding-bottom: 1rem;
     }
 
     .benchmark-container {
@@ -244,14 +237,14 @@ function getRankDisplay(rank) {
         padding: 2rem;
         box-shadow: 0 0 30px rgba(0,0,0,0.2);
         border: 1px solid rgba(245, 158, 11, 0.3);
-        min-width: 900px; /* Ensure columns don't squish too much */
+        min-width: 900px; /* Force minimum width to keep columns legible */
     }
 
-    /* Grid Layout */
-    .header-row, .zone-content {
+    /* Header Row */
+    .header-row {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        gap: 1.5rem;
+        /* No border bottom here, headers have their own style */
     }
 
     .col-header h3 {
@@ -264,56 +257,61 @@ function getRankDisplay(rank) {
         text-align: center;
     }
 
-    .zone-section {
-        margin-bottom: 2rem;
+    /* Benchmark Rows */
+    .benchmark-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Horizontal line */
     }
 
-    .zone-header {
-        grid-column: 1 / -1; /* Full width */
-        font-size: 1rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        padding: 0.5rem 0;
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        letter-spacing: 0.1em;
-        text-align: left;
+    .benchmark-row:last-child {
+        border-bottom: none;
     }
 
-    .zone-column {
+    /* Cells */
+    .benchmark-cell {
+        padding: 0.75rem 1rem;
         display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .benchmark-item {
-        display: flex;
-        gap: 0.5rem;
         align-items: center;
-        padding: 0.5rem;
-        background: rgba(255,255,255,0.02);
-        border-radius: 0.5rem;
-        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Vertical Lines */
+    .easy-col {
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .hard-col {
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    /* Impossible col needs no right border */
+
+    /* Content Layout inside Cell */
+    .benchmark-content {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        gap: 0.75rem;
     }
 
     .rank {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 900;
         color: #F59E0B;
-        min-width: 30px;
+        min-width: 25px;
         text-align: center;
     }
 
     .human-baseline { opacity: 0.8; }
     .human-baseline .rank { color: #9CA3AF; }
-    .fail-rank { color: #EF4444; font-size: 1rem; min-width: 60px; }
+    .fail-rank { color: #EF4444; font-size: 0.9rem; min-width: 70px; text-align: left; }
 
-    .model-info { flex: 1; min-width: 0; /* Allow text truncate if needed */ }
+    .model-info {
+        flex: 1;
+        min-width: 0; /* Text truncate */
+    }
 
     .model-name {
         font-size: 0.95rem;
-        font-weight: 700;
+        font-weight: 600; /* Slightly lighter than card title */
         color: white;
         white-space: nowrap;
         overflow: hidden;
@@ -321,13 +319,13 @@ function getRankDisplay(rank) {
     }
 
     .model-score {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 900;
         color: #F59E0B;
         margin-left: auto;
     }
 
-    .fail-score { color: #6B7280; font-size: 1rem; }
+    .fail-score { color: #6B7280; font-size: 0.9rem; }
 
     /* Impossible Mode Styles */
     .impossible-header h3 {
@@ -387,11 +385,6 @@ function getRankDisplay(rank) {
     }
 
     .contact-disclaimer { margin-top: 1rem; color: #60A5FA; }
-
-    .zone-noise { color: #EF4444; border-color: rgba(239, 68, 68, 0.3); }
-    .zone-competent { color: #F59E0B; border-color: rgba(245, 158, 11, 0.3); }
-    .zone-impressive { color: #10B981; border-color: rgba(16, 185, 129, 0.3); }
-    .zone-saturated { color: #3B82F6; border-color: rgba(59, 130, 246, 0.3); }
 </style>
 
 <script define:vars={{ translations, lang, TIME_OFFSET }}>
