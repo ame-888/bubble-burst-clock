@@ -1,0 +1,23 @@
+
+> bubble-burst-clock@0.0.1 dev
+> astro dev
+
+▶ Astro collects anonymous usage data.
+  This information helps us improve Astro.
+  Run "astro telemetry disable" to opt-out.
+  https://astro.build/telemetry
+
+02:20:07 [types] Generated 1ms
+02:20:07 [content] Syncing content
+02:20:07 [content] Synced content
+
+ astro  v5.17.3 ready in 284 ms
+
+┃ Local    http://localhost:4321/
+┃ Network  use --host to expose
+
+02:20:07 watching for file changes...
+02:21:05 [200] /leaderboard 42ms
+02:21:27 [200] /leaderboard 12ms
+02:21:47 [200] /leaderboard 12ms
+02:21:52 [200] /leaderboard 9ms
