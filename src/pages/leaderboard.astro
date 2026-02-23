@@ -111,14 +111,20 @@ function getRankDisplay(rank) {
     <main>
         <h1 id="leaderboard-title">{t.leaderboard_button}</h1>
 
+        <div class="toggle-container">
+            <button id="toggle-visual" class="toggle-btn active">{t.toggle_visual}</button>
+            <button id="toggle-data" class="toggle-btn">{t.toggle_data}</button>
+        </div>
+
         <div class="leaderboard-grid">
             <!-- Benchmarks Section -->
             <section class="leaderboard-section full-width">
                 <h2 id="benchmark-title">{t.benchmark_title}</h2>
 
-                <div class="benchmark-scroll-container">
-                    <div class="benchmark-container">
-                        <!-- Header Row -->
+                <div id="visual-benchmark-wrapper">
+                    <div class="benchmark-scroll-container">
+                        <div class="benchmark-container">
+                            <!-- Header Row -->
                         <div class="header-row">
                             <div class="col-header"><h3>EASY MODE</h3></div>
                             <div class="col-header"><h3>HARD MODE</h3></div>
@@ -192,6 +198,13 @@ function getRankDisplay(rank) {
 
                         <p class="disclaimer" id="benchmark-disclaimer">{t.benchmark_impossible_disclaimer}</p>
                         <p class="disclaimer contact-disclaimer" id="benchmark-contact">{t.benchmark_contact_disclaimer}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="data-benchmark-wrapper" class="hidden">
+                    <div class="coming-soon-container">
+                        <div class="coming-soon-text">{t.coming_soon}</div>
                     </div>
                 </div>
             </section>
@@ -385,6 +398,63 @@ function getRankDisplay(rank) {
     }
 
     .contact-disclaimer { margin-top: 1rem; color: #60A5FA; }
+
+    /* Toggle Styles */
+    .toggle-container {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .toggle-btn {
+        background: rgba(31, 41, 55, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #9CA3AF;
+        padding: 0.5rem 1.5rem;
+        border-radius: 9999px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+    }
+
+    .toggle-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .toggle-btn.active {
+        background: #F59E0B;
+        color: #1F2937;
+        border-color: #F59E0B;
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    /* Coming Soon Styles */
+    .coming-soon-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 400px;
+        background: rgba(31, 41, 55, 0.5);
+        border-radius: 1rem;
+        border: 1px dashed rgba(245, 158, 11, 0.3);
+        margin-top: 2rem;
+    }
+
+    .coming-soon-text {
+        font-size: 3rem;
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.2);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        text-align: center;
+    }
 </style>
 
 <script define:vars={{ translations, lang, TIME_OFFSET }}>
@@ -405,9 +475,42 @@ function getRankDisplay(rank) {
         const contact = document.getElementById('benchmark-contact');
 
         if (mainTitle) mainTitle.textContent = t.leaderboard_button;
-        if (benchTitle) benchTitle.textContent = t.benchmark_title;
+        // benchTitle text is set by updateBenchmarkView
         if (disclaimer) disclaimer.textContent = t.benchmark_impossible_disclaimer;
         if (contact) contact.textContent = t.benchmark_contact_disclaimer;
+
+        const toggleVisual = document.getElementById('toggle-visual');
+        const toggleData = document.getElementById('toggle-data');
+        const visualWrapper = document.getElementById('visual-benchmark-wrapper');
+        const dataWrapper = document.getElementById('data-benchmark-wrapper');
+        const comingSoonText = document.querySelector('.coming-soon-text');
+
+        if (toggleVisual) toggleVisual.textContent = t.toggle_visual;
+        if (toggleData) toggleData.textContent = t.toggle_data;
+        if (comingSoonText) comingSoonText.textContent = t.coming_soon;
+
+        function updateBenchmarkView(mode) {
+            if (mode === 'visual') {
+                if (toggleVisual) toggleVisual.classList.add('active');
+                if (toggleData) toggleData.classList.remove('active');
+                if (visualWrapper) visualWrapper.classList.remove('hidden');
+                if (dataWrapper) dataWrapper.classList.add('hidden');
+                if (benchTitle) benchTitle.textContent = t.benchmark_title;
+            } else {
+                if (toggleVisual) toggleVisual.classList.remove('active');
+                if (toggleData) toggleData.classList.add('active');
+                if (visualWrapper) visualWrapper.classList.add('hidden');
+                if (dataWrapper) dataWrapper.classList.remove('hidden');
+                if (benchTitle) benchTitle.textContent = t.benchmark_data_title;
+            }
+            localStorage.setItem('benchmark_tab', mode);
+        }
+
+        if (toggleVisual) toggleVisual.addEventListener('click', () => updateBenchmarkView('visual'));
+        if (toggleData) toggleData.addEventListener('click', () => updateBenchmarkView('data'));
+
+        const savedMode = localStorage.getItem('benchmark_tab') || 'visual';
+        updateBenchmarkView(savedMode);
 
         // --- Dynamic "NEW" Badge Logic ---
         const timeOffset = TIME_OFFSET;
