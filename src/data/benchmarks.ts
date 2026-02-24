@@ -114,5 +114,9 @@ export const benchmarks = {
         { name: 'Grok 4.20 (chat)', score: 0, releaseDate: '2026-02-18' },
         { name: 'Gemini 2.5 Pro', score: 0 },
         { name: 'Gemini 2.5 Flash', score: 0 }
+    ],
+    dataRetrieval: [
+        { name: 'Human Baseline', score: 100 },
+        { name: 'Claude 4.6 Sonnet (with extended thinking)', score: 9, releaseDate: '2026-02-21' }
     ]
 };

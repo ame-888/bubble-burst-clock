@@ -94,8 +94,12 @@ const hardList = computeRanks(benchmarks.hardMode, 'score');
 // Impossible Mode Logic
 const impossibleList = computeRanks(benchmarks.impossibleMode, 'score');
 
+// Data Retrieval Logic
+const dataList = computeRanks(benchmarks.dataRetrieval || [], 'score');
+
 const maxRows = Math.max(easyList.length, hardList.length, impossibleList.length);
 const rows = Array.from({ length: maxRows }, (_, i) => i);
+const rowsData = Array.from({ length: dataList.length }, (_, i) => i);
 
 function getRankDisplay(rank) {
     if (rank === '-') return '-';
@@ -116,10 +120,28 @@ function getRankDisplay(rank) {
             <button id="toggle-data" class="toggle-btn">{t.toggle_data}</button>
         </div>
 
+        <!-- Benchmark About Modal -->
+        <div id="modal-overlay" class="hidden"></div>
+        <div id="about-benchmark-modal" class="modal hidden">
+            <div class="modal-content">
+                <button class="close-modal">&times;</button>
+                <h3 id="about-modal-title">About Benchmark</h3>
+                <p id="about-modal-desc">Description here...</p>
+            </div>
+        </div>
+
         <div class="leaderboard-grid">
             <!-- Benchmarks Section -->
             <section class="leaderboard-section full-width">
-                <h2 id="benchmark-title">{t.benchmark_title}</h2>
+                <div class="benchmark-header-container">
+                    <h2 id="benchmark-title">{t.benchmark_title}</h2>
+                    <button id="about-benchmark-btn" class="about-benchmark-btn" title={t.about_benchmark_btn}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                        </svg>
+                        <span>{t.about_benchmark_btn}</span>
+                    </button>
+                </div>
 
                 <div id="visual-benchmark-wrapper">
                     <div class="benchmark-scroll-container">
@@ -203,8 +225,38 @@ function getRankDisplay(rank) {
                 </div>
 
                 <div id="data-benchmark-wrapper" class="hidden">
-                    <div class="coming-soon-container">
-                        <div class="coming-soon-text">{t.coming_soon}</div>
+                    <div class="benchmark-scroll-container">
+                        <div class="benchmark-container single-col-container">
+                            <!-- Header Row -->
+                            <div class="header-row single-col-header">
+                                <div class="col-header"><h3>SCORE</h3></div>
+                            </div>
+
+                            <!-- Rows Loop -->
+                            {rowsData.map(i => {
+                                const item = dataList[i];
+                                return (
+                                    <div class="benchmark-row single-col-row">
+                                        <div class="benchmark-cell">
+                                            {item && (
+                                                <div class={`benchmark-content ${item.isFail ? 'fail-item' : ''} ${item.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                                    <div class={`rank ${item.isFail ? 'fail-rank' : ''}`}>
+                                                        {getRankDisplay(item.rank)}
+                                                    </div>
+                                                    <div class="model-info">
+                                                        <div class="model-name" data-release-date={item.releaseDate}>
+                                                            {item.name}
+                                                            {isNew(item.releaseDate) && <span class="new-badge">NEW</span>}
+                                                        </div>
+                                                    </div>
+                                                    <div class={`model-score ${item.isFail ? 'fail-score' : ''}`}>{item.score}%</div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </section>
@@ -455,6 +507,129 @@ function getRankDisplay(rank) {
         letter-spacing: 0.1em;
         text-align: center;
     }
+
+    /* Header Container */
+    .benchmark-header-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .benchmark-header-container h2 {
+        margin-bottom: 0;
+    }
+
+    .about-benchmark-btn {
+        background: none;
+        border: none;
+        color: #6B7280;
+        cursor: pointer;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+    .about-benchmark-btn:hover {
+        color: #F59E0B;
+    }
+    .about-benchmark-btn svg {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+    .about-benchmark-btn span {
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: none;
+    }
+    @media (min-width: 640px) {
+        .about-benchmark-btn span {
+            display: inline;
+        }
+    }
+
+    /* Single Column Layout */
+    .benchmark-container.single-col-container {
+        min-width: auto;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .header-row.single-col-header,
+    .benchmark-row.single-col-row {
+        grid-template-columns: 1fr;
+    }
+
+    .single-col-row .benchmark-cell {
+        border-right: none;
+    }
+
+    /* Modal Styles */
+    #modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 20000;
+        animation: fadeIn 0.3s;
+    }
+
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 20001;
+        width: 90%;
+        max-width: 600px;
+        animation: slideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    .modal-content {
+        background: #1F2937;
+        padding: 2.5rem;
+        border-radius: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 1rem;
+        right: 1.5rem;
+        background: none;
+        border: none;
+        color: #9CA3AF;
+        font-size: 2rem;
+        cursor: pointer;
+        line-height: 1;
+    }
+    .close-modal:hover { color: white; }
+
+    #about-modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #F59E0B;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    #about-modal-desc {
+        color: #D1D5DB;
+        line-height: 1.6;
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translate(-50%, -45%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
 </style>
 
 <script define:vars={{ translations, lang, TIME_OFFSET }}>
@@ -508,6 +683,42 @@ function getRankDisplay(rank) {
 
         if (toggleVisual) toggleVisual.addEventListener('click', () => updateBenchmarkView('visual'));
         if (toggleData) toggleData.addEventListener('click', () => updateBenchmarkView('data'));
+
+        // --- About Modal Logic ---
+        const modalOverlay = document.getElementById('modal-overlay');
+        const aboutModal = document.getElementById('about-benchmark-modal');
+        const aboutBtn = document.getElementById('about-benchmark-btn');
+        const closeModalBtn = document.querySelector('.close-modal');
+        const aboutTitle = document.getElementById('about-modal-title');
+        const aboutDesc = document.getElementById('about-modal-desc');
+
+        function openModal() {
+             if (aboutModal && modalOverlay) {
+                aboutModal.classList.remove('hidden');
+                modalOverlay.classList.remove('hidden');
+
+                // Set content based on active tab
+                const isVisual = toggleVisual && toggleVisual.classList.contains('active');
+                if (isVisual) {
+                    if(aboutTitle) aboutTitle.textContent = t.benchmark_title;
+                    if(aboutDesc) aboutDesc.textContent = t.benchmark_visual_about;
+                } else {
+                    if(aboutTitle) aboutTitle.textContent = t.benchmark_data_title;
+                    if(aboutDesc) aboutDesc.textContent = t.benchmark_data_about;
+                }
+             }
+        }
+
+        function closeModal() {
+            if (aboutModal && modalOverlay) {
+                aboutModal.classList.add('hidden');
+                modalOverlay.classList.add('hidden');
+            }
+        }
+
+        if (aboutBtn) aboutBtn.addEventListener('click', openModal);
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+        if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
 
         const savedMode = localStorage.getItem('benchmark_tab') || 'visual';
         updateBenchmarkView(savedMode);
