@@ -256,6 +256,8 @@ function getRankDisplay(rank) {
                                     </div>
                                 );
                             })}
+
+                            <p class="disclaimer" id="data-benchmark-disclaimer">{t.benchmark_data_disclaimer}</p>
                         </div>
                     </div>
                 </div>
@@ -647,11 +649,13 @@ function getRankDisplay(rank) {
         const mainTitle = document.getElementById('leaderboard-title');
         const benchTitle = document.getElementById('benchmark-title');
         const disclaimer = document.getElementById('benchmark-disclaimer');
+        const dataDisclaimer = document.getElementById('data-benchmark-disclaimer');
         const contact = document.getElementById('benchmark-contact');
 
         if (mainTitle) mainTitle.textContent = t.leaderboard_button;
         // benchTitle text is set by updateBenchmarkView
         if (disclaimer) disclaimer.textContent = t.benchmark_impossible_disclaimer;
+        if (dataDisclaimer) dataDisclaimer.textContent = t.benchmark_data_disclaimer;
         if (contact) contact.textContent = t.benchmark_contact_disclaimer;
 
         const toggleVisual = document.getElementById('toggle-visual');
