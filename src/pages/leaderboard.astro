@@ -218,7 +218,6 @@ function getRankDisplay(rank) {
                             );
                         })}
 
-                        <p class="disclaimer" id="benchmark-disclaimer">{t.benchmark_impossible_disclaimer}</p>
                         <p class="disclaimer contact-disclaimer" id="benchmark-contact">{t.benchmark_contact_disclaimer}</p>
                         </div>
                     </div>
@@ -724,14 +723,12 @@ function getRankDisplay(rank) {
 
         const mainTitle = document.getElementById('leaderboard-title');
         const benchTitle = document.getElementById('benchmark-title');
-        const disclaimer = document.getElementById('benchmark-disclaimer');
         const dataDisclaimer = document.getElementById('data-benchmark-disclaimer');
         const dataWarning = document.getElementById('data-benchmark-warning');
         const contact = document.getElementById('benchmark-contact');
 
         if (mainTitle) mainTitle.textContent = t.leaderboard_button;
         // benchTitle text is set by updateBenchmarkView
-        if (disclaimer) disclaimer.textContent = t.benchmark_impossible_disclaimer;
         if (dataDisclaimer) dataDisclaimer.textContent = t.benchmark_data_disclaimer;
         if (dataWarning) dataWarning.textContent = t.benchmark_data_warning;
         if (contact) contact.textContent = t.benchmark_contact_disclaimer;
@@ -849,7 +846,7 @@ function getRankDisplay(rank) {
             el.style.fontSize = '0.95rem';
 
             let size = 0.95;
-            const minSize = 0.75;
+            const minSize = 0.60;
 
             // Reduce size while content overflows
             while (el.scrollWidth > el.clientWidth && size > minSize) {
