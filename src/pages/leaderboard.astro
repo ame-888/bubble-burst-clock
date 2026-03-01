@@ -225,15 +225,16 @@ function getRankDisplay(rank) {
                 </div>
 
                 <div id="data-benchmark-wrapper" class="hidden">
-                    <div class="benchmark-scroll-container">
-                        <div class="benchmark-container single-col-container">
-                            <!-- Header Row -->
-                            <div class="header-row single-col-header">
-                                <div class="col-header"><h3>SCORE</h3></div>
-                            </div>
+                    <div class="data-benchmark-layout">
+                        <div class="benchmark-scroll-container data-table-wrapper">
+                            <div class="benchmark-container single-col-container">
+                                <!-- Header Row -->
+                                <div class="header-row single-col-header">
+                                    <div class="col-header"><h3>SCORE</h3></div>
+                                </div>
 
-                            <!-- Rows Loop -->
-                            {rowsData.map(i => {
+                                <!-- Rows Loop -->
+                                {rowsData.map(i => {
                                 const item = dataList[i];
                                 return (
                                     <div class="benchmark-row single-col-row">
@@ -249,15 +250,26 @@ function getRankDisplay(rank) {
                                                             {isNew(item.releaseDate) && <span class="new-badge">NEW</span>}
                                                         </div>
                                                     </div>
-                                                    <div class={`model-score ${item.isFail ? 'fail-score' : ''}`}>{item.score}%</div>
-                                                </div>
-                                            )}
+                                                        <div class={`model-score ${item.isFail ? 'fail-score' : ''}`}>{item.score}%</div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
 
-                            <p class="disclaimer" id="data-benchmark-disclaimer">{t.benchmark_data_disclaimer}</p>
+                                <p class="disclaimer" id="data-benchmark-disclaimer">{t.benchmark_data_disclaimer}</p>
+                            </div>
+                        </div>
+
+                        <!-- Warning Section -->
+                        <div class="data-warning-container">
+                            <div class="warning-box">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="warning-icon">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <p id="data-benchmark-warning">{t.benchmark_data_warning}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -569,6 +581,70 @@ function getRankDisplay(rank) {
         border-right: none;
     }
 
+    /* Data Benchmark Layout */
+    .data-benchmark-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    @media (min-width: 1024px) {
+        .data-benchmark-layout {
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        .data-table-wrapper {
+            flex: 1;
+            max-width: 600px;
+        }
+        .data-warning-container {
+            flex: 0 0 300px;
+            margin-top: 0;
+        }
+    }
+
+    /* Warning Box */
+    .data-warning-container {
+        width: 100%;
+        max-width: 600px;
+    }
+
+    .warning-box {
+        background: rgba(239, 68, 68, 0.1);
+        border: 2px solid rgba(239, 68, 68, 0.6);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+    }
+
+    .warning-icon {
+        width: 3rem;
+        height: 3rem;
+        color: #ef4444;
+        animation: pulseRed 2s infinite;
+    }
+
+    @keyframes pulseRed {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    #data-benchmark-warning {
+        color: #fca5a5;
+        font-weight: 700;
+        font-size: 1.1rem;
+        line-height: 1.4;
+        margin: 0;
+    }
+
     /* Modal Styles */
     #modal-overlay {
         position: fixed;
@@ -650,12 +726,14 @@ function getRankDisplay(rank) {
         const benchTitle = document.getElementById('benchmark-title');
         const disclaimer = document.getElementById('benchmark-disclaimer');
         const dataDisclaimer = document.getElementById('data-benchmark-disclaimer');
+        const dataWarning = document.getElementById('data-benchmark-warning');
         const contact = document.getElementById('benchmark-contact');
 
         if (mainTitle) mainTitle.textContent = t.leaderboard_button;
         // benchTitle text is set by updateBenchmarkView
         if (disclaimer) disclaimer.textContent = t.benchmark_impossible_disclaimer;
         if (dataDisclaimer) dataDisclaimer.textContent = t.benchmark_data_disclaimer;
+        if (dataWarning) dataWarning.textContent = t.benchmark_data_warning;
         if (contact) contact.textContent = t.benchmark_contact_disclaimer;
 
         const toggleVisual = document.getElementById('toggle-visual');

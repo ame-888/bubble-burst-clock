@@ -2,21 +2,23 @@
 > bubble-burst-clock@0.0.1 dev
 > astro dev
 
-15:48:14 [types] Generated 1ms
-15:48:14 [content] Syncing content
-15:48:14 [content] Synced content
-15:48:14 [vite] Re-optimizing dependencies because vite config has changed
-15:48:14 [vite] Port 4321 is in use, trying another one...
+▶ Astro collects anonymous usage data.
+  This information helps us improve Astro.
+  Run "astro telemetry disable" to opt-out.
+  https://astro.build/telemetry
 
- astro  v5.17.3 ready in 240 ms
+16:39:24 [types] Generated 1ms
+16:39:24 [content] Syncing content
+16:39:24 [content] Synced content
 
-┃ Local    http://localhost:4322/
+ astro  v5.17.3 ready in 316 ms
+
+┃ Local    http://localhost:4321/
 ┃ Network  use --host to expose
 
-15:48:14 watching for file changes...
-15:48:58 [200] /leaderboard 54ms
-15:51:01 [watch] /src/pages/leaderboard.astro?astro&type=style&index=0&lang.css
-15:51:09 [200] /leaderboard 16ms
-15:52:03 [200] /leaderboard 19ms
-15:52:54 [200] /leaderboard 14ms
-15:54:29 [200] /leaderboard 12ms
+16:39:24 watching for file changes...
+
+ update  ▶ New version of Astro available: 5.18.0
+  Run npx @astrojs/upgrade to update
+
+16:40:33 [200] /leaderboard 86ms
