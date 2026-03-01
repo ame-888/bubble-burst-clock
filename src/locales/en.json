@@ -53,6 +53,7 @@
     "status_expired_tooltip": "The 2-week window has passed. The prediction failed to materialize.",
     "benchmark_impossible_disclaimer": "It wasn't possible to test Impossible Mode due to technical problems with Gemini 3.0 Flash Preview (with code execution) (but most likely it's still 0%)",
     "benchmark_data_disclaimer": "In order to make this benchmark stay unsaturated for longer, easier questions might be removed and harder questions might be added over time. Any changes will be applied on all models, in order to make things fair",
+    "benchmark_data_warning": "Warning: A Hard Mode will be added when a model gets a score over 50%",
     "serial_popper_button": "SERIAL POPPERS HALL OF FAME",
     "serial_popper_modal_title": "Serial Poppers Hall of Fame",
     "serial_popper_count_label": "Claims",
