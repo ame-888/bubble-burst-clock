@@ -118,7 +118,7 @@ export const benchmarks = {
     dataRetrieval: [
         { name: 'Human Baseline', score: 100 },
         { name: 'Grok 4.20 (chat)', score: 24, releaseDate: '2026-02-18' },
-        { name: 'Gemini 3.0 Pro Preview', score: 20 },
+        { name: 'Gemini 3.1 Pro Preview', score: 20 },
         { name: 'Claude 4.6 Sonnet (with extended thinking)', score: 9, releaseDate: '2026-02-21' }
     ]
 };

@@ -47,7 +47,6 @@
     "status_future_tooltip": "La validez de la predicción comienza en el futuro. La cuenta regresiva no ha comenzado.",
     "status_active_tooltip": "La predicción está siendo rastreada. La ventana de validación de 2 semanas está abierta.",
     "status_expired_tooltip": "La ventana de 2 semanas ha pasado. La predicción no se materializó.",
-    "benchmark_impossible_disclaimer": "It wasn't possible to test Impossible Mode due to technical problems with Gemini 3.0 Flash Preview (with code execution) (but most likely it's still 0%)",
     "benchmark_data_disclaimer": "Para que este benchmark se mantenga insaturado por más tiempo, las preguntas más fáciles podrían eliminarse y las más difíciles podrían agregarse con el tiempo. Cualquier cambio se aplicará a todos los modelos para que las cosas sean justas.",
     "benchmark_data_warning": "Advertencia: Se agregará un Modo Difícil cuando un modelo obtenga una puntuación superior al 50%",
     "serial_popper_button": "SALÓN DE LA FAMA DE AGUAFIESTAS",
