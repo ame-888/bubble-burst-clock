@@ -17,6 +17,7 @@ const { mode = 'modal' } = Astro.props;
     <div id="game-modal" class={mode === 'embedded' ? 'embedded-view' : 'hidden'}>
         {mode === 'modal' && <div class="modal-overlay"></div>}
         <div class="modal-content glass-panel">
+            <div id="crt-overlay" class="hidden"></div>
             <div class="modal-header">
                 <button id="header-back-btn" class="hidden" aria-label="Back to Menu">←</button>
                 <h2 id="modal-title">AI Arcade</h2>
@@ -110,9 +111,9 @@ const { mode = 'modal' } = Astro.props;
                         <button id="pool-mode-btn" style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: #374151; color: white; border: none; cursor: pointer;">Switch to VS AI</button>
                     </div>
 
-                    <div id="adventure-container" class="hidden" style="width: 100%; aspect-ratio: 1; background: #000; border: 2px solid #374151; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; overflow: hidden;">
-                        <div id="adventure-text" style="flex-grow: 1; overflow-y: auto; color: #10B981; font-family: 'Courier New', monospace; font-size: 1rem; line-height: 1.5; margin-bottom: 1rem;"></div>
-                        <div id="adventure-choices" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                    <div id="adventure-container" class="hidden terminal-screen">
+                        <div id="adventure-text" class="terminal-text"></div>
+                        <div id="adventure-choices" class="terminal-choices"></div>
                     </div>
 
                     <div id="canvas-container" class="game-canvas-wrapper">
@@ -407,6 +408,29 @@ const { mode = 'modal' } = Astro.props;
         image-rendering: pixelated; /* Sharp rendering */
     }
 
+    /* CRT global overlay */
+    #crt-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 10;
+        background: linear-gradient(
+            rgba(18, 16, 16, 0) 50%,
+            rgba(0, 0, 0, 0.25) 50%
+        );
+        background-size: 100% 4px;
+        border-radius: 1.5rem;
+    }
+
+    #crt-overlay::after {
+        content: " ";
+        display: block;
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
+        border-radius: 1.5rem;
+    }
+
     /* Cutscene Overlay */
     #cutscene-overlay {
         position: absolute;
@@ -626,6 +650,39 @@ const { mode = 'modal' } = Astro.props;
     }
     .leaderboard-list li:last-child { border-bottom: none; }
 
+    /* Terminal Adventure Styling */
+    .terminal-screen {
+        width: 100%;
+        aspect-ratio: 1;
+        background-color: #000;
+        border: 2px solid #374151;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .terminal-text {
+        flex-grow: 1;
+        overflow-y: auto;
+        color: #10B981;
+        font-family: 'Courier New', monospace;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        text-shadow: 0 0 5px #10B981;
+        white-space: pre-wrap;
+    }
+
+    .terminal-choices {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: auto;
+    }
+
     /* Utility */
     .hidden { display: none !important; }
     .fade-in { animation: fadeIn 0.3s ease-out; }
@@ -637,7 +694,7 @@ const { mode = 'modal' } = Astro.props;
 </style>
 
 <script>
-    import { SoundManager, MusicManager, ScoreManager, GameLogic } from '../scripts/GameEngine.js';
+    import { SoundManager, MusicManager, ScoreManager, GameLogic, CameraParams, GlobalParticles } from '../scripts/GameEngine.js';
     import { AdventureEngine } from '../scripts/AdventureEngine.js';
 
     // Initialize Managers
@@ -656,6 +713,8 @@ const { mode = 'modal' } = Astro.props;
     let lastTime = 0;
     let isPaused = false;
     let keys = {};
+    let typeWriterInterval = null;
+    let isTyping = false;
 
     function init() {
         joystickBtn = document.getElementById('joystick-btn');
@@ -805,28 +864,66 @@ const { mode = 'modal' } = Astro.props;
         const textEl = document.getElementById('adventure-text');
         const choicesEl = document.getElementById('adventure-choices');
 
-        textEl.textContent = node.text;
         choicesEl.innerHTML = '';
+        textEl.textContent = '';
 
+        if (typeWriterInterval) clearInterval(typeWriterInterval);
+        isTyping = true;
+
+        let charIndex = 0;
+        const speed = 20; // ms per char
+
+        // Disable choices until typing is done
+        textEl.onclick = () => {
+            if (isTyping) {
+                clearInterval(typeWriterInterval);
+                textEl.textContent = node.text;
+                isTyping = false;
+                renderAdventureChoices(node, choicesEl);
+            }
+        };
+
+        typeWriterInterval = setInterval(() => {
+            if (charIndex < node.text.length) {
+                textEl.textContent += node.text.charAt(charIndex);
+                charIndex++;
+                if (charIndex % 3 === 0) sound.play('move'); // tick sound
+                textEl.scrollTop = textEl.scrollHeight; // scroll to bottom
+            } else {
+                clearInterval(typeWriterInterval);
+                isTyping = false;
+                renderAdventureChoices(node, choicesEl);
+            }
+        }, speed);
+    }
+
+    function renderAdventureChoices(node, choicesEl) {
         node.choices.forEach((c, i) => {
             // Check reqs
             if (c.req && !adventure.state.inventory.includes(c.req)) return;
 
             const btn = document.createElement('button');
-            btn.textContent = c.text;
-            btn.className = 'adventure-btn';
+            btn.textContent = "> " + c.text;
+            btn.className = 'adventure-btn fade-in';
             btn.style.padding = '0.5rem';
-            btn.style.background = '#1F2937';
-            btn.style.color = '#E5E7EB';
-            btn.style.border = '1px solid #374151';
-            btn.style.borderRadius = '0.5rem';
+            btn.style.background = 'transparent';
+            btn.style.color = '#10B981';
+            btn.style.border = '1px solid #059669';
+            btn.style.borderRadius = '0.25rem';
             btn.style.cursor = 'pointer';
             btn.style.textAlign = 'left';
+            btn.style.fontFamily = "'Courier New', monospace";
+            btn.style.textShadow = '0 0 5px #10B981';
 
-            btn.onmouseover = () => btn.style.background = '#374151';
-            btn.onmouseout = () => btn.style.background = '#1F2937';
+            btn.onmouseover = () => {
+                btn.style.background = 'rgba(16, 185, 129, 0.2)';
+                sound.play('move');
+            };
+            btn.onmouseout = () => btn.style.background = 'transparent';
 
             btn.onclick = () => {
+                if (isTyping) return;
+                sound.play('pop');
                 const newNode = adventure.handleChoice(i, {
                     onLoot: (item) => sound.play('score'),
                     onAchievement: (id) => {
@@ -847,6 +944,7 @@ const { mode = 'modal' } = Astro.props;
         document.getElementById('header-back-btn').classList.add('hidden'); // Hide back button on menu
         document.getElementById('suggest-game-btn').classList.remove('hidden'); // Show suggest button
         document.getElementById('modal-title').textContent = "AI Arcade";
+        document.getElementById('crt-overlay')?.classList.add('hidden');
     }
 
     function showLeaderboard() {
@@ -910,6 +1008,8 @@ const { mode = 'modal' } = Astro.props;
             adventureContainer.classList.add('hidden');
             canvasContainer.classList.remove('hidden');
         }
+
+        document.getElementById('crt-overlay')?.classList.remove('hidden');
 
         // Titles & Hints
         const titles = {
@@ -1044,12 +1144,19 @@ const { mode = 'modal' } = Astro.props;
 
         ctx.clearRect(0,0,canvas.width, canvas.height);
 
+        // Update Camera
+        if (CameraParams) CameraParams.update(dt);
+        ctx.save();
+        if (CameraParams) CameraParams.apply(ctx);
+
         // Update & Draw
         if (currentGame !== 'tictactoe') { // TTT is event based
             state = GameLogic[currentGame].update(dt, state, canvas, {
                 playSound: (t) => sound.play(t),
                 onScore: updateScore,
-                onGameOver: handleGameOver
+                onGameOver: handleGameOver,
+                spawnParticles: (x, y, color, count, speedMul) => GlobalParticles.spawn(x, y, color, count, speedMul),
+                triggerShake: (mag, time) => CameraParams.triggerShake(mag, time)
             }, { keys });
 
             // Check if game over happened inside update
@@ -1057,6 +1164,13 @@ const { mode = 'modal' } = Astro.props;
         } else {
              GameLogic.tictactoe.draw(ctx, state, canvas);
         }
+
+        if (GlobalParticles) {
+            GlobalParticles.update(dt);
+            GlobalParticles.draw(ctx);
+        }
+
+        ctx.restore();
     }
 
     // Init on load
