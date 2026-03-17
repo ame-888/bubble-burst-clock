@@ -163,6 +163,54 @@ export class MusicManager {
     }
 }
 
+class ParticleSystem {
+    constructor() {
+        this.particles = [];
+    }
+
+    spawn(x, y, color, count = 10, speedMul = 1) {
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = (Math.random() * 2 + 1) * speedMul;
+            this.particles.push({
+                x, y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: 1.0,
+                decay: Math.random() * 0.03 + 0.02,
+                color,
+                size: Math.random() * 3 + 1
+            });
+        }
+    }
+
+    update(dt) {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const p = this.particles[i];
+            p.x += p.vx * dt * 0.06; // dt scaling
+            p.y += p.vy * dt * 0.06;
+            p.life -= p.decay;
+            if (p.life <= 0) {
+                this.particles.splice(i, 1);
+            }
+        }
+    }
+
+    draw(ctx) {
+        this.particles.forEach(p => {
+            ctx.globalAlpha = Math.max(0, p.life);
+            ctx.fillStyle = p.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.globalAlpha = 1.0;
+        ctx.shadowBlur = 0;
+    }
+}
+
 export class ScoreManager {
     constructor() {
         this.key = 'ai_arcade_scores';
@@ -242,6 +290,39 @@ function drawPixelCircle(ctx, cx, cy, r, color) {
     ctx.fillRect(cx - r/2, cy - r/2, r/3, r/3);
 }
 
+// Global Screen Shake state
+export const CameraParams = {
+    shakeX: 0,
+    shakeY: 0,
+    shakeTime: 0,
+    shakeMagnitude: 0,
+    triggerShake: function(magnitude, time) {
+        this.shakeMagnitude = magnitude;
+        this.shakeTime = time;
+    },
+    update: function(dt) {
+        if (this.shakeTime > 0) {
+            this.shakeTime -= dt;
+            this.shakeX = (Math.random() - 0.5) * this.shakeMagnitude * 2;
+            this.shakeY = (Math.random() - 0.5) * this.shakeMagnitude * 2;
+        } else {
+            this.shakeX = 0;
+            this.shakeY = 0;
+            this.shakeMagnitude = 0;
+        }
+    },
+    apply: function(ctx) {
+        ctx.translate(this.shakeX, this.shakeY);
+    },
+    reset: function(ctx) {
+        ctx.translate(-this.shakeX, -this.shakeY);
+    }
+};
+
+
+// Initialize an instance of ParticleSystem so games can use it
+export const GlobalParticles = new ParticleSystem();
+
 export const GameLogic = {
     // Snake
     snake: {
@@ -302,6 +383,13 @@ export const GameLogic = {
                  state.score += 10;
                  callbacks.onScore(state.score);
                  callbacks.playSound('pop');
+
+                 // Food explosion particles
+                 if (callbacks.spawnParticles) {
+                     callbacks.spawnParticles(state.food.x * grid + grid/2, state.food.y * grid + grid/2, '#EF4444', 15);
+                 }
+                 if (callbacks.triggerShake) callbacks.triggerShake(2, 50);
+
                  state.food = GameLogic.snake.spawnFood(canvas);
                  state.speed = Math.max(50, state.speed * 0.98);
              } else {
@@ -319,10 +407,16 @@ export const GameLogic = {
             for(let i=0; i<canvas.width; i+=g) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
             for(let i=0; i<canvas.height; i+=g) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
 
+            // Apply Neon Effect
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#EF4444';
+
             // Food (Pixel Apple)
             const fx = state.food.x * g;
             const fy = state.food.y * g;
             drawPixelRect(ctx, fx, fy, g, g, '#EF4444');
+
+            ctx.shadowColor = '#10B981';
 
             // Snake
             state.snake.forEach((seg, i) => {
@@ -331,11 +425,14 @@ export const GameLogic = {
 
                 // Eyes for head
                 if (i === 0) {
+                    ctx.shadowBlur = 0;
                     ctx.fillStyle = '#000';
                     ctx.fillRect(seg.x * g + 4, seg.y * g + 4, 4, 4);
                     ctx.fillRect(seg.x * g + 12, seg.y * g + 4, 4, 4);
+                    ctx.shadowBlur = 10; // restore
                 }
             });
+            ctx.shadowBlur = 0;
         }
     },
 
@@ -470,6 +567,14 @@ export const GameLogic = {
                         callbacks.onScore(state.score);
                         callbacks.playSound('score');
                         state.speed *= 0.95;
+                        if (callbacks.triggerShake) callbacks.triggerShake(lines * 3, 200);
+
+                        // Spawn particles for each cleared line roughly in the middle
+                        if (callbacks.spawnParticles) {
+                            for(let i=0; i<lines; i++) {
+                                callbacks.spawnParticles(canvas.width/2, (state.rows - lines + i) * state.grid, '#FFF', 30, 2);
+                            }
+                        }
                     } else {
                         callbacks.playSound('pop');
                     }
@@ -496,17 +601,24 @@ export const GameLogic = {
             // Board
             state.board.forEach((row, y) => {
                 row.forEach((color, x) => {
-                    if (color) drawPixelRect(ctx, x*g, y*g, g, g, color);
+                    if (color) {
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = color;
+                        drawPixelRect(ctx, x*g, y*g, g, g, color);
+                    }
                 });
             });
             // Piece
             if (state.piece) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = state.piece.color;
                 state.piece.shape.forEach((row, y) => {
                     row.forEach((val, x) => {
                         if (val) drawPixelRect(ctx, (state.piece.x + x)*g, (state.piece.y + y)*g, g, g, state.piece.color);
                     });
                 });
             }
+            ctx.shadowBlur = 0;
         }
     },
 
@@ -551,8 +663,8 @@ export const GameLogic = {
             b.y += b.dy;
 
             // Walls
-            if (b.x + b.r > canvas.width || b.x - b.r < 0) { b.dx = -b.dx; callbacks.playSound('move'); }
-            if (b.y - b.r < 0) { b.dy = -b.dy; callbacks.playSound('move'); }
+            if (b.x + b.r > canvas.width || b.x - b.r < 0) { b.dx = -b.dx; callbacks.playSound('move'); if (callbacks.triggerShake) callbacks.triggerShake(1, 50); }
+            if (b.y - b.r < 0) { b.dy = -b.dy; callbacks.playSound('move'); if (callbacks.triggerShake) callbacks.triggerShake(1, 50); }
             if (b.y + b.r > canvas.height) { callbacks.onGameOver(state.score); return state; }
 
             // Paddle
@@ -560,6 +672,7 @@ export const GameLogic = {
                 b.dy = -Math.abs(b.dy);
                 b.dx += (b.x - (p.x + p.w/2)) * 0.1;
                 callbacks.playSound('move');
+                if (callbacks.triggerShake) callbacks.triggerShake(2, 100);
             }
 
             // Bricks
@@ -574,6 +687,8 @@ export const GameLogic = {
                     state.score += 10;
                     callbacks.onScore(state.score);
                     callbacks.playSound('pop');
+                    if (callbacks.spawnParticles) callbacks.spawnParticles(brick.x + brick.w/2, brick.y + brick.h/2, brick.color, 15, 1.5);
+                    if (callbacks.triggerShake) callbacks.triggerShake(3, 150);
                 }
             });
 
@@ -589,16 +704,21 @@ export const GameLogic = {
              ctx.fillRect(0,0,400,400); // hardcoded for now or use global
 
              const p = state.paddle;
+             ctx.shadowBlur = 10;
+             ctx.shadowColor = '#60A5FA';
              drawPixelRect(ctx, p.x, p.y, p.w, p.h, '#60A5FA');
 
              const b = state.ball;
              // Square ball for retro feel
+             ctx.shadowColor = '#FFFFFF';
              drawPixelRect(ctx, b.x - b.r, b.y - b.r, b.r*2, b.r*2, '#FFFFFF');
 
              state.bricks.forEach(brick => {
                  if (!brick.active) return;
+                 ctx.shadowColor = brick.color;
                  drawPixelRect(ctx, brick.x, brick.y, brick.w, brick.h, brick.color);
              });
+             ctx.shadowBlur = 0;
         }
     },
 
@@ -637,6 +757,8 @@ export const GameLogic = {
             if (state.board[idx] === null) {
                 state.board[idx] = 'X';
                 callbacks.playSound('pop');
+                if(callbacks.triggerShake) callbacks.triggerShake(2, 50);
+                if(callbacks.spawnParticles) callbacks.spawnParticles(x, y, '#3B82F6', 15);
                 GameLogic.tictactoe.checkWin(state, callbacks);
                 if (!state.winner) {
                     state.player = 'O';
@@ -679,6 +801,16 @@ export const GameLogic = {
              if (move !== -1) {
                  state.board[move] = 'O';
                  callbacks.playSound('move');
+                 if(callbacks.triggerShake) callbacks.triggerShake(2, 50);
+
+                 // Calc center for particles
+                 const col = move % 3;
+                 const row = Math.floor(move / 3);
+                 // Assuming standard 400x400 canvas in GameCenter
+                 const cellW = 400 / 3;
+                 const cellH = 400 / 3;
+                 if(callbacks.spawnParticles) callbacks.spawnParticles(col * cellW + cellW/2, row * cellH + cellH/2, '#EF4444', 15);
+
                  GameLogic.tictactoe.checkWin(state, callbacks);
                  if (!state.winner) state.player = 'X';
              }
@@ -800,6 +932,8 @@ export const GameLogic = {
             ctx.fillRect(0,0,canvas.width, canvas.height);
 
             // Grid
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = state.hardMode ? '#EF4444' : '#3B82F6';
             ctx.strokeStyle = state.hardMode ? '#EF4444' : '#3B82F6';
             ctx.lineWidth = 4;
             ctx.beginPath();
@@ -817,6 +951,7 @@ export const GameLogic = {
                 const cy = row * h + h/2;
 
                 if (cell === 'X') {
+                    ctx.shadowColor = '#3B82F6';
                     drawPixelRect(ctx, cx - 20, cy - 20, 40, 40, '#3B82F6');
                     // Draw X
                     ctx.strokeStyle = '#FFF';
@@ -826,9 +961,11 @@ export const GameLogic = {
                     ctx.moveTo(cx + 15, cy - 15); ctx.lineTo(cx - 15, cy + 15);
                     ctx.stroke();
                 } else {
+                    ctx.shadowColor = '#EF4444';
                     drawPixelCircle(ctx, cx, cy, 20, '#EF4444');
                 }
             });
+            ctx.shadowBlur = 0;
         }
     },
 
@@ -905,7 +1042,7 @@ export const GameLogic = {
                 const dy = my - state.cueBall.y;
                 state.angle = Math.atan2(dy, dx);
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                state.power = Math.min(dist, 200) / 4; // Max power 50
+                state.power = Math.min(dist, 300) / 4; // Max power 75
             }
             return state;
         },
@@ -918,6 +1055,10 @@ export const GameLogic = {
                 state.cueBall.vy = Math.sin(state.angle + Math.PI) * speed;
                 state.stopped = false;
                 state.shots++;
+
+                // Add camera shake based on power
+                if (callbacks.triggerShake) callbacks.triggerShake(speed * 0.1, 150);
+
                 callbacks.playSound('move');
 
                 // If vs AI, next turn will be AI after stop
@@ -928,12 +1069,12 @@ export const GameLogic = {
              if (state.gameOver) return state;
 
              // Physics Sub-steps for stability
-             const steps = 4;
+             const steps = 6; // more steps for better high speed collision
              const subDt = 1 / steps;
 
              let movement = false;
-             const friction = 0.985;
-             const wallBounce = 0.8;
+             const friction = 0.992; // lower friction (balls roll further)
+             const wallBounce = 0.9; // higher wall elasticity
 
              const allBalls = [state.cueBall, ...state.balls];
 
@@ -952,10 +1093,10 @@ export const GameLogic = {
                      }
 
                      // Walls
-                     if (b.x < b.r) { b.x = b.r; b.vx = -b.vx * wallBounce; }
-                     if (b.x > canvas.width - b.r) { b.x = canvas.width - b.r; b.vx = -b.vx * wallBounce; }
-                     if (b.y < b.r) { b.y = b.r; b.vy = -b.vy * wallBounce; }
-                     if (b.y > canvas.height - b.r) { b.y = canvas.height - b.r; b.vy = -b.vy * wallBounce; }
+                     if (b.x < b.r) { b.x = b.r; b.vx = -b.vx * wallBounce; if(s===0 && (Math.abs(b.vx)>1||Math.abs(b.vy)>1)) callbacks.playSound('move'); }
+                     if (b.x > canvas.width - b.r) { b.x = canvas.width - b.r; b.vx = -b.vx * wallBounce; if(s===0 && (Math.abs(b.vx)>1||Math.abs(b.vy)>1)) callbacks.playSound('move'); }
+                     if (b.y < b.r) { b.y = b.r; b.vy = -b.vy * wallBounce; if(s===0 && (Math.abs(b.vx)>1||Math.abs(b.vy)>1)) callbacks.playSound('move'); }
+                     if (b.y > canvas.height - b.r) { b.y = canvas.height - b.r; b.vy = -b.vy * wallBounce; if(s===0 && (Math.abs(b.vx)>1||Math.abs(b.vy)>1)) callbacks.playSound('move'); }
 
                      // Pockets (Simple corners)
                      // If close to corner, pot it
@@ -963,7 +1104,7 @@ export const GameLogic = {
                          {x:0, y:0}, {x:canvas.width/2, y:0}, {x:canvas.width, y:0},
                          {x:0, y:canvas.height}, {x:canvas.width/2, y:canvas.height}, {x:canvas.width, y:canvas.height}
                      ];
-                     const pocketR = 25;
+                     const pocketR = 28; // slightly larger/forgiving
 
                      for(let p of corners) {
                          const dx = b.x - p.x;
@@ -974,6 +1115,7 @@ export const GameLogic = {
                                  b.x = canvas.width * 0.25;
                                  b.y = canvas.height / 2;
                                  b.vx = 0; b.vy = 0;
+                                 if(callbacks.triggerShake) callbacks.triggerShake(5, 200);
                                  callbacks.playSound('gameover'); // Bad sound
                              } else {
                                  b.active = false; // Potted
@@ -982,6 +1124,8 @@ export const GameLogic = {
                                  if (idx > -1) state.balls.splice(idx, 1);
                                  state.score += 100;
                                  callbacks.onScore(state.score);
+                                 if(callbacks.spawnParticles) callbacks.spawnParticles(p.x, p.y, b.color, 20, 2);
+                                 if(callbacks.triggerShake) callbacks.triggerShake(3, 100);
                                  callbacks.playSound('pop');
                              }
                          }
@@ -1018,10 +1162,12 @@ export const GameLogic = {
                              const vx2Final = vx1;
 
                              // Update velocity
-                             b1.vx = vx1Final * cos - vy1 * sin;
-                             b1.vy = vy1 * cos + vx1Final * sin;
-                             b2.vx = vx2Final * cos - vy2 * sin;
-                             b2.vy = vy2 * cos + vx2Final * sin;
+                             // Apply slightly higher restitution
+                             const res = 1.05;
+                             b1.vx = (vx1Final * cos - vy1 * sin) * res;
+                             b1.vy = (vy1 * cos + vx1Final * sin) * res;
+                             b2.vx = (vx2Final * cos - vy2 * sin) * res;
+                             b2.vy = (vy2 * cos + vx2Final * sin) * res;
 
                              // Separate balls
                              const overlap = (b1.r + b2.r - dist) / 2;
@@ -1030,7 +1176,10 @@ export const GameLogic = {
                              b2.x += overlap * Math.cos(angle);
                              b2.y += overlap * Math.sin(angle);
 
-                             callbacks.playSound('score'); // clack sound
+                             if (s === 0) callbacks.playSound('score'); // clack sound
+                             if (callbacks.spawnParticles && Math.abs(vx1Final - vx2Final) > 5) {
+                                 callbacks.spawnParticles((b1.x+b2.x)/2, (b1.y+b2.y)/2, '#FFF', 5, 0.5);
+                             }
                          }
                      }
                  }
@@ -1076,6 +1225,8 @@ export const GameLogic = {
                 if(i%8===0) ctx.fillRect(i,0,4,canvas.height);
             }
 
+            ctx.shadowBlur = 10;
+
             // Pockets
             const pocketR = 15;
             const corners = [
@@ -1088,29 +1239,57 @@ export const GameLogic = {
 
              // Balls
              [...state.balls, state.cueBall].forEach(b => {
+                 ctx.shadowColor = b.color === '#111827' ? '#000' : b.color;
                  drawPixelCircle(ctx, b.x, b.y, b.r, b.color);
 
                  // Numbers
                  if (typeof b.id !== 'undefined') {
+                     ctx.shadowBlur = 0; // disable shadow for text
                      ctx.fillStyle = b.color === '#FFFFFF' ? '#000' : '#FFF';
                      ctx.font = 'bold 8px monospace';
                      ctx.textAlign = 'center';
                      ctx.textBaseline = 'middle';
                      ctx.fillText(b.id + 1, b.x, b.y);
+                     ctx.shadowBlur = 10;
                  }
              });
 
              // Aim Line (Dotted Pixel Line)
              if (state.dragging && state.stopped && (state.turn === 'player' || !state.vsAI)) {
+                 ctx.shadowBlur = 0;
                  ctx.fillStyle = '#FFF';
                  const aimLength = 50 + state.power * 5;
                  const step = 5;
                  for(let d=0; d<aimLength; d+=step) {
                      const ax = state.cueBall.x + Math.cos(state.angle + Math.PI) * d;
                      const ay = state.cueBall.y + Math.sin(state.angle + Math.PI) * d;
+                     // Color the dots based on power
+                     const powerRatio = d / (50 + 75 * 5); // max power is 75
+                     ctx.fillStyle = `rgb(255, ${255 - powerRatio*255}, ${255 - powerRatio*255})`;
                      ctx.fillRect(ax, ay, 2, 2);
                  }
+
+                 // Power Bar (Top of screen)
+                 const barW = 200;
+                 const barH = 10;
+                 const barX = canvas.width / 2 - barW / 2;
+                 const barY = 20;
+
+                 ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                 ctx.fillRect(barX, barY, barW, barH);
+
+                 const pRatio = state.power / 75;
+                 ctx.fillStyle = `rgb(${pRatio*255}, ${255 - pRatio*200}, 0)`;
+                 ctx.shadowBlur = 10;
+                 ctx.shadowColor = ctx.fillStyle;
+                 ctx.fillRect(barX, barY, barW * pRatio, barH);
+                 ctx.shadowBlur = 0;
+
+                 ctx.strokeStyle = '#FFF';
+                 ctx.lineWidth = 1;
+                 ctx.strokeRect(barX, barY, barW, barH);
              }
+             ctx.shadowBlur = 0;
         }
     },
 
