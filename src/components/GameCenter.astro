@@ -258,6 +258,10 @@ const { mode = 'modal' } = Astro.props;
         max-width: 800px;
     }
 
+    #game-modal:not(.hidden) .modal-content.adventure-mode {
+        max-width: 1000px; /* Wider for text game */
+    }
+
     #game-modal:not(.hidden) .modal-content {
         transform: scale(1);
     }
@@ -544,6 +548,10 @@ const { mode = 'modal' } = Astro.props;
         gap: 1.5rem;
     }
 
+    .adventure-mode .game-controls-info {
+        display: none !important; /* Hide side panel in adventure mode to give full width */
+    }
+
     @media (min-width: 768px) {
         .game-layout-wrapper {
             flex-direction: row;
@@ -654,7 +662,8 @@ const { mode = 'modal' } = Astro.props;
     /* Terminal Adventure Styling */
     .terminal-screen {
         width: 100%;
-        aspect-ratio: 1;
+        aspect-ratio: 16 / 9; /* Wider ratio instead of 1:1 */
+        min-height: 400px;
         background-color: #000;
         border: 2px solid #374151;
         border-radius: 1rem;
@@ -1002,13 +1011,16 @@ const { mode = 'modal' } = Astro.props;
         }
 
         // Handle Adventure vs Canvas
+        const modalContent = document.querySelector('.modal-content');
         if (game === 'adventure') {
             adventureContainer.classList.remove('hidden');
             canvasContainer.classList.add('hidden');
+            if (modalContent) modalContent.classList.add('adventure-mode');
             renderAdventure();
         } else {
             adventureContainer.classList.add('hidden');
             canvasContainer.classList.remove('hidden');
+            if (modalContent) modalContent.classList.remove('adventure-mode');
         }
 
         document.getElementById('crt-overlay')?.classList.remove('hidden');
