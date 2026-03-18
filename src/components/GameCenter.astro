@@ -111,9 +111,32 @@ const { mode = 'modal' } = Astro.props;
                         <button id="pool-mode-btn" style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: #374151; color: white; border: none; cursor: pointer;">Switch to VS AI</button>
                     </div>
 
-                    <div id="adventure-container" class="hidden terminal-screen">
-                        <div id="adventure-text" class="terminal-text"></div>
-                        <div id="adventure-choices" class="terminal-choices"></div>
+                    <div id="adventure-wrapper" class="hidden">
+                        <div class="adventure-top-bar">
+                            <button id="adv-save-btn" class="adv-action-btn">Save Game</button>
+                            <button id="adv-load-btn" class="adv-action-btn">Load Game</button>
+                            <span id="adv-status-msg"></span>
+                        </div>
+                        <div class="adventure-main-layout">
+                            <div id="adventure-character-sheet" class="adv-side-panel">
+                                <h4>CHARACTER</h4>
+                                <div id="adv-char-name">User_01</div>
+                                <div class="adv-stat-row"><span>HP:</span> <span id="adv-stat-hp">100/100</span></div>
+                                <div class="adv-stat-row"><span>STM:</span> <span id="adv-stat-stm">50/50</span></div>
+                                <div class="adv-stat-row"><span>STATUS:</span> <span id="adv-stat-status">OK</span></div>
+                            </div>
+                            <div id="adventure-container" class="terminal-screen">
+                                <div id="adventure-text" class="terminal-text"></div>
+                                <div id="adventure-choices" class="terminal-choices"></div>
+                            </div>
+                        </div>
+                        <div id="adventure-inventory" class="adv-bottom-panel">
+                            <h4>INVENTORY</h4>
+                            <div id="adv-inv-list" class="inv-list">
+                                <!-- Items injected here -->
+                                <span class="inv-empty">Empty</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="canvas-container" class="game-canvas-wrapper">
@@ -659,10 +682,126 @@ const { mode = 'modal' } = Astro.props;
     }
     .leaderboard-list li:last-child { border-bottom: none; }
 
+    /* Terminal Adventure Layout */
+    #adventure-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .adventure-top-bar {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .adv-action-btn {
+        background: transparent;
+        color: #10B981;
+        border: 1px solid #10B981;
+        border-radius: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        font-family: 'Courier New', monospace;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .adv-action-btn:hover {
+        background: rgba(16, 185, 129, 0.2);
+    }
+
+    #adv-status-msg {
+        color: #FCD34D;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        margin-left: auto;
+    }
+
+    .adventure-main-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .adventure-main-layout {
+            flex-direction: row;
+            align-items: stretch;
+        }
+    }
+
+    .adv-side-panel {
+        background: #000;
+        border: 2px solid #374151;
+        border-radius: 1rem;
+        padding: 1rem;
+        font-family: 'Courier New', monospace;
+        color: #10B981;
+        min-width: 150px;
+        box-sizing: border-box;
+    }
+
+    .adv-side-panel h4, .adv-bottom-panel h4 {
+        margin: 0 0 0.75rem 0;
+        color: #34D399;
+        font-size: 1rem;
+        border-bottom: 1px dashed #374151;
+        padding-bottom: 0.25rem;
+    }
+
+    #adv-char-name {
+        font-weight: bold;
+        color: #60A5FA;
+        margin-bottom: 0.5rem;
+    }
+
+    .adv-stat-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .adv-bottom-panel {
+        background: #000;
+        border: 2px solid #374151;
+        border-radius: 1rem;
+        padding: 1rem;
+        font-family: 'Courier New', monospace;
+        color: #10B981;
+        box-sizing: border-box;
+    }
+
+    .inv-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .inv-item {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid #059669;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        color: #6EE7B7;
+    }
+
+    .inv-empty {
+        color: #4B5563;
+        font-style: italic;
+    }
+
     /* Terminal Adventure Styling */
     .terminal-screen {
+        flex: 1;
         width: 100%;
-        aspect-ratio: 16 / 9; /* Wider ratio instead of 1:1 */
+        aspect-ratio: auto;
         min-height: 400px;
         background-color: #000;
         border: 2px solid #374151;
@@ -717,7 +856,7 @@ const { mode = 'modal' } = Astro.props;
     // Elements
     let modal, joystickBtn;
     let canvas, ctx;
-    let adventureContainer, canvasContainer;
+    let adventureWrapper, adventureContainer, canvasContainer;
     let gameLoopId;
     let state = null;
     let currentGame = null;
@@ -731,6 +870,7 @@ const { mode = 'modal' } = Astro.props;
         joystickBtn = document.getElementById('joystick-btn');
         modal = document.getElementById('game-modal');
         canvas = document.getElementById('game-canvas');
+        adventureWrapper = document.getElementById('adventure-wrapper');
         adventureContainer = document.getElementById('adventure-container');
         canvasContainer = document.getElementById('canvas-container');
         if (canvas) ctx = canvas.getContext('2d');
@@ -942,10 +1082,40 @@ const { mode = 'modal' } = Astro.props;
                         sound.play('score');
                     }
                 });
+                updateAdventureUI();
                 if (newNode) renderAdventure();
             };
             choicesEl.appendChild(btn);
         });
+    }
+
+    function updateAdventureUI() {
+        if(!adventure || !adventure.state || !adventure.state.stats) return;
+
+        // Character Sheet
+        const hpEl = document.getElementById('adv-stat-hp');
+        const stmEl = document.getElementById('adv-stat-stm');
+        const statusEl = document.getElementById('adv-stat-status');
+
+        if (hpEl) hpEl.textContent = `${adventure.state.stats.hp}/${adventure.state.stats.maxHp}`;
+        if (stmEl) stmEl.textContent = `${adventure.state.stats.stm}/${adventure.state.stats.maxStm}`;
+        if (statusEl) statusEl.textContent = adventure.state.stats.status;
+
+        // Inventory
+        const invList = document.getElementById('adv-inv-list');
+        if (invList) {
+            invList.innerHTML = '';
+            if (!adventure.state.inventory || adventure.state.inventory.length === 0) {
+                invList.innerHTML = '<span class="inv-empty">Empty</span>';
+            } else {
+                adventure.state.inventory.forEach(item => {
+                    const span = document.createElement('span');
+                    span.className = 'inv-item';
+                    span.textContent = item.replace('_', ' '); // Clean up formatting
+                    invList.appendChild(span);
+                });
+            }
+        }
     }
 
     function showMenu() {
@@ -1013,12 +1183,45 @@ const { mode = 'modal' } = Astro.props;
         // Handle Adventure vs Canvas
         const modalContent = document.querySelector('.modal-content');
         if (game === 'adventure') {
-            adventureContainer.classList.remove('hidden');
+            adventureWrapper.classList.remove('hidden');
             canvasContainer.classList.add('hidden');
             if (modalContent) modalContent.classList.add('adventure-mode');
+
+            // Adventure UI updates and hooks
+            updateAdventureUI();
+
+            // Bind save/load
+            const saveBtn = document.getElementById('adv-save-btn');
+            const loadBtn = document.getElementById('adv-load-btn');
+            const statusMsg = document.getElementById('adv-status-msg');
+
+            if (saveBtn) saveBtn.onclick = () => {
+                adventure.explicitSave();
+                if(statusMsg) {
+                    statusMsg.textContent = "Game Saved.";
+                    setTimeout(() => statusMsg.textContent = "", 2000);
+                }
+            };
+            if (loadBtn) loadBtn.onclick = () => {
+                const loaded = adventure.explicitLoad();
+                if(loaded) {
+                    if(statusMsg) {
+                        statusMsg.textContent = "Game Loaded.";
+                        setTimeout(() => statusMsg.textContent = "", 2000);
+                    }
+                    updateAdventureUI();
+                    renderAdventure();
+                } else {
+                    if(statusMsg) {
+                        statusMsg.textContent = "No Save Found.";
+                        setTimeout(() => statusMsg.textContent = "", 2000);
+                    }
+                }
+            };
+
             renderAdventure();
         } else {
-            adventureContainer.classList.add('hidden');
+            adventureWrapper.classList.add('hidden');
             canvasContainer.classList.remove('hidden');
             if (modalContent) modalContent.classList.remove('adventure-mode');
         }

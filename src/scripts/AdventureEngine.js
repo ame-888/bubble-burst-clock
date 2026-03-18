@@ -11,6 +11,7 @@ export class AdventureEngine {
             },
             'check_supplies': {
                 text: "You have your trusty Code Breaker (a rusty crowbar) and a flask of Java (coffee, not code). Not much, but it'll have to do.",
+                loot: 'code_breaker',
                 choices: [
                     { text: "Enter the Wasteland", next: 'wasteland_entry' }
                 ]
@@ -71,7 +72,8 @@ export class AdventureEngine {
                 ]
             },
             'city_fight': {
-                text: "You swing your Code Breaker. The figure dodges with 0ms latency. 'Whoa, easy there user!' it shouts. It's just an NPC vendor.",
+                text: "You swing your Code Breaker. The figure dodges with 0ms latency. 'Whoa, easy there user!' it shouts. It's just an NPC vendor. You lose some stamina from the wild swing.",
+                statChanges: { stm: -10 },
                 choices: [
                     { text: "Apologize and browse wares", next: 'city_talk' }
                 ]
@@ -92,6 +94,8 @@ export class AdventureEngine {
             },
             'city_explore': {
                 text: "You wander the city for hours. Eventually, you get stuck in infinite geometry. You are forced to reboot.",
+                statChanges: { hp: -100, status: 'FATAL_ERROR' },
+                isEnd: true,
                 choices: [
                     { text: "Reboot (Game Over)", next: 'start' }
                 ]
@@ -119,6 +123,7 @@ export class AdventureEngine {
             },
             'bad_end_1': {
                 text: "You rage against the machine until your stamina depletes. You collapse, becoming just another background asset. GAME OVER.",
+                statChanges: { hp: -100, stm: -50, status: 'FATAL_ERROR' },
                 isEnd: true,
                 choices: [
                     { text: "Try Again", next: 'start' }
@@ -126,27 +131,44 @@ export class AdventureEngine {
             }
         };
 
-        this.state = this.load() || {
+        this.defaultState = {
             currentNode: 'start',
             inventory: [],
-            history: [] // For "back" functionality if needed, or just log
+            history: [],
+            stats: {
+                hp: 100,
+                maxHp: 100,
+                stm: 50,
+                maxStm: 50,
+                status: 'OK'
+            }
         };
+
+        // We no longer auto-load to allow explicit save/load from UI.
+        // Start fresh every time the game is initialized unless load is clicked.
+        this.state = JSON.parse(JSON.stringify(this.defaultState));
     }
 
-    load() {
+    explicitLoad() {
         try {
             const data = localStorage.getItem(this.key);
-            return data ? JSON.parse(data) : null;
+            if (data) {
+                this.state = JSON.parse(data);
+                return true;
+            }
+            return false;
         } catch (e) {
-            return null;
+            return false;
         }
     }
 
-    save() {
+    explicitSave() {
         try {
             localStorage.setItem(this.key, JSON.stringify(this.state));
+            return true;
         } catch (e) {
             console.error('Save failed', e);
+            return false;
         }
     }
 
@@ -170,9 +192,35 @@ export class AdventureEngine {
             // Assume we start with it, or just abstract it away
         }
 
+        // Apply Stat Changes
+        if (choice.statChanges) {
+            if (choice.statChanges.hp) {
+                this.state.stats.hp = Math.max(0, Math.min(this.state.stats.maxHp, this.state.stats.hp + choice.statChanges.hp));
+            }
+            if (choice.statChanges.stm) {
+                this.state.stats.stm = Math.max(0, Math.min(this.state.stats.maxStm, this.state.stats.stm + choice.statChanges.stm));
+            }
+            if (choice.statChanges.status) {
+                this.state.stats.status = choice.statChanges.status;
+            }
+        }
+
         // Move
         this.state.currentNode = choice.next;
         const newNode = this.story[this.state.currentNode];
+
+        // Node Stat Changes (applied when entering node)
+        if (newNode.statChanges) {
+            if (newNode.statChanges.hp) {
+                this.state.stats.hp = Math.max(0, Math.min(this.state.stats.maxHp, this.state.stats.hp + newNode.statChanges.hp));
+            }
+            if (newNode.statChanges.stm) {
+                this.state.stats.stm = Math.max(0, Math.min(this.state.stats.maxStm, this.state.stats.stm + newNode.statChanges.stm));
+            }
+            if (newNode.statChanges.status) {
+                this.state.stats.status = newNode.statChanges.status;
+            }
+        }
 
         // Loot
         if (newNode.loot && !this.state.inventory.includes(newNode.loot)) {
@@ -198,13 +246,12 @@ export class AdventureEngine {
              }
              // Reset state after end for replay (or keep it there until they click Restart)
              if (choice.text.includes("Restart") || choice.text.includes("Try Again")) {
-                 this.state.inventory = [];
-                 this.state.history = [];
+                 this.state = JSON.parse(JSON.stringify(this.defaultState));
                  // Achievement for survivor? (Maybe simple win)
              }
         }
 
-        this.save();
+        // Note: we removed auto-save. The user must click the explicit "Save Game" button.
         return newNode;
     }
 }
