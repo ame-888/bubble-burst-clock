@@ -2,8 +2,6 @@
 // Pixel Pet Component
 // This component renders a pixel art pet based on CSS box-shadows.
 // It handles its own client-side logic for interactions (petting, naming, releasing).
-import { predictions } from '../data/predictions';
-
 // Calculate the current simulated date (must match index.astro logic for consistency)
 const simulatedNow = new Date('2025-12-03T00:00:00Z').getTime();
 ---
@@ -370,7 +368,7 @@ const simulatedNow = new Date('2025-12-03T00:00:00Z').getTime();
 
 </style>
 
-<script define:vars={{ predictions, simulatedNow }}>
+<script define:vars={{ simulatedNow }}>
     class PixelPet {
         constructor() {
             this.container = document.getElementById('pixel-pet-container');
@@ -438,17 +436,7 @@ const simulatedNow = new Date('2025-12-03T00:00:00Z').getTime();
 
             // Calculate Bursts (Failed Claims Witnessed)
             let burstCount = 0;
-            if (predictions && Array.isArray(predictions)) {
-                burstCount = predictions.filter(p => {
-                    const end = new Date(p.validityEnd).getTime();
-                    // Status Check Logic (Replicated from index.astro)
-                    let status = 'FUTURE';
-                    if (simulatedNow > end) status = 'EXPIRED';
-
-                    // Count if expired AND expiration date is after pet obtained date
-                    return status === 'EXPIRED' && end > start;
-                }).length;
-            }
+            // Removed predictions integration
             if (this.burstEl) this.burstEl.textContent = burstCount.toString();
 
             // Check Pet Witness Achievement

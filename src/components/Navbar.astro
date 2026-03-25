@@ -28,18 +28,13 @@ const t = translations[lang] || en;
 
         <div class="navbar-menu" id="navbar-menu">
             <a href="/" class="nav-link" data-i18n-key="nav_home">Home</a>
-            <a href="/players" class="nav-link" data-i18n-key="player_cards_button">{t.player_cards_button}</a>
-            <a href="/leaderboard" class="nav-link" data-i18n-key="leaderboard_button">{t.leaderboard_button}</a>
-            <a href="/my-stats" class="nav-link" data-i18n-key="my_stats_button">{t.my_stats_button || 'MY STATS'}</a>
             <a href="/achievements" class="nav-link" id="nav-achievements" data-i18n-key="achievements_button">Achievements</a>
-            <a href="/hype-dictionary" class="nav-link" data-i18n-key="hype_dictionary_button">{t.hype_dictionary_button}</a>
             <a href="/about" class="nav-link" data-i18n-key="about_button">{t.about_button}</a>
             <a href="/privacy" class="nav-link" data-i18n-key="privacy_policy_button">{t.privacy_policy_button}</a>
-            <a href="/arcade" id="nav-arcade" class="nav-link hidden" style="color: #FACC15; font-weight: 700; margin-right: 1rem;">ARCADE</a>
+            <a href="/arcade" id="nav-arcade" class="nav-link" style="color: #FACC15; font-weight: 700; margin-right: 1rem;">ARCADE</a>
         </div>
 
         <div class="navbar-end">
-             <button id="bubbles-toggle" class="bubbles-toggle-btn">Bubbles: ON</button>
              <LanguageSwitcher />
         </div>
     </div>
@@ -127,26 +122,6 @@ const t = translations[lang] || en;
         position: static !important;
     }
 
-    .bubbles-toggle-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        padding: 0.3rem 0.6rem;
-        border-radius: 0.3rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .bubbles-toggle-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-    .bubbles-toggle-btn.off {
-        opacity: 0.6;
-        background: transparent;
-        border-color: rgba(255,255,255,0.1);
-    }
-
     .navbar-toggle {
         display: none;
         flex-direction: column;
@@ -216,36 +191,6 @@ const t = translations[lang] || en;
         });
     }
 
-    // Bubbles Toggle Logic
-    const bubblesBtn = document.getElementById('bubbles-toggle');
-    if (bubblesBtn) {
-        let isEnabled = true;
-        try {
-            const saved = localStorage.getItem('bubbles_enabled');
-            if (saved === 'false') isEnabled = false;
-        } catch(e) {}
-
-        function updateBtn() {
-            if (isEnabled) {
-                bubblesBtn.textContent = "Bubbles: ON";
-                bubblesBtn.classList.remove('off');
-            } else {
-                bubblesBtn.textContent = "Bubbles: OFF";
-                bubblesBtn.classList.add('off');
-            }
-        }
-        updateBtn();
-
-        bubblesBtn.addEventListener('click', () => {
-            isEnabled = !isEnabled;
-            localStorage.setItem('bubbles_enabled', isEnabled);
-            updateBtn();
-
-            // Reload to apply changes cleanly to the physics engine
-            location.reload();
-        });
-    }
-
     // Client-side Translation Update for Navbar
     function updateNavbarTranslations() {
         let currentLang = lang;
@@ -309,13 +254,6 @@ const t = translations[lang] || en;
     document.addEventListener('DOMContentLoaded', () => {
         updateNavbarTranslations();
         checkPetNotification();
-
-        // Check for Arcade Unlock
-        const arcadeUnlocked = localStorage.getItem('arcade_unlocked') === 'true';
-        if (arcadeUnlocked) {
-            const arcadeLink = document.getElementById('nav-arcade');
-            if (arcadeLink) arcadeLink.classList.remove('hidden');
-        }
 
         // Also highlight active link
         const currentPath = window.location.pathname;

@@ -1,0 +1,23 @@
+
+> bubble-burst-clock@0.0.1 dev
+> astro dev
+
+22:46:14 [types] Generated 1ms
+22:46:14 [content] Syncing content
+22:46:14 [content] Synced content
+22:46:14 [vite] Re-optimizing dependencies because vite config has changed
+
+ astro  v5.17.3 ready in 251 ms
+
+┃ Local    http://localhost:4321/
+┃ Network  use --host to expose
+
+22:46:14 watching for file changes...
+
+ update  ▶ New version of Astro available: 6.0.8
+  Run npx @astrojs/upgrade to update
+
+22:47:29 [200] / 37ms
+22:47:33 [200] /arcade 15ms
+22:47:34 [200] /about 8ms
+22:47:35 [200] / 7ms
