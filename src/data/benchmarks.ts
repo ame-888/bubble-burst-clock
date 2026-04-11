@@ -97,6 +97,14 @@ export const benchmarks = {
                 'lvl3': 6.66
             },
             releaseDate: '2026-02-18'
+        },
+        {
+            name: 'Muse Spark (with reasoning)*',
+            scores: {
+                'lvl1': 0,
+                'lvl2': 0,
+                'lvl3': 0
+            }
         }
     ],
     hardMode: [
@@ -110,7 +118,8 @@ export const benchmarks = {
         { name: 'Gemini 3.0 Pro Preview', score: 2 },
         { name: 'Grok 4.20 (chat)', score: 0, releaseDate: '2026-02-18' },
         { name: 'Gemini 2.5 Pro', score: 0 },
-        { name: 'Gemini 2.5 Flash', score: 0 }
+        { name: 'Gemini 2.5 Flash', score: 0 },
+        { name: 'Muse Spark (with reasoning)*', score: 0 }
     ],
     impossibleMode: [
         { name: 'Human Baseline', score: 100 },
@@ -123,7 +132,8 @@ export const benchmarks = {
         { name: 'Gemini 3.0 Pro Preview', score: 0 },
         { name: 'Grok 4.20 (chat)', score: 0, releaseDate: '2026-02-18' },
         { name: 'Gemini 2.5 Pro', score: 0 },
-        { name: 'Gemini 2.5 Flash', score: 0 }
+        { name: 'Gemini 2.5 Flash', score: 0 },
+        { name: 'Muse Spark (with reasoning)*', score: 0 }
     ],
     dataRetrieval: [
         { name: 'Human Baseline', score: 100 },
