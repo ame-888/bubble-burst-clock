@@ -80,25 +80,51 @@ function computeRanks(items, scoreKey) {
     return rankedItems;
 }
 
-// Easy Mode Logic (Averages)
-const rawEasy = benchmarks.models.map(m => {
-    const scores = Object.values(m.scores);
-    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-    return { ...m, avg };
+// --- Unify Benchmark Data for Visual Mode ---
+const unifiedDataMap = new Map();
+
+benchmarks.models.forEach(m => {
+    unifiedDataMap.set(m.name, {
+        name: m.name,
+        releaseDate: m.releaseDate,
+        lvl1: m.scores.lvl1,
+        lvl2: m.scores.lvl2,
+        lvl3: m.scores.lvl3,
+        lvl4: 0,
+        lvl5: 0,
+        lvl6: '?'
+    });
 });
-const easyList = computeRanks(rawEasy, 'avg');
 
-// Hard Mode Logic
-const hardList = computeRanks(benchmarks.hardMode, 'score');
+benchmarks.hardMode.forEach(m => {
+    if (!unifiedDataMap.has(m.name)) {
+        unifiedDataMap.set(m.name, { name: m.name, releaseDate: m.releaseDate, lvl1: 0, lvl2: 0, lvl3: 0, lvl4: 0, lvl5: 0, lvl6: '?' });
+    }
+    unifiedDataMap.get(m.name).lvl4 = m.score;
+});
 
-// Impossible Mode Logic
-const impossibleList = computeRanks(benchmarks.impossibleMode, 'score');
+benchmarks.impossibleMode.forEach(m => {
+    if (!unifiedDataMap.has(m.name)) {
+        unifiedDataMap.set(m.name, { name: m.name, releaseDate: m.releaseDate, lvl1: 0, lvl2: 0, lvl3: 0, lvl4: 0, lvl5: 0, lvl6: '?' });
+    }
+    unifiedDataMap.get(m.name).lvl5 = m.score;
+});
+
+const unifiedRawList = Array.from(unifiedDataMap.values()).map(m => {
+    let total = m.lvl1 + m.lvl2 + m.lvl3 + m.lvl4 + m.lvl5;
+    m.avg = total / 5; // Calculate average for sorting and ranking
+
+    // Determine overall fail (all scores 0)
+    m.isTotalFail = m.lvl1 === 0 && m.lvl2 === 0 && m.lvl3 === 0 && m.lvl4 === 0 && m.lvl5 === 0;
+
+    return m;
+});
+
+const unifiedList = computeRanks(unifiedRawList, 'avg');
+const rows = Array.from({ length: unifiedList.length }, (_, i) => i);
 
 // Data Retrieval Logic
 const dataList = computeRanks(benchmarks.dataRetrieval || [], 'score');
-
-const maxRows = Math.max(easyList.length, hardList.length, impossibleList.length);
-const rows = Array.from({ length: maxRows }, (_, i) => i);
 const rowsData = Array.from({ length: dataList.length }, (_, i) => i);
 
 function getRankDisplay(rank) {
@@ -144,83 +170,104 @@ function getRankDisplay(rank) {
                 </div>
 
                 <div id="visual-benchmark-wrapper">
-                    <div class="benchmark-scroll-container">
-                        <div class="benchmark-container">
+                    <div class="benchmark-desktop-container">
+                        <div class="benchmark-container visual-table">
                             <!-- Header Row -->
-                        <div class="header-row">
-                            <div class="col-header"><h3>EASY MODE</h3></div>
-                            <div class="col-header"><h3>HARD MODE</h3></div>
-                            <div class="col-header impossible-header"><h3>IMPOSSIBLE MODE</h3></div>
+                            <div class="header-row unified-header-row">
+                                <div class="col-header model-col-header"><h3>MODEL</h3></div>
+                                <div class="col-header mole-header"><h3>MOLE</h3></div>
+                                <div class="col-header rhino-header"><h3>RHINO</h3></div>
+                                <div class="col-header chimp-header"><h3>CHIMPANZEE</h3></div>
+                                <div class="col-header owl-header"><h3>OWL</h3></div>
+                                <div class="col-header eagle-header"><h3>EAGLE</h3></div>
+                                <div class="col-header beholder-header"><h3>BEHOLDER</h3></div>
+                            </div>
+
+                            <!-- Rows Loop -->
+                            {rows.map(i => {
+                                const item = unifiedList[i];
+
+                                return (
+                                    <div class="benchmark-row unified-row">
+                                        {/* Model Column */}
+                                        <div class="benchmark-cell model-cell">
+                                            <div class={`benchmark-content ${item.isTotalFail ? 'fail-item' : ''} ${item.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                                <div class={`rank ${item.isTotalFail ? 'fail-rank' : ''}`}>
+                                                    {getRankDisplay(item.rank)}
+                                                </div>
+                                                <div class="model-info">
+                                                    <div class="model-name" data-release-date={item.releaseDate}>
+                                                        {item.name}
+                                                        {isNew(item.releaseDate) && <span class="new-badge">NEW</span>}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Challenge Columns */}
+                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl1}%`)}</span></div>
+                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl2}%`)}</span></div>
+                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl3}%`)}</span></div>
+                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl4}%`)}</span></div>
+                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl5}%`)}</span></div>
+                                        <div class="benchmark-cell score-cell beholder-score"><span class="beholder-text">{item.name === 'Human Baseline' ? '' : '?'}</span></div>
+                                    </div>
+                                );
+                            })}
+
+                            <p class="disclaimer">* The model was unable to complete the task in the proper way. It displayed persistent instruction following issues and difficulty in keeping its messy CoT outside the output. The results were consistently vague, confusing, full of self-corrections.</p>
+                            <p class="disclaimer contact-disclaimer" id="benchmark-contact">{t.benchmark_contact_disclaimer}</p>
                         </div>
+                    </div>
 
-                        <!-- Rows Loop -->
+                    <!-- Mobile Cards Layout -->
+                    <div class="benchmark-mobile-container">
                         {rows.map(i => {
-                            const easyItem = easyList[i];
-                            const hardItem = hardList[i];
-                            const impossibleItem = impossibleList[i];
-
+                            const item = unifiedList[i];
                             return (
-                                <div class="benchmark-row">
-                                    {/* Easy Column */}
-                                    <div class="benchmark-cell easy-col">
-                                        {easyItem && (
-                                            <div class={`benchmark-content ${easyItem.isFail ? 'fail-item' : ''} ${easyItem.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                                <div class={`rank ${easyItem.isFail ? 'fail-rank' : ''}`}>
-                                                    {getRankDisplay(easyItem.rank)}
-                                                </div>
-                                                <div class="model-info">
-                                                    <div class="model-name" data-release-date={easyItem.releaseDate}>
-                                                        {easyItem.name}
-                                                        {isNew(easyItem.releaseDate) && <span class="new-badge">NEW</span>}
-                                                    </div>
-                                                </div>
-                                                <div class={`model-score ${easyItem.isFail ? 'fail-score' : ''}`}>{easyItem.avg.toFixed(1)}%</div>
+                                <div class={`mobile-card ${item.isTotalFail ? 'fail-card' : ''} ${item.name === 'Human Baseline' ? 'human-baseline-card' : ''}`}>
+                                    <div class="mobile-card-header">
+                                        <div class={`rank ${item.isTotalFail ? 'fail-rank' : ''}`}>
+                                            {getRankDisplay(item.rank)}
+                                        </div>
+                                        <div class="model-info">
+                                            <div class="model-name" data-release-date={item.releaseDate}>
+                                                {item.name}
+                                                {isNew(item.releaseDate) && <span class="new-badge">NEW</span>}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
-
-                                    {/* Hard Column */}
-                                    <div class="benchmark-cell hard-col">
-                                        {hardItem && (
-                                            <div class={`benchmark-content ${hardItem.isFail ? 'fail-item' : ''} ${hardItem.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                                <div class={`rank ${hardItem.isFail ? 'fail-rank' : ''}`}>
-                                                    {getRankDisplay(hardItem.rank)}
-                                                </div>
-                                                <div class="model-info">
-                                                    <div class="model-name" data-release-date={hardItem.releaseDate}>
-                                                        {hardItem.name}
-                                                        {isNew(hardItem.releaseDate) && <span class="new-badge">NEW</span>}
-                                                    </div>
-                                                </div>
-                                                <div class={`model-score ${hardItem.isFail ? 'fail-score' : ''}`}>{hardItem.score}%</div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Impossible Column */}
-                                    <div class="benchmark-cell impossible-col">
-                                        {impossibleItem && (
-                                            <div class={`benchmark-content ${impossibleItem.isFail ? 'fail-item' : ''} ${impossibleItem.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
-                                                <div class={`rank ${impossibleItem.isFail ? 'fail-rank' : ''} ${impossibleItem.isFail ? '' : 'impossible-rank'}`}>
-                                                    {getRankDisplay(impossibleItem.rank)}
-                                                </div>
-                                                <div class="model-info">
-                                                    <div class={`model-name ${impossibleItem.isFail ? '' : 'impossible-text'}`} data-release-date={impossibleItem.releaseDate}>
-                                                        {impossibleItem.name}
-                                                        {isNew(impossibleItem.releaseDate) && <span class="new-badge">NEW</span>}
-                                                    </div>
-                                                </div>
-                                                <div class={`model-score ${impossibleItem.isFail ? 'fail-score' : 'impossible-score'}`}>{impossibleItem.score}%</div>
-                                            </div>
-                                        )}
+                                    <div class="mobile-card-scores">
+                                        <div class="mobile-score-item">
+                                            <span class="mobile-score-label mole-label">MOLE</span>
+                                            <span class={`mobile-score-value mole-score ${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl1}%`)}</span>
+                                        </div>
+                                        <div class="mobile-score-item">
+                                            <span class="mobile-score-label rhino-label">RHINO</span>
+                                            <span class={`mobile-score-value rhino-score ${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl2}%`)}</span>
+                                        </div>
+                                        <div class="mobile-score-item">
+                                            <span class="mobile-score-label chimp-label">CHIMP</span>
+                                            <span class={`mobile-score-value chimp-score ${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl3}%`)}</span>
+                                        </div>
+                                        <div class="mobile-score-item">
+                                            <span class="mobile-score-label owl-label">OWL</span>
+                                            <span class={`mobile-score-value owl-score ${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl4}%`)}</span>
+                                        </div>
+                                        <div class="mobile-score-item">
+                                            <span class="mobile-score-label eagle-label">EAGLE</span>
+                                            <span class={`mobile-score-value eagle-score ${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl5}%`)}</span>
+                                        </div>
+                                        <div class="mobile-score-item">
+                                            <span class="mobile-score-label beholder-label">BEHOLDER</span>
+                                            <span class="mobile-score-value beholder-score beholder-text">{item.name === 'Human Baseline' ? '' : '?'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             );
                         })}
-
                         <p class="disclaimer">* The model was unable to complete the task in the proper way. It displayed persistent instruction following issues and difficulty in keeping its messy CoT outside the output. The results were consistently vague, confusing, full of self-corrections.</p>
                         <p class="disclaimer contact-disclaimer" id="benchmark-contact">{t.benchmark_contact_disclaimer}</p>
-                        </div>
                     </div>
                 </div>
 
@@ -304,6 +351,20 @@ function getRankDisplay(rank) {
         text-align: center;
     }
 
+    /* Desktop layout overrides */
+    .benchmark-desktop-container {
+        display: none;
+    }
+
+    @media (min-width: 1024px) {
+        .benchmark-desktop-container {
+            display: block;
+        }
+        .benchmark-mobile-container {
+            display: none;
+        }
+    }
+
     /* Scroll Container for Mobile */
     .benchmark-scroll-container {
         overflow-x: auto;
@@ -313,66 +374,79 @@ function getRankDisplay(rank) {
     .benchmark-container {
         background: rgba(31, 41, 55, 0.5);
         border-radius: 1rem;
-        padding: 2rem;
+        padding: 1.5rem;
         box-shadow: 0 0 30px rgba(0,0,0,0.2);
         border: 1px solid rgba(245, 158, 11, 0.3);
-        min-width: 900px; /* Force minimum width to keep columns legible */
+        /* min-width: 900px;  Removed for responsive layout */
+    }
+
+    /* Unified Visual Grid */
+    .unified-header-row, .unified-row {
+        display: grid;
+        grid-template-columns: 2.5fr 1fr 1fr 1fr 1fr 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .unified-row {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .unified-row:last-child {
+        border-bottom: none;
     }
 
     /* Header Row */
     .header-row {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
         /* No border bottom here, headers have their own style */
     }
 
     .col-header h3 {
-        font-size: 1.5rem;
+        font-size: 0.85rem; /* Reduced to fit */
         font-weight: 800;
         color: #F59E0B;
         margin-bottom: 1rem;
         border-bottom: 2px solid rgba(245, 158, 11, 0.3);
         padding-bottom: 0.5rem;
         text-align: center;
+        white-space: nowrap;
+    }
+    .model-col-header h3 {
+        text-align: left;
     }
 
     /* Benchmark Rows */
     .benchmark-row {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
         border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Horizontal line */
-    }
-
-    .benchmark-row:last-child {
-        border-bottom: none;
     }
 
     /* Cells */
     .benchmark-cell {
-        padding: 0.75rem 1rem;
+        padding: 0.75rem 0.5rem; /* Reduced padding */
         display: flex;
         align-items: center;
     }
 
-    /* Vertical Lines */
-    .easy-col {
+    .model-cell {
         border-right: 1px solid rgba(255, 255, 255, 0.1);
+        padding-right: 1rem;
     }
-    .hard-col {
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
+
+    .score-cell {
+        justify-content: center;
+        font-size: 1rem;
+        font-weight: 900;
+        text-align: center;
     }
-    /* Impossible col needs no right border */
 
     /* Content Layout inside Cell */
     .benchmark-content {
         display: flex;
         width: 100%;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.5rem; /* Reduced gap */
     }
 
     .rank {
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 900;
         color: #F59E0B;
         min-width: 25px;
@@ -381,7 +455,7 @@ function getRankDisplay(rank) {
 
     .human-baseline { opacity: 0.8; }
     .human-baseline .rank { color: #9CA3AF; }
-    .fail-rank { color: #EF4444; font-size: 0.9rem; min-width: 70px; text-align: left; }
+    .fail-rank { color: #EF4444; font-size: 0.85rem; min-width: 70px; text-align: left; }
 
     .model-info {
         flex: 1;
@@ -389,7 +463,7 @@ function getRankDisplay(rank) {
     }
 
     .model-name {
-        font-size: 0.95rem;
+        font-size: 0.85rem; /* Reduced font size to fit horizontally */
         font-weight: 600; /* Slightly lighter than card title */
         color: white;
         white-space: nowrap;
@@ -404,32 +478,106 @@ function getRankDisplay(rank) {
         margin-left: auto;
     }
 
-    .fail-score { color: #6B7280; font-size: 0.9rem; }
+    .fail-score { color: #6B7280 !important; font-size: 0.85rem !important; text-shadow: none !important; }
+    .fail-item .model-name { color: white; }
 
-    /* Impossible Mode Styles */
-    .impossible-header h3 {
-        color: #ef4444;
-        text-shadow:
-            0 0 4px #7f1d1d,
-            0 -5px 4px #ff9c00,
-            2px -10px 6px #fd3e3e,
-            -2px -15px 11px #f00;
-        animation: burn 1.5s ease-in-out infinite alternate;
-        border-color: #ef4444;
+    /* --- CREATURE CHALLENGE STYLES --- */
+
+    /* Mole (Earthy Brown) */
+    .mole-header h3 { color: #A0522D; border-color: #A0522D; }
+    .mole-score { color: #CD853F; }
+
+    /* Rhino (Slate Grey) */
+    .rhino-header h3 { color: #708090; border-color: #708090; }
+    .rhino-score { color: #B0C4DE; }
+
+    /* Chimpanzee (Jungle Green) */
+    .chimp-header h3 { color: #2E8B57; border-color: #2E8B57; }
+    .chimp-score { color: #3CB371; }
+
+    /* Owl (Night Sky Blue) */
+    .owl-header h3 { color: #4169E1; border-color: #4169E1; }
+    .owl-score { color: #6495ED; }
+
+    /* Eagle (Bright Sky Blue/Gold) */
+    .eagle-header h3 { color: #00BFFF; border-color: #00BFFF; }
+    .eagle-score { color: #87CEFA; }
+
+    /* Beholder (Neon Arcane) */
+    .beholder-header h3 {
+        color: #FF00FF;
+        text-shadow: 0 0 5px #FF00FF, 0 0 10px #8A2BE2, 0 0 20px #9400D3;
+        border-color: #FF00FF;
+        animation: arcanePulse 2s infinite alternate;
     }
 
-    @keyframes burn {
-        from { text-shadow: 0 0 4px #7f1d1d, 0 -5px 4px #ff9c00, 2px -10px 6px #fd3e3e, -2px -15px 11px #f00; }
-        to { text-shadow: 0 0 4px #7f1d1d, 0 -2px 4px #ff9c00, 2px -5px 6px #fd3e3e, -2px -10px 11px #f00; }
+    @keyframes arcanePulse {
+        from { text-shadow: 0 0 5px #FF00FF, 0 0 10px #8A2BE2, 0 0 20px #9400D3; }
+        to { text-shadow: 0 0 10px #FF00FF, 0 0 20px #8A2BE2, 0 0 30px #9400D3, 0 0 40px #4B0082; }
     }
 
-    .impossible-rank { color: #ef4444; }
-    .impossible-score { color: #ef4444; text-shadow: 0 0 5px #7f1d1d; }
-    .impossible-text { color: #fee2e2; }
+    .beholder-score { color: #FF00FF; }
+    .beholder-text { color: #FF69B4; text-shadow: 0 0 8px #FF1493; font-weight: 900; font-size: 1.2rem; }
 
-    /* Override for Fail in Impossible Mode */
-    .fail-item .impossible-score { color: #6B7280; text-shadow: none; }
-    .fail-item .impossible-text { color: white; }
+    /* Mobile Cards Layout */
+    .benchmark-mobile-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .mobile-card {
+        background: rgba(31, 41, 55, 0.5);
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .fail-card { border-color: rgba(239, 68, 68, 0.2); }
+    .human-baseline-card { border-color: rgba(156, 163, 175, 0.3); opacity: 0.9; }
+
+    .mobile-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 0.75rem;
+    }
+
+    .mobile-card-scores {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+
+    .mobile-score-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 0.5rem;
+        padding: 0.5rem 0;
+    }
+
+    .mobile-score-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        margin-bottom: 0.25rem;
+    }
+
+    .mobile-score-value {
+        font-size: 1rem;
+        font-weight: 900;
+    }
+
+    .mole-label { color: #A0522D; }
+    .rhino-label { color: #708090; }
+    .chimp-label { color: #2E8B57; }
+    .owl-label { color: #4169E1; }
+    .eagle-label { color: #00BFFF; }
+    .beholder-label { color: #FF00FF; }
 
     /* New Badge */
     .new-badge {
@@ -844,10 +992,10 @@ function getRankDisplay(rank) {
         const models = document.querySelectorAll('.model-name');
         models.forEach(el => {
             // Reset to original size to allow growth on resize
-            el.style.fontSize = '0.95rem';
+            el.style.fontSize = '0.85rem';
 
-            let size = 0.95;
-            const minSize = 0.60;
+            let size = 0.85;
+            const minSize = 0.50;
 
             // Reduce size while content overflows
             while (el.scrollWidth > el.clientWidth && size > minSize) {
