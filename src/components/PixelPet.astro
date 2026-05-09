@@ -26,7 +26,7 @@ const simulatedNow = new Date('2025-12-03T00:00:00Z').getTime();
             <span class="separator">|</span>
             <span title="Time together"><span id="pet-days-count">0</span> Days</span>
             <span class="separator">|</span>
-            <span title="Failed Claims Witnessed"><span id="pet-burst-count">0</span> 💥</span>
+            <span title="Bugs Encountered"><span id="pet-bugs-count">0</span> 🐛</span>
         </div>
         <button id="pet-release-btn" class="release-btn">Release</button>
     </div>
@@ -376,7 +376,7 @@ const simulatedNow = new Date('2025-12-03T00:00:00Z').getTime();
             this.nameEl = document.getElementById('pet-name-display');
             this.loveEl = document.getElementById('pet-love-count');
             this.daysEl = document.getElementById('pet-days-count');
-            this.burstEl = document.getElementById('pet-burst-count');
+            this.bugsEl = document.getElementById('pet-bugs-count');
             this.heartsContainer = document.getElementById('pet-hearts');
             this.data = null;
 
@@ -431,10 +431,10 @@ const simulatedNow = new Date('2025-12-03T00:00:00Z').getTime();
 
             // Check Pet Veteran Achievement
 
-            // Calculate Bursts (Failed Claims Witnessed)
-            let burstCount = 0;
+            // Calculate Bugs Encountered
+            let bugCount = 0;
             // Removed predictions integration
-            if (this.burstEl) this.burstEl.textContent = burstCount.toString();
+            if (this.bugsEl) this.bugsEl.textContent = bugCount.toString();
 
             // Check Pet Witness Achievement
 
