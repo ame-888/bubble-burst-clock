@@ -38,22 +38,31 @@ function isNew(dateStr) {
 }
 
 // --- Ranking Logic ---
-function computeRanks(items, scoreKey) {
+function computeRanks(items, scoreKeys) {
+    const keys = Array.isArray(scoreKeys) ? scoreKeys : [scoreKeys];
+
     // 1. Sort
     let sorted = [...items].sort((a, b) => {
         // Human Baseline always on top if it exists, though score usually handles it
         if (a.name === 'Human Baseline') return -1;
         if (b.name === 'Human Baseline') return 1;
-        return b[scoreKey] - a[scoreKey];
+
+        for (const key of keys) {
+            if (b[key] !== a[key]) {
+                return b[key] - a[key];
+            }
+        }
+        return 0;
     });
 
     // 2. Separate Zeroes
-    const eligible = sorted.filter(i => i[scoreKey] > 0);
-    const fails = sorted.filter(i => i[scoreKey] === 0).sort((a,b) => a.name.localeCompare(b.name));
+    // A model is an "EPIC FAIL" if ALL its scores for the provided keys are 0
+    const eligible = sorted.filter(i => keys.some(key => i[key] > 0));
+    const fails = sorted.filter(i => keys.every(key => i[key] === 0)).sort((a,b) => a.name.localeCompare(b.name));
 
     // 3. Assign ranks to eligible
     let currentRank = 1;
-    let previousScore = null;
+    let previousItem = null;
     let rankedItems = [];
 
     eligible.forEach((item) => {
@@ -62,14 +71,23 @@ function computeRanks(items, scoreKey) {
             return;
         }
 
-        const score = item[scoreKey];
-
-        if (previousScore !== null && score < previousScore) {
-            currentRank++;
+        if (previousItem !== null) {
+            let isWorse = false;
+            for (const key of keys) {
+                if (item[key] < previousItem[key]) {
+                    isWorse = true;
+                    break;
+                } else if (item[key] > previousItem[key]) {
+                    break;
+                }
+            }
+            if (isWorse) {
+                currentRank++;
+            }
         }
 
         rankedItems.push({ ...item, rank: currentRank, isFail: false });
-        previousScore = score;
+        previousItem = item;
     });
 
     // 4. Append Fails
@@ -79,6 +97,7 @@ function computeRanks(items, scoreKey) {
 
     return rankedItems;
 }
+
 
 // --- Unify Benchmark Data for Visual Mode ---
 const unifiedDataMap = new Map();
@@ -112,7 +131,7 @@ benchmarks.impossibleMode.forEach(m => {
 
 const unifiedRawList = Array.from(unifiedDataMap.values()).map(m => {
     let total = m.lvl1 + m.lvl2 + m.lvl3 + m.lvl4 + m.lvl5;
-    m.avg = total / 5; // Calculate average for sorting and ranking
+    // Average removed in favor of level-by-level fallback ranking
 
     // Determine overall fail (all scores 0)
     m.isTotalFail = m.lvl1 === 0 && m.lvl2 === 0 && m.lvl3 === 0 && m.lvl4 === 0 && m.lvl5 === 0;
@@ -120,7 +139,7 @@ const unifiedRawList = Array.from(unifiedDataMap.values()).map(m => {
     return m;
 });
 
-const unifiedList = computeRanks(unifiedRawList, 'avg');
+const unifiedList = computeRanks(unifiedRawList, ['lvl1', 'lvl2', 'lvl3', 'lvl4', 'lvl5']);
 const rows = Array.from({ length: unifiedList.length }, (_, i) => i);
 
 // Data Retrieval Logic
