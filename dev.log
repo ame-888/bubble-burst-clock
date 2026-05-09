@@ -2,22 +2,33 @@
 > bubble-burst-clock@0.0.1 dev
 > astro dev
 
-22:46:14 [types] Generated 1ms
-22:46:14 [content] Syncing content
-22:46:14 [content] Synced content
-22:46:14 [vite] Re-optimizing dependencies because vite config has changed
+▶ Astro collects anonymous usage data.
+  This information helps us improve Astro.
+  Run "astro telemetry disable" to opt-out.
+  https://astro.build/telemetry
 
- astro  v5.17.3 ready in 251 ms
+16:06:04 [types] Generated 1ms
+16:06:04 [content] Syncing content
+16:06:04 [content] Synced content
+
+ astro  v5.17.3 ready in 250 ms
 
 ┃ Local    http://localhost:4321/
 ┃ Network  use --host to expose
 
-22:46:14 watching for file changes...
+16:06:04 watching for file changes...
 
- update  ▶ New version of Astro available: 6.0.8
+ update  ▶ New version of Astro available: 6.3.1
   Run npx @astrojs/upgrade to update
 
-22:47:29 [200] / 37ms
-22:47:33 [200] /arcade 15ms
-22:47:34 [200] /about 8ms
-22:47:35 [200] / 7ms
+16:08:47 [404] /robots.txt 35ms
+16:08:53 [200] / 32ms
+16:53:06 [404] /robots.txt 37ms
+16:53:10 [200] / 49ms
+16:54:57 [200] / 36ms
+16:55:45 [watch] /src/pages/index.astro?astro&type=style&index=0&lang.css
+16:55:45 [watch] src/pages/index.astro
+16:56:00 [watch] /src/pages/index.astro?astro&type=style&index=0&lang.css
+16:56:04 [200] / 22ms
+16:56:58 [404] /leaderboard 2ms
+16:58:07 [200] / 10ms

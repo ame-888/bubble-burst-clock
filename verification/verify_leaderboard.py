@@ -6,7 +6,7 @@ def run():
         page = browser.new_page()
 
         # Navigate to the leaderboard page
-        page.goto("http://localhost:4321/leaderboard")
+        page.goto("http://localhost:4321/")
 
         # Wait for the page to load
         page.wait_for_selector("#leaderboard-title")
