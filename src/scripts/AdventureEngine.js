@@ -3,7 +3,7 @@ export class AdventureEngine {
         this.key = 'adventure_save';
         this.story = {
             'start': {
-                text: "You stand at the edge of the Data Wasteland. Rumors speak of the 'Unpoppable Bubble'—a legendary artifact that defies the laws of the Simulation. It is said to grant eternal uptime to whoever possesses it.",
+                text: "You stand at the edge of the Data Wasteland. Rumors speak of the 'Ultimate Node'—a legendary artifact that defies the laws of the Simulation. It is said to grant eternal uptime to whoever possesses it.",
                 choices: [
                     { text: "Enter the Wasteland", next: 'wasteland_entry' },
                     { text: "Check your supplies", next: 'check_supplies' }
@@ -52,7 +52,7 @@ export class AdventureEngine {
                 ]
             },
             'monolith_open': {
-                text: "The Monolith slides open. Inside levitates a small, shimmering orb. Is this it? The Unpoppable Bubble?",
+                text: "The Monolith slides open. Inside levitates a small, shimmering orb. Is this it? The Ultimate Node?",
                 choices: [
                     { text: "Touch the Orb", next: 'orb_touch' }
                 ]
@@ -108,13 +108,13 @@ export class AdventureEngine {
                 ]
             },
             'cloud_climb': {
-                text: "You climb for what feels like an eternity. Finally, you reach the Cloud Layer. In the center sits a pedestal with a soap bubble that shimmers with all colors of the rainbow. It doesn't pop against the sharp winds.",
+                text: "You climb for what feels like an eternity. Finally, you reach the Cloud Layer. In the center sits a pedestal with an orb that shimmers with all colors of the rainbow. It doesn't pop against the sharp winds.",
                 choices: [
-                    { text: "Claim the Unpoppable Bubble", next: 'good_end' }
+                    { text: "Claim the Ultimate Node", next: 'good_end' }
                 ]
             },
             'good_end': {
-                text: "You hold the bubble. It feels warm. You have found it. The simulation stabilizes. You are the Admin now. CONGRATULATIONS!",
+                text: "You hold the orb. It feels warm. You have found it. The simulation stabilizes. You are the Admin now. CONGRATULATIONS!",
                 isEnd: true,
                 win: true,
                 choices: [
@@ -228,26 +228,11 @@ export class AdventureEngine {
             if (callbacks.onLoot) callbacks.onLoot(newNode.loot);
         }
 
-        // Achievements / Endings
-        if (this.state.currentNode === 'start' && this.state.history.length === 0) {
-             if (callbacks.onAchievement) callbacks.onAchievement('adventure_begins');
-        }
 
         if (newNode.isEnd) {
-             if (newNode.win) {
-                 if (callbacks.onAchievement) callbacks.onAchievement('adventure_end_good');
-                 // Check for 'adventure_truth' if they did something specific?
-                 // For now, let's say owning the keycard and patch grants 'adventure_explorer'
-                 if (this.state.inventory.includes('keycard') && this.state.inventory.includes('reality_patch')) {
-                     if (callbacks.onAchievement) callbacks.onAchievement('adventure_explorer');
-                 }
-             } else {
-                 if (callbacks.onAchievement) callbacks.onAchievement('adventure_end_bad');
-             }
              // Reset state after end for replay (or keep it there until they click Restart)
              if (choice.text.includes("Restart") || choice.text.includes("Try Again")) {
                  this.state = JSON.parse(JSON.stringify(this.defaultState));
-                 // Achievement for survivor? (Maybe simple win)
              }
         }
 
