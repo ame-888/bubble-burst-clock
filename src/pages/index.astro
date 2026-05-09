@@ -216,9 +216,9 @@ function getRankDisplay(rank) {
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl1}%`)}</span></div>
-                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl2}%`)}</span></div>
-                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl3}%`)}</span></div>
+                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl1 !== undefined ? `${item.lvl1}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl2 !== undefined ? `${item.lvl2}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl3 !== undefined ? `${item.lvl3}%` : ''))}</span></div>
                                         <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl4 !== undefined ? `${item.lvl4}%` : ''))}</span></div>
                                         <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl5 !== undefined ? `${item.lvl5}%` : ''))}</span></div>
                                         <div class="benchmark-cell score-cell beholder-score"><span class="beholder-text">{item.name === 'Human Baseline' ? '' : '?'}</span></div>
