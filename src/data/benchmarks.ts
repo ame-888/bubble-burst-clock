@@ -130,7 +130,7 @@ export const benchmarks = {
             }
         },
         {
-            name: 'Grok 4.20 (chat)',
+            name: 'Grok 4.20 Expert',
             scores: {
                 'lvl1': 10,
                 'lvl2': 7,
@@ -155,13 +155,22 @@ export const benchmarks = {
             scores: {
                 'lvl1': 30,
                 'lvl2': 38,
-                'lvl3': 19
+                'lvl3': 19,
+                'lvl4': 0,
+                'lvl5': 0
+            }
+        },
+        {
+            name: 'Grok 4.3 Fast',
+            scores: {
+                'lvl1': 6,
+                'lvl2': 4
             }
         }
     ],
     dataRetrieval: [
         { name: 'Human Baseline', score: 100 },
-        { name: 'Grok 4.20 (chat)', score: 24, releaseDate: '2026-02-18' },
+        { name: 'Grok 4.20 Expert', score: 24, releaseDate: '2026-02-18' },
         { name: 'Gemini 3.1 Pro Preview', score: 20 },
         { name: 'Claude 4.6 Sonnet (with extended thinking)', score: 9, releaseDate: '2026-02-21' }
     ]
