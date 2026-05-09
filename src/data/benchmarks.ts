@@ -25,9 +25,9 @@ export const benchmarks = {
         {
             name: 'Gemini 3.1 Pro Preview',
             scores: {
-                'lvl1': 67,
-                'lvl2': 67,
-                'lvl3': 67
+                'lvl1': 75,
+                'lvl2': 64,
+                'lvl3': 62
             },
             releaseDate: '2026-02-20'
         },
@@ -51,9 +51,9 @@ export const benchmarks = {
         {
             name: 'Gemini 3.1 Flashlite GA (with code execution)',
             scores: {
-                'lvl1': 38.7,
-                'lvl2': 38.7,
-                'lvl3': 38.7
+                'lvl1': 40,
+                'lvl2': 33,
+                'lvl3': 43
             }
         },
         {
@@ -84,9 +84,9 @@ export const benchmarks = {
         {
             name: 'Gemini 3.1 Flashlite Preview',
             scores: {
-                'lvl1': 40.66,
-                'lvl2': 40.66,
-                'lvl3': 40.66
+                'lvl1': 30,
+                'lvl2': 29,
+                'lvl3': 63
             }
         },
         {
