@@ -19,7 +19,6 @@
   "toggle_data": "DATA",
   "coming_soon": "Coming Soon",
   "leaderboard_button": "OUR BENCHMARK",
-  "benchmark_contact_disclaimer": "If you want your model scored and placed in the ranking, contact me",
   "fab_report_bug": "Report Bug",
   "benchmark_data_disclaimer": "In order to make this benchmark stay unsaturated for longer, easier questions might be removed and harder questions might be added over time. Any changes will be applied on all models, in order to make things fair",
   "benchmark_data_warning": "Warning: A Hard Mode will be added when a model gets a score over 50%",

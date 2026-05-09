@@ -235,7 +235,6 @@ function getRankDisplay(rank) {
                             })}
 
                             <p class="disclaimer">* The model was unable to complete the task in the proper way. It displayed persistent instruction following issues and difficulty in keeping its messy CoT outside the output. The results were consistently vague, confusing, full of self-corrections.</p>
-                            <p class="disclaimer contact-disclaimer" id="benchmark-contact">{t.benchmark_contact_disclaimer}</p>
                         </div>
                     </div>
                 </div>
@@ -602,8 +601,6 @@ function getRankDisplay(rank) {
         opacity: 0.8;
     }
 
-    .contact-disclaimer { margin-top: 1rem; color: #60A5FA; }
-
     /* Toggle Styles */
     .toggle-container {
         display: flex;
@@ -865,13 +862,11 @@ function getRankDisplay(rank) {
         const benchTitle = document.getElementById('benchmark-title');
         const dataDisclaimer = document.getElementById('data-benchmark-disclaimer');
         const dataWarning = document.getElementById('data-benchmark-warning');
-        const contact = document.getElementById('benchmark-contact');
 
         if (mainTitle) mainTitle.textContent = t.leaderboard_button;
         // benchTitle text is set by updateBenchmarkView
         if (dataDisclaimer) dataDisclaimer.textContent = t.benchmark_data_disclaimer;
         if (dataWarning) dataWarning.textContent = t.benchmark_data_warning;
-        if (contact) contact.textContent = t.benchmark_contact_disclaimer;
 
         const toggleVisual = document.getElementById('toggle-visual');
         const toggleData = document.getElementById('toggle-data');

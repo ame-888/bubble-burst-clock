@@ -16,9 +16,9 @@ export const benchmarks = {
         {
             name: 'Claude 4.6 Sonnet (with extended reasoning)',
             scores: {
-                'lvl1': 6.3,
-                'lvl2': 6.3,
-                'lvl3': 6.3
+                'lvl1': 12,
+                'lvl2': 5,
+                'lvl3': 2
             },
             releaseDate: '2026-02-21'
         },
@@ -43,9 +43,9 @@ export const benchmarks = {
         {
             name: 'Gemini 3.1 Flashlite GA',
             scores: {
-                'lvl1': 36.7,
-                'lvl2': 36.7,
-                'lvl3': 36.7
+                'lvl1': 38,
+                'lvl2': 33,
+                'lvl3': 39
             }
         },
         {
@@ -108,9 +108,9 @@ export const benchmarks = {
         {
             name: 'Grok 4.20 (chat)',
             scores: {
-                'lvl1': 6.66,
-                'lvl2': 6.66,
-                'lvl3': 6.66
+                'lvl1': 10,
+                'lvl2': 7,
+                'lvl3': 3
             },
             releaseDate: '2026-02-18'
         },
