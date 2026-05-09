@@ -109,25 +109,13 @@ benchmarks.models.forEach(m => {
         lvl1: m.scores.lvl1,
         lvl2: m.scores.lvl2,
         lvl3: m.scores.lvl3,
-        lvl4: 0,
-        lvl5: 0,
+        lvl4: m.scores.lvl4 || 0,
+        lvl5: m.scores.lvl5 || 0,
         lvl6: '?'
     });
 });
 
-benchmarks.hardMode.forEach(m => {
-    if (!unifiedDataMap.has(m.name)) {
-        unifiedDataMap.set(m.name, { name: m.name, releaseDate: m.releaseDate, lvl1: 0, lvl2: 0, lvl3: 0, lvl4: 0, lvl5: 0, lvl6: '?' });
-    }
-    unifiedDataMap.get(m.name).lvl4 = m.score;
-});
 
-benchmarks.impossibleMode.forEach(m => {
-    if (!unifiedDataMap.has(m.name)) {
-        unifiedDataMap.set(m.name, { name: m.name, releaseDate: m.releaseDate, lvl1: 0, lvl2: 0, lvl3: 0, lvl4: 0, lvl5: 0, lvl6: '?' });
-    }
-    unifiedDataMap.get(m.name).lvl5 = m.score;
-});
 
 const unifiedRawList = Array.from(unifiedDataMap.values()).map(m => {
     let total = m.lvl1 + m.lvl2 + m.lvl3 + m.lvl4 + m.lvl5;
@@ -234,7 +222,7 @@ function getRankDisplay(rank) {
                                 );
                             })}
 
-                            <p class="disclaimer">* The model was unable to complete the task in the proper way. It displayed persistent instruction following issues and difficulty in keeping its messy CoT outside the output. The results were consistently vague, confusing, full of self-corrections.</p>
+                            <p class="disclaimer">* This specific model had a FAILED STATE over 50%. A FAILED STATE means the model failed to answer the questions at all, even if incorrectly. Other models did present this behavior ocasionally, but nowhere near this often. A high frequency of FAILED STATE shows a fundamental issue in understanding user intent. While the model did perform decently when it did understand the questions, we decided the abundance of FAILED STATE is enough to consider it below the minimum criteria</p>
                         </div>
                     </div>
                 </div>
