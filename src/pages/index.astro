@@ -48,8 +48,10 @@ function computeRanks(items, scoreKeys) {
         if (b.name === 'Human Baseline') return 1;
 
         for (const key of keys) {
-            if (b[key] !== a[key]) {
-                return b[key] - a[key];
+            const valA = a[key] ?? 0;
+            const valB = b[key] ?? 0;
+            if (valB !== valA) {
+                return valB - valA;
             }
         }
         return 0;
@@ -57,8 +59,8 @@ function computeRanks(items, scoreKeys) {
 
     // 2. Separate Zeroes
     // A model is an "EPIC FAIL" if ALL its scores for the provided keys are 0
-    const eligible = sorted.filter(i => keys.some(key => i[key] > 0));
-    const fails = sorted.filter(i => keys.every(key => i[key] === 0)).sort((a,b) => a.name.localeCompare(b.name));
+    const eligible = sorted.filter(i => keys.some(key => (i[key] ?? 0) > 0));
+    const fails = sorted.filter(i => keys.every(key => (i[key] ?? 0) === 0)).sort((a,b) => a.name.localeCompare(b.name));
 
     // 3. Assign ranks to eligible
     let currentRank = 1;
@@ -74,10 +76,12 @@ function computeRanks(items, scoreKeys) {
         if (previousItem !== null) {
             let isWorse = false;
             for (const key of keys) {
-                if (item[key] < previousItem[key]) {
+                const itemVal = item[key] ?? 0;
+                const prevVal = previousItem[key] ?? 0;
+                if (itemVal < prevVal) {
                     isWorse = true;
                     break;
-                } else if (item[key] > previousItem[key]) {
+                } else if (itemVal > prevVal) {
                     break;
                 }
             }
@@ -109,8 +113,8 @@ benchmarks.models.forEach(m => {
         lvl1: m.scores.lvl1,
         lvl2: m.scores.lvl2,
         lvl3: m.scores.lvl3,
-        lvl4: m.scores.lvl4 || 0,
-        lvl5: m.scores.lvl5 || 0,
+        lvl4: m.scores.lvl4,
+        lvl5: m.scores.lvl5,
         lvl6: '?'
     });
 });
@@ -122,7 +126,7 @@ const unifiedRawList = Array.from(unifiedDataMap.values()).map(m => {
     // Average removed in favor of level-by-level fallback ranking
 
     // Determine overall fail (all scores 0)
-    m.isTotalFail = m.lvl1 === 0 && m.lvl2 === 0 && m.lvl3 === 0 && m.lvl4 === 0 && m.lvl5 === 0;
+    m.isTotalFail = (m.lvl1 ?? 0) === 0 && (m.lvl2 ?? 0) === 0 && (m.lvl3 ?? 0) === 0 && (m.lvl4 ?? 0) === 0 && (m.lvl5 ?? 0) === 0;
 
     return m;
 });
@@ -215,8 +219,8 @@ function getRankDisplay(rank) {
                                         <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl1}%`)}</span></div>
                                         <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl2}%`)}</span></div>
                                         <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl3}%`)}</span></div>
-                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl4}%`)}</span></div>
-                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : `${item.lvl5}%`)}</span></div>
+                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl4 !== undefined ? `${item.lvl4}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl5 !== undefined ? `${item.lvl5}%` : ''))}</span></div>
                                         <div class="benchmark-cell score-cell beholder-score"><span class="beholder-text">{item.name === 'Human Baseline' ? '' : '?'}</span></div>
                                     </div>
                                 );
