@@ -141,7 +141,7 @@ export const benchmarks = {
             releaseDate: '2026-02-18'
         },
         {
-            name: 'Muse Spark (with reasoning)',
+            name: 'Muse Spark (with reasoning)*',
             scores: {
                 'lvl1': 0,
                 'lvl2': 0,
@@ -151,13 +151,11 @@ export const benchmarks = {
             }
         },
         {
-            name: 'GPT-5.5 Instant*',
+            name: 'GPT-5.5 Instant',
             scores: {
                 'lvl1': 30,
                 'lvl2': 38,
-                'lvl3': 0,
-                'lvl4': 0,
-                'lvl5': 0
+                'lvl3': 19
             }
         }
     ],
