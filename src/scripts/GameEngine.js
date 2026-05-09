@@ -36,7 +36,7 @@ export class SoundManager {
         gain.connect(this.ctx.destination);
 
         switch (type) {
-            case 'pop': // Bubble Pop
+            case 'pop': // Orb Pop
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(800, now);
                 osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);

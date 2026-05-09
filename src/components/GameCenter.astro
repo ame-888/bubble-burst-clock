@@ -43,7 +43,7 @@ const { mode = 'modal' } = Astro.props;
                             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                         </svg>
                     </div>
-                    The Unpoppable
+                    The Ultimate
                 </button>
                 <button class="game-select-btn" data-game="tetris">
                      <div class="game-icon">
@@ -1078,7 +1078,6 @@ const { mode = 'modal' } = Astro.props;
                 const newNode = adventure.handleChoice(i, {
                     onLoot: (item) => sound.play('score'),
                     onAchievement: (id) => {
-                        if(window.AchievementManager) window.AchievementManager.unlock(id);
                         sound.play('score');
                     }
                 });
@@ -1235,7 +1234,7 @@ const { mode = 'modal' } = Astro.props;
             breakout: "Firewall Breaker",
             tictactoe: "Neural Nodes",
             pool: "Neural Pool",
-            adventure: "The Unpoppable"
+            adventure: "The Ultimate"
         };
         const hints = {
             snake: "Arrows to Move • P to Pause",
@@ -1284,46 +1283,12 @@ const { mode = 'modal' } = Astro.props;
 
     function updateScore(s) {
         document.getElementById('current-score').textContent = s;
-
-        // Check Achievements
-        if (window.AchievementManager) {
-            if (currentGame === 'snake') {
-                if (s >= 500) window.AchievementManager.unlock('snake_charmer');
-                if (s >= 1000) window.AchievementManager.unlock('snake_survivor');
-            }
-            if (currentGame === 'tetris') {
-                if (s >= 1000) window.AchievementManager.unlock('tetris_master');
-                if (s >= 3000) window.AchievementManager.unlock('tetris_endurance');
-            }
-            if (currentGame === 'breakout') {
-                if (s >= 500) window.AchievementManager.unlock('breakout_artist');
-                if (s >= 2000) window.AchievementManager.unlock('breakout_clean');
-            }
-        }
     }
 
     function handleGameOver(finalScore) {
         stopGame(); // Stop the loop, but keep currentGame for restart
         sound.play('gameover');
         scores.saveScore(currentGame, finalScore);
-
-        // Check Achievements
-        if (window.AchievementManager) {
-            if (currentGame === 'snake') {
-                if (finalScore >= 500) window.AchievementManager.unlock('snake_charmer');
-                if (finalScore >= 1000) window.AchievementManager.unlock('snake_survivor');
-            }
-            if (currentGame === 'tetris') {
-                if (finalScore >= 1000) window.AchievementManager.unlock('tetris_master');
-                if (finalScore >= 3000) window.AchievementManager.unlock('tetris_endurance');
-            }
-            if (currentGame === 'breakout') {
-                if (finalScore >= 500) window.AchievementManager.unlock('breakout_artist');
-                if (finalScore >= 2000) window.AchievementManager.unlock('breakout_clean');
-            }
-            if (currentGame === 'pool' && finalScore > 0) window.AchievementManager.unlock('pool_shark');
-            if (currentGame === 'tictactoe' && finalScore >= 10) window.AchievementManager.unlock('ttt_draw_master');
-        }
 
         document.getElementById('game-overlay-score').textContent = `Score: ${finalScore}`;
         document.getElementById('game-overlay').classList.remove('hidden');
