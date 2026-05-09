@@ -1,5 +1,6 @@
 ---
 import Navbar from '../components/Navbar.astro';
+import CookieBanner from '../components/CookieBanner.astro';
 
 const { lang = 'en', title = 'The AI Benchmark' } = Astro.props;
 ---
@@ -14,7 +15,7 @@ const { lang = 'en', title = 'The AI Benchmark' } = Astro.props;
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;900&display=swap" rel="stylesheet">
-		<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5230972214569734"
+		<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456"
      crossorigin="anonymous"></script>
         <slot name="head" />
 	</head>
@@ -27,6 +28,8 @@ const { lang = 'en', title = 'The AI Benchmark' } = Astro.props;
 
         <!-- Achievement Toast Container -->
         <div id="achievement-toast-container"></div>
+
+        <CookieBanner />
 
         <script>
             // Initialize Achievement Manager

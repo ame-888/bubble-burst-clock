@@ -1,0 +1,102 @@
+---
+// CookieBanner.astro
+---
+
+<div id="cookie-banner" class="cookie-banner">
+    <div class="cookie-content">
+        <p>
+            We use cookies to personalize content and ads, to provide social media features, and to analyze our traffic. By continuing to use our site, you agree to our use of cookies.
+            <a href="/privacy">Read our Privacy Policy</a>.
+        </p>
+        <button id="accept-cookies" class="cookie-btn">Accept</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const banner = document.getElementById("cookie-banner");
+        const acceptBtn = document.getElementById("accept-cookies");
+
+        // Check if user has already accepted
+        if (!localStorage.getItem("cookie_consent")) {
+            banner.classList.add("show");
+        }
+
+        acceptBtn.addEventListener("click", () => {
+            localStorage.setItem("cookie_consent", "true");
+            banner.classList.remove("show");
+        });
+    });
+</script>
+
+<style>
+    .cookie-banner {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: rgba(17, 24, 39, 0.98); /* Tailwind gray-900 */
+        color: #F3F4F6; /* Tailwind gray-100 */
+        padding: 1rem;
+        z-index: 10000;
+        border-top: 1px solid #374151; /* Tailwind gray-700 */
+        transform: translateY(100%);
+        transition: transform 0.3s ease-in-out;
+        box-sizing: border-box;
+    }
+
+    .cookie-banner.show {
+        transform: translateY(0);
+    }
+
+    .cookie-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    @media (min-width: 768px) {
+        .cookie-content {
+            flex-direction: row;
+            justify-content: space-between;
+            text-align: left;
+        }
+    }
+
+    .cookie-content p {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.4;
+        font-family: var(--font-body);
+    }
+
+    .cookie-content a {
+        color: #10B981; /* Emerald-500 */
+        text-decoration: underline;
+    }
+
+    .cookie-content a:hover {
+        color: #34D399; /* Emerald-400 */
+    }
+
+    .cookie-btn {
+        background-color: #10B981;
+        color: #111827;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-family: var(--font-heading);
+        cursor: pointer;
+        transition: background-color 0.2s;
+        white-space: nowrap;
+    }
+
+    .cookie-btn:hover {
+        background-color: #059669; /* Emerald-600 */
+    }
+</style>
