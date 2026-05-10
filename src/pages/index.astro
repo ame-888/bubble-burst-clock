@@ -23,6 +23,16 @@ function isNew(dateStr) {
     return diffDays >= -1 && diffDays <= 30;
 }
 
+function getModelColorClass(name) {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('gemini')) return 'model-bg-gemini';
+    if (lowerName.includes('muse')) return 'model-bg-muse';
+    if (lowerName.includes('gpt')) return 'model-bg-gpt';
+    if (lowerName.includes('grok')) return 'model-bg-grok';
+    if (lowerName.includes('claude')) return 'model-bg-claude';
+    return '';
+}
+
 // --- Ranking Logic ---
 function computeRanks(items, scoreKeys) {
     const keys = Array.isArray(scoreKeys) ? scoreKeys : [scoreKeys];
@@ -187,7 +197,7 @@ function getRankDisplay(rank) {
                                 return (
                                     <div class="benchmark-row unified-row">
                                         {/* Model Column */}
-                                        <div class="benchmark-cell model-cell">
+                                        <div class={`benchmark-cell model-cell ${getModelColorClass(item.name)}`}>
                                             <div class={`benchmark-content ${item.isTotalFail ? 'fail-item' : ''} ${item.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
                                                 <div class={`rank ${item.isTotalFail ? 'fail-rank' : ''}`}>
                                                     {getRankDisplay(item.rank)}
@@ -231,7 +241,7 @@ function getRankDisplay(rank) {
                                 const item = dataList[i];
                                 return (
                                     <div class="benchmark-row single-col-row">
-                                        <div class="benchmark-cell">
+                                        <div class={`benchmark-cell ${item ? getModelColorClass(item.name) : ''}`}>
                                             {item && (
                                                 <div class={`benchmark-content ${item.isFail ? 'fail-item' : ''} ${item.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
                                                     <div class={`rank ${item.isFail ? 'fail-rank' : ''}`}>
@@ -508,6 +518,27 @@ function getRankDisplay(rank) {
 
     .fail-score { color: #6B7280 !important; font-size: 0.85rem !important; text-shadow: none !important; }
     .fail-item .model-name { color: white; }
+
+    /* --- MODEL BRANDING STYLES --- */
+    .model-bg-gemini { background-color: #ADD8E6; }
+    .model-bg-gemini .model-name { color: #111827; }
+    .model-bg-gemini .rank { color: #111827; }
+
+    .model-bg-muse { background-color: #00008B; }
+    .model-bg-muse .model-name { color: #FFFFFF; }
+    .model-bg-muse .rank { color: #FFFFFF; }
+
+    .model-bg-gpt { background-color: #90EE90; }
+    .model-bg-gpt .model-name { color: #111827; }
+    .model-bg-gpt .rank { color: #111827; }
+
+    .model-bg-grok { background-color: #FFD700; }
+    .model-bg-grok .model-name { color: #111827; }
+    .model-bg-grok .rank { color: #111827; }
+
+    .model-bg-claude { background-color: #C8A2C8; }
+    .model-bg-claude .model-name { color: #111827; }
+    .model-bg-claude .rank { color: #111827; }
 
     /* --- CREATURE CHALLENGE STYLES --- */
 
