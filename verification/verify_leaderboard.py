@@ -9,7 +9,7 @@ def run():
         page.goto("http://localhost:4321/")
 
         # Wait for the page to load
-        page.wait_for_selector("#leaderboard-title")
+        page.wait_for_selector(".toggle-container")
 
         # Click the "DATA" toggle to switch to Data Retrieval view
         page.click("#toggle-data")
