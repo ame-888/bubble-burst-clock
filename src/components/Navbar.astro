@@ -1,21 +1,4 @@
 ---
-import LanguageSwitcher from './LanguageSwitcher.astro';
-import en from '../locales/en.json';
-import ptBR from '../locales/pt-BR.json';
-import ja from '../locales/ja.json';
-import es from '../locales/es.json';
-import zh from '../locales/zh.json';
-
-const translations = {
-    'en': en,
-    'pt-BR': ptBR,
-    'ja': ja,
-    'es': es,
-    'zh': zh,
-};
-
-const { lang = 'en' } = Astro.props;
-const t = translations[lang] || en;
 ---
 
 <nav class="navbar">
@@ -27,14 +10,13 @@ const t = translations[lang] || en;
         </button>
 
         <div class="navbar-menu" id="navbar-menu">
-            <a href="/" class="nav-link" data-i18n-key="nav_home">Home</a>
-            <a href="/about" class="nav-link" data-i18n-key="about_button">{t.about_button}</a>
-            <a href="/privacy" class="nav-link" data-i18n-key="privacy_policy_button">{t.privacy_policy_button}</a>
+            <a href="/" class="nav-link">Home</a>
+            <a href="/about" class="nav-link">About</a>
+            <a href="/privacy" class="nav-link">Privacy Policy</a>
             <a href="/arcade" id="nav-arcade" class="nav-link" style="color: #FACC15; font-weight: 700; margin-right: 1rem;">ARCADE</a>
         </div>
 
         <div class="navbar-end">
-             <LanguageSwitcher />
         </div>
     </div>
 </nav>
@@ -116,11 +98,6 @@ const t = translations[lang] || en;
         justify-content: flex-end;
     }
 
-    /* Override LanguageSwitcher positioning for Navbar */
-    :global(.language-switcher) {
-        position: static !important;
-    }
-
     .navbar-toggle {
         display: none;
         flex-direction: column;
@@ -178,7 +155,7 @@ const t = translations[lang] || en;
     }
 </style>
 
-<script define:vars={{ translations, lang }}>
+<script>
     // Mobile Menu Toggle
     const toggle = document.getElementById('navbar-toggle');
     const menu = document.getElementById('navbar-menu');
@@ -187,29 +164,6 @@ const t = translations[lang] || en;
         toggle.addEventListener('click', () => {
             menu.classList.toggle('active');
             // Animate hamburger (optional simple rotation)
-        });
-    }
-
-    // Client-side Translation Update for Navbar
-    function updateNavbarTranslations() {
-        let currentLang = lang;
-        try {
-            currentLang = localStorage.getItem('language') || document.cookie.split('; ').find(row => row.startsWith('language='))?.split('=')[1] || lang;
-        } catch (e) {
-            console.warn('Language detection failed:', e);
-        }
-
-        const t = translations[currentLang] || translations['en'];
-
-        document.querySelectorAll('.nav-link[data-i18n-key]').forEach(link => {
-            const key = link.getAttribute('data-i18n-key');
-
-            // Special handling for 'nav_home' if not in all json files (fallback to 'Home')
-            if (key === 'nav_home') {
-                link.textContent = t[key] || "Home";
-            } else if (t[key]) {
-                link.textContent = t[key];
-            }
         });
     }
 
@@ -237,7 +191,6 @@ const t = translations[lang] || en;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        updateNavbarTranslations();
         checkPetNotification();
 
         // Also highlight active link

@@ -164,7 +164,9 @@ export const benchmarks = {
             name: 'Grok 4.3 Fast',
             scores: {
                 'lvl1': 6,
-                'lvl2': 4
+                'lvl2': 4,
+                'lvl4': 0,
+                'lvl5': 0
             }
         }
     ],

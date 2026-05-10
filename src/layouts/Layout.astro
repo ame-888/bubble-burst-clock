@@ -2,16 +2,23 @@
 import Navbar from '../components/Navbar.astro';
 import CookieBanner from '../components/CookieBanner.astro';
 
-const { lang = 'en', title = 'The AI Benchmark' } = Astro.props;
+const { title = 'The AI Benchmark' } = Astro.props;
 ---
 <!doctype html>
-<html lang={lang}>
+<html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
+        <script>
+            // Check for saved theme preference or system preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'day' || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+                document.documentElement.classList.add('day-mode');
+            }
+        </script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;900&display=swap" rel="stylesheet">
@@ -20,7 +27,14 @@ const { lang = 'en', title = 'The AI Benchmark' } = Astro.props;
         <slot name="head" />
 	</head>
 	<body>
-        <Navbar lang={lang} />
+        <Navbar />
+
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Day/Night Mode">
+            <span class="icon moon">🌙</span>
+            <span class="text moon-text">Night</span>
+            <span class="icon sun">☀️</span>
+            <span class="text sun-text">Day</span>
+        </button>
 
 		<div class="content-wrapper">
             <slot />
@@ -32,7 +46,14 @@ const { lang = 'en', title = 'The AI Benchmark' } = Astro.props;
         <CookieBanner />
 
         <script>
-            // Initialize Achievement Manager
+            // Theme Toggle Logic
+            const themeToggle = document.getElementById('theme-toggle');
+
+            themeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('day-mode');
+                const isDayMode = document.documentElement.classList.contains('day-mode');
+                localStorage.setItem('theme', isDayMode ? 'day' : 'night');
+            });
         </script>
 	</body>
 </html>
@@ -43,6 +64,18 @@ const { lang = 'en', title = 'The AI Benchmark' } = Astro.props;
         --font-heading: 'Poppins', sans-serif;
         --color-bg: #111827;
         --color-text: #F3F4F6;
+        --theme-toggle-bg: rgba(31, 41, 55, 0.8);
+        --theme-toggle-border: rgba(255, 255, 255, 0.1);
+        --theme-toggle-color: #D1D5DB;
+    }
+
+    html.day-mode {
+        --color-bg: #F3F4F6;
+        --color-text: #111827;
+        --theme-toggle-bg: rgba(255, 255, 255, 0.8);
+        --theme-toggle-border: rgba(0, 0, 0, 0.1);
+        --theme-toggle-color: #374151;
+        --benchmark-bg: #FFFFFF;
     }
 
 	html,
@@ -131,4 +164,65 @@ const { lang = 'en', title = 'The AI Benchmark' } = Astro.props;
         font-weight: 600;
     }
 
+    /* Theme Toggle Button */
+    .theme-toggle {
+        position: fixed;
+        top: 5rem;
+        right: 1.5rem;
+        z-index: 1000;
+        background: var(--theme-toggle-bg);
+        border: 1px solid var(--theme-toggle-border);
+        border-radius: 2rem;
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        color: var(--theme-toggle-color);
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .theme-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .theme-toggle .icon {
+        font-size: 1.2rem;
+    }
+
+    .theme-toggle .sun,
+    .theme-toggle .sun-text {
+        display: none;
+    }
+
+    html.day-mode .theme-toggle .moon,
+    html.day-mode .theme-toggle .moon-text {
+        display: none;
+    }
+
+    html.day-mode .theme-toggle .sun,
+    html.day-mode .theme-toggle .sun-text {
+        display: inline;
+    }
+
+    @media (max-width: 768px) {
+        .theme-toggle {
+            top: auto;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.5rem;
+        }
+        .theme-toggle .text {
+            display: none;
+        }
+        html.day-mode .theme-toggle .sun-text {
+            display: none;
+        }
+    }
 </style>
