@@ -54,7 +54,7 @@ function computeRanks(items, scoreKeys) {
     });
 
     // 2. Separate Zeroes
-    // A model is an "EPIC FAIL" if ALL its scores for the provided keys are 0
+    // A model is an "INVALID" if ALL its scores for the provided keys are 0
     const eligible = sorted.filter(i => keys.some(key => (i[key] ?? 0) > 0));
     const fails = sorted.filter(i => keys.every(key => (i[key] ?? 0) === 0)).sort((a,b) => a.name.localeCompare(b.name));
 
@@ -92,7 +92,7 @@ function computeRanks(items, scoreKeys) {
 
     // 4. Append Fails
     fails.forEach(item => {
-        rankedItems.push({ ...item, rank: 'EPIC FAIL', isFail: true });
+        rankedItems.push({ ...item, rank: 'INVALID', isFail: true });
     });
 
     return rankedItems;
@@ -128,6 +128,19 @@ const unifiedRawList = Array.from(unifiedDataMap.values()).map(m => {
 });
 
 const unifiedList = computeRanks(unifiedRawList, ['lvl1', 'lvl2', 'lvl3', 'lvl4', 'lvl5']);
+
+// Calculate best AI scores for each column to apply the golden aura
+const bestAiScores = { lvl1: -1, lvl2: -1, lvl3: -1, lvl4: -1, lvl5: -1 };
+unifiedList.forEach(item => {
+    if (item.name !== 'Human Baseline' && !item.isTotalFail) {
+        if (item.lvl1 !== undefined && item.lvl1 > bestAiScores.lvl1) bestAiScores.lvl1 = item.lvl1;
+        if (item.lvl2 !== undefined && item.lvl2 > bestAiScores.lvl2) bestAiScores.lvl2 = item.lvl2;
+        if (item.lvl3 !== undefined && item.lvl3 > bestAiScores.lvl3) bestAiScores.lvl3 = item.lvl3;
+        if (item.lvl4 !== undefined && item.lvl4 > bestAiScores.lvl4) bestAiScores.lvl4 = item.lvl4;
+        if (item.lvl5 !== undefined && item.lvl5 > bestAiScores.lvl5) bestAiScores.lvl5 = item.lvl5;
+    }
+});
+
 const rows = Array.from({ length: unifiedList.length }, (_, i) => i);
 
 // Data Retrieval Logic
@@ -152,7 +165,7 @@ function getPixelMedal(rank) {
 
 function getRankDisplay(rank) {
     if (rank === '-') return '-';
-    if (rank === 'EPIC FAIL') return 'EPIC FAIL';
+    if (rank === 'INVALID') return 'INVALID';
     if (rank === 1) return getPixelMedal(1);
     if (rank === 2) return getPixelMedal(2);
     if (rank === 3) return getPixelMedal(3);
@@ -227,11 +240,11 @@ function getRankDisplay(rank) {
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl1 !== undefined ? `${item.lvl1}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl2 !== undefined ? `${item.lvl2}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl3 !== undefined ? `${item.lvl3}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl4 !== undefined ? `${item.lvl4}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'EPIC FAIL' : (item.lvl5 !== undefined ? `${item.lvl5}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl1 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl1 !== undefined ? `${item.lvl1}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl2 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl2 !== undefined ? `${item.lvl2}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl3 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl3 !== undefined ? `${item.lvl3}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl4 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl4 !== undefined ? `${item.lvl4}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl5 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl5 !== undefined ? `${item.lvl5}%` : ''))}</span></div>
                                         <div class="benchmark-cell score-cell beholder-score"><span class="beholder-text">{item.name === 'Human Baseline' ? '' : '?'}</span></div>
                                     </div>
                                 );
@@ -531,6 +544,16 @@ function getRankDisplay(rank) {
     }
 
     .fail-score { color: #6B7280 !important; font-size: 0.85rem !important; text-shadow: none !important; }
+
+    .zero-score-glow {
+        text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.6) !important;
+        color: #ffcccc !important;
+    }
+
+    .best-score-glow {
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6) !important;
+        color: #fff9e6 !important;
+    }
     .fail-item .model-name { color: white; }
 
     /* --- MODEL BRANDING STYLES --- */
