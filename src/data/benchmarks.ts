@@ -165,6 +165,7 @@ export const benchmarks = {
             scores: {
                 'lvl1': 6,
                 'lvl2': 4,
+                'lvl3': 0,
                 'lvl4': 0,
                 'lvl5': 0
             }
