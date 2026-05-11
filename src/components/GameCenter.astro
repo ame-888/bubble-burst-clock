@@ -120,9 +120,15 @@ const { mode = 'modal' } = Astro.props;
                         <div class="adventure-main-layout">
                             <div id="adventure-character-sheet" class="adv-side-panel">
                                 <h4>CHARACTER</h4>
-                                <div id="adv-char-name">User_01</div>
+                                <div id="adv-char-name" style="font-size: 0.8rem; color: #6EE7B7; margin-bottom: 0.5rem; word-break: break-word;">User_01</div>
+                                <div class="adv-stat-row"><span>LVL:</span> <span id="adv-stat-lvl">1</span></div>
+                                <div class="adv-stat-row"><span>XP:</span> <span id="adv-stat-xp">0</span></div>
                                 <div class="adv-stat-row"><span>HP:</span> <span id="adv-stat-hp">100/100</span></div>
                                 <div class="adv-stat-row"><span>STM:</span> <span id="adv-stat-stm">50/50</span></div>
+                                <div class="adv-stat-row"><span>STR:</span> <span id="adv-stat-str">10</span></div>
+                                <div class="adv-stat-row"><span>DEX:</span> <span id="adv-stat-dex">10</span></div>
+                                <div class="adv-stat-row"><span>INT:</span> <span id="adv-stat-int">10</span></div>
+                                <div class="adv-stat-row"><span>CURRENCY:</span> <span id="adv-stat-currency">0</span></div>
                                 <div class="adv-stat-row"><span>STATUS:</span> <span id="adv-stat-status">OK</span></div>
                             </div>
                             <div id="adventure-container" class="terminal-screen">
@@ -1092,12 +1098,33 @@ const { mode = 'modal' } = Astro.props;
         if(!adventure || !adventure.state || !adventure.state.stats) return;
 
         // Character Sheet
+        const nameEl = document.getElementById('adv-char-name');
+        const lvlEl = document.getElementById('adv-stat-lvl');
+        const xpEl = document.getElementById('adv-stat-xp');
         const hpEl = document.getElementById('adv-stat-hp');
         const stmEl = document.getElementById('adv-stat-stm');
+        const strEl = document.getElementById('adv-stat-str');
+        const dexEl = document.getElementById('adv-stat-dex');
+        const intEl = document.getElementById('adv-stat-int');
+        const currEl = document.getElementById('adv-stat-currency');
         const statusEl = document.getElementById('adv-stat-status');
 
+        if (nameEl) {
+            if (adventure.state.stats.race && adventure.state.stats.charClass) {
+                nameEl.textContent = `${adventure.state.stats.race} ${adventure.state.stats.charClass}`;
+            } else {
+                nameEl.textContent = 'Unknown Entity';
+            }
+        }
+
+        if (lvlEl) lvlEl.textContent = adventure.state.stats.level;
+        if (xpEl) xpEl.textContent = adventure.state.stats.xp;
         if (hpEl) hpEl.textContent = `${adventure.state.stats.hp}/${adventure.state.stats.maxHp}`;
         if (stmEl) stmEl.textContent = `${adventure.state.stats.stm}/${adventure.state.stats.maxStm}`;
+        if (strEl) strEl.textContent = adventure.state.stats.str;
+        if (dexEl) dexEl.textContent = adventure.state.stats.dex;
+        if (intEl) intEl.textContent = adventure.state.stats.int;
+        if (currEl) currEl.textContent = adventure.state.currency;
         if (statusEl) statusEl.textContent = adventure.state.stats.status;
 
         // Inventory
