@@ -240,11 +240,11 @@ function getRankDisplay(rank) {
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl1 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl1 !== undefined ? `${item.lvl1}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl2 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl2 !== undefined ? `${item.lvl2}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl3 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl3 !== undefined ? `${item.lvl3}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl4 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl4 !== undefined ? `${item.lvl4}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl5 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl5 !== undefined ? `${item.lvl5}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl1 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.lvl1 > 0 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl1 !== undefined ? `${item.lvl1}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl2 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.lvl2 > 0 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl2 !== undefined ? `${item.lvl2}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl3 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.lvl3 > 0 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl3 !== undefined ? `${item.lvl3}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl4 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.lvl4 > 0 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl4 !== undefined ? `${item.lvl4}%` : ''))}</span></div>
+                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl5 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.lvl5 > 0 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl5 !== undefined ? `${item.lvl5}%` : ''))}</span></div>
                                         <div class="benchmark-cell score-cell beholder-score"><span class="beholder-text">{item.name === 'Human Baseline' ? '' : '?'}</span></div>
                                     </div>
                                 );
@@ -552,7 +552,6 @@ function getRankDisplay(rank) {
 
     .best-score-glow {
         text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6) !important;
-        color: #fff9e6 !important;
     }
     .fail-item .model-name { color: white; }
 
@@ -560,22 +559,27 @@ function getRankDisplay(rank) {
     .model-bg-gemini { background-color: #ADD8E6; }
     .model-bg-gemini .model-name { color: #111827; }
     .model-bg-gemini .rank { color: #111827; }
+    .model-bg-gemini .model-score { color: #111827; }
 
     .model-bg-muse { background-color: #00008B; }
     .model-bg-muse .model-name { color: #FFFFFF; }
     .model-bg-muse .rank { color: #FFFFFF; }
+    .model-bg-muse .model-score { color: #FFFFFF; }
 
     .model-bg-gpt { background-color: #90EE90; }
     .model-bg-gpt .model-name { color: #111827; }
     .model-bg-gpt .rank { color: #111827; }
+    .model-bg-gpt .model-score { color: #111827; }
 
     .model-bg-grok { background-color: #FFD700; }
     .model-bg-grok .model-name { color: #111827; }
     .model-bg-grok .rank { color: #111827; }
+    .model-bg-grok .model-score { color: #111827; }
 
     .model-bg-claude { background-color: #C8A2C8; }
     .model-bg-claude .model-name { color: #111827; }
     .model-bg-claude .rank { color: #111827; }
+    .model-bg-claude .model-score { color: #111827; }
 
     /* --- CREATURE CHALLENGE STYLES --- */
 
