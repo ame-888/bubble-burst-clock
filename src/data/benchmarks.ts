@@ -175,6 +175,7 @@ export const benchmarks = {
         { name: 'Human Baseline', score: 100 },
         { name: 'Grok 4.20 Expert', score: 24, releaseDate: '2026-02-18' },
         { name: 'Gemini 3.1 Pro Preview', score: 20 },
+        { name: 'Muse Spark (with reasoning)', score: 13 },
         { name: 'Claude 4.6 Sonnet (with extended thinking)', score: 9, releaseDate: '2026-02-21' }
     ]
 };
