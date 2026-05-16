@@ -163,7 +163,8 @@ export const benchmarks = {
     ],
     dataRetrieval: [
         { name: 'Grok 4.20 Expert', scores: { koala: 24 }, releaseDate: '2026-02-18' },
-        { name: 'Gemini 3.1 Pro Preview', scores: { koala: 20 } },
+        { name: 'Grok 4.3 Fast', scores: { koala: 27 } },
+        { name: 'Gemini 3.1 Pro Preview', scores: { koala: 20, crow: 11 } },
         { name: 'Muse Spark (with reasoning)', scores: { koala: 13 } },
         { name: 'Claude 4.6 Sonnet (with extended thinking)', scores: { koala: 9 }, releaseDate: '2026-02-21' }
     ]
