@@ -135,7 +135,35 @@ unifiedList.forEach(item => {
 const rows = Array.from({ length: unifiedList.length }, (_, i) => i);
 
 // Data Retrieval Logic
-const dataList = computeRanks(benchmarks.dataRetrieval || [], 'score');
+const dataDataMap = new Map();
+
+(benchmarks.dataRetrieval || []).forEach(m => {
+    dataDataMap.set(m.name, {
+        name: m.name,
+        releaseDate: m.releaseDate,
+        worm: m.scores?.worm,
+        koala: m.scores?.koala,
+        crow: m.scores?.crow,
+        athena: '?'
+    });
+});
+
+const dataRawList = Array.from(dataDataMap.values()).map(m => {
+    m.isTotalFail = (m.worm ?? 0) === 0 && (m.koala ?? 0) === 0 && (m.crow ?? 0) === 0;
+    return m;
+});
+
+const dataList = computeRanks(dataRawList, ['worm', 'koala', 'crow']);
+
+const bestDataAiScores = { worm: -1, koala: -1, crow: -1 };
+dataList.forEach(item => {
+    if (!item.isTotalFail) {
+        if (item.worm !== undefined && item.worm > bestDataAiScores.worm) bestDataAiScores.worm = item.worm;
+        if (item.koala !== undefined && item.koala > bestDataAiScores.koala) bestDataAiScores.koala = item.koala;
+        if (item.crow !== undefined && item.crow > bestDataAiScores.crow) bestDataAiScores.crow = item.crow;
+    }
+});
+
 const rowsData = Array.from({ length: dataList.length }, (_, i) => i);
 
 function getPixelMedal(rank) {
@@ -316,21 +344,76 @@ function getRankDisplay(rank) {
                     </div>
                     <div class="data-benchmark-layout">
                         <div class="benchmark-scroll-container data-table-wrapper">
-                            <div class="benchmark-container single-col-container">
+                            <div class="benchmark-container visual-table">
                                 <!-- Header Row -->
-                                <div class="header-row single-col-header">
-                                    <div class="col-header"><h3>SCORE</h3></div>
+                                <div class="header-row unified-header-row">
+                                    <div class="col-header model-col-header"><h3>MODEL</h3><div class="creature-icon"></div></div>
+                                    <div class="col-header worm-header">
+                                        <h3>WORM</h3>
+                                        <div class="creature-icon worm-icon">
+                                            <svg viewBox="0 0 16 16" width="24" height="24">
+                                                <rect x="4" y="8" width="8" height="4" fill="#FFB6C1"/>
+                                                <rect x="5" y="7" width="6" height="6" fill="#FF69B4"/>
+                                                <rect x="3" y="9" width="10" height="2" fill="#FFB6C1"/>
+                                                <rect x="4" y="9" width="1" height="1" fill="#000"/>
+                                                <rect x="11" y="9" width="1" height="1" fill="#000"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="col-header koala-header">
+                                        <h3>KOALA</h3>
+                                        <div class="creature-icon koala-icon">
+                                            <svg viewBox="0 0 16 16" width="24" height="24">
+                                                <rect x="4" y="5" width="8" height="8" fill="#A9A9A9"/>
+                                                <rect x="3" y="6" width="2" height="3" fill="#808080"/>
+                                                <rect x="11" y="6" width="2" height="3" fill="#808080"/>
+                                                <rect x="6" y="8" width="1" height="1" fill="#000"/>
+                                                <rect x="9" y="8" width="1" height="1" fill="#000"/>
+                                                <rect x="7" y="10" width="2" height="2" fill="#2F4F4F"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="col-header crow-header">
+                                        <h3>CROW</h3>
+                                        <div class="creature-icon crow-icon">
+                                            <svg viewBox="0 0 16 16" width="24" height="24">
+                                                <rect x="5" y="4" width="6" height="8" fill="#333333"/>
+                                                <rect x="3" y="6" width="4" height="4" fill="#222222"/>
+                                                <rect x="9" y="6" width="4" height="4" fill="#222222"/>
+                                                <rect x="6" y="5" width="1" height="1" fill="#FFF"/>
+                                                <rect x="9" y="5" width="1" height="1" fill="#FFF"/>
+                                                <rect x="7" y="7" width="2" height="2" fill="#FFA500"/>
+                                                <rect x="7" y="12" width="1" height="2" fill="#FFA500"/>
+                                                <rect x="8" y="12" width="1" height="2" fill="#FFA500"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="col-header athena-header">
+                                        <h3>ATHENA</h3>
+                                        <div class="creature-icon athena-icon">
+                                            <svg viewBox="0 0 16 16" width="24" height="24">
+                                                <rect x="4" y="4" width="8" height="8" fill="#8A2BE2"/>
+                                                <rect x="5" y="5" width="6" height="6" fill="#9400D3"/>
+                                                <rect x="6" y="6" width="4" height="4" fill="#fff"/>
+                                                <rect x="7" y="7" width="2" height="2" fill="#FF0000"/>
+                                                <rect x="2" y="2" width="2" height="2" fill="#8A2BE2"/>
+                                                <rect x="12" y="2" width="2" height="2" fill="#8A2BE2"/>
+                                                <rect x="2" y="12" width="2" height="2" fill="#8A2BE2"/>
+                                                <rect x="12" y="12" width="2" height="2" fill="#8A2BE2"/>
+                                            </svg>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Rows Loop -->
                                 {rowsData.map(i => {
                                 const item = dataList[i];
                                 return (
-                                    <div class="benchmark-row single-col-row">
-                                        <div class={`benchmark-cell ${item ? getModelColorClass(item.name) : ''}`}>
+                                    <div class="benchmark-row unified-row">
+                                        <div class={`benchmark-cell model-cell ${item ? getModelColorClass(item.name) : ''}`}>
                                             {item && (
-                                                <div class={`benchmark-content ${item.isFail ? 'fail-item' : ''}`}>
-                                                    <div class={`rank ${item.isFail ? 'fail-rank' : ''}`} set:html={getRankDisplay(item.rank)}>
+                                                <div class={`benchmark-content ${item.isTotalFail ? 'fail-item' : ''}`}>
+                                                    <div class={`rank ${item.isTotalFail ? 'fail-rank' : ''}`} set:html={getRankDisplay(item.rank)}>
                                                     </div>
                                                     <div class="model-info">
                                                         <div class="model-name" data-release-date={item.releaseDate}>
@@ -338,12 +421,17 @@ function getRankDisplay(rank) {
                                                             {isNew(item.releaseDate) && <span class="new-badge">NEW</span>}
                                                         </div>
                                                     </div>
-                                                        <div class={`model-score ${item.isFail ? 'fail-score' : ''}`}>{item.score}%</div>
-                                                    </div>
-                                                )}
-                                            </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    );
+
+                                        {/* Challenge Columns */}
+                                        <div class="benchmark-cell score-cell worm-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.worm === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.worm === bestDataAiScores.worm && item.worm > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.worm !== undefined ? `${item.worm}%` : '')}</span></div>
+                                        <div class="benchmark-cell score-cell koala-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.koala === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.koala === bestDataAiScores.koala && item.koala > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.koala !== undefined ? `${item.koala}%` : '')}</span></div>
+                                        <div class="benchmark-cell score-cell crow-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.crow === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.crow === bestDataAiScores.crow && item.crow > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.crow !== undefined ? `${item.crow}%` : '')}</span></div>
+                                        <div class="benchmark-cell score-cell athena-score"><span class="athena-text">?</span></div>
+                                    </div>
+                                );
                                 })}
                             </div>
                         </div>
@@ -406,6 +494,10 @@ function getRankDisplay(rank) {
         display: grid;
         grid-template-columns: minmax(60px, 2.5fr) repeat(6, minmax(25px, 1fr));
         gap: 0.1rem;
+    }
+
+    .data-table-wrapper .unified-header-row, .data-table-wrapper .unified-row {
+        grid-template-columns: minmax(60px, 2.5fr) repeat(4, minmax(25px, 1fr));
     }
 
     @media (min-width: 640px) {
@@ -679,6 +771,30 @@ function getRankDisplay(rank) {
     .beholder-score { color: #FF00FF; }
     .beholder-text { color: #FF69B4; text-shadow: 0 0 8px #FF1493; font-weight: 900; font-size: 1.2rem; }
 
+    /* --- DATA CHALLENGE STYLES --- */
+
+    /* Worm (Pink/Brown) */
+    .worm-header h3 { color: #FFB6C1; border-color: #FFB6C1; }
+    .worm-score { color: #FF69B4; }
+
+    /* Koala (Grey/Eucalyptus) */
+    .koala-header h3 { color: #A9A9A9; border-color: #A9A9A9; }
+    .koala-score { color: #8FBC8F; }
+
+    /* Crow (Dark Grey/Black) */
+    .crow-header h3 { color: #555555; border-color: #555555; }
+    .crow-score { color: #777777; }
+
+    /* Athena (Neon Arcane / Same as Beholder) */
+    .athena-header h3 {
+        color: #FF00FF;
+        text-shadow: 0 0 5px #FF00FF, 0 0 10px #8A2BE2, 0 0 20px #9400D3;
+        border-color: #FF00FF;
+        animation: arcanePulse 2s infinite alternate;
+    }
+    .athena-score { color: #FF00FF; }
+    .athena-text { color: #FF69B4; text-shadow: 0 0 8px #FF1493; font-weight: 900; font-size: 1.2rem; }
+
     /* New Badge */
     .new-badge {
         display: inline-block;
@@ -800,22 +916,6 @@ function getRankDisplay(rank) {
         margin-bottom: 0.25rem;
     }
 
-    /* Single Column Layout */
-    .benchmark-container.single-col-container {
-        min-width: auto;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .header-row.single-col-header,
-    .benchmark-row.single-col-row {
-        grid-template-columns: 1fr;
-    }
-
-    .single-col-row .benchmark-cell {
-        border-right: none;
-    }
-
     /* Data Benchmark Layout */
     .data-benchmark-layout {
         display: flex;
@@ -832,7 +932,7 @@ function getRankDisplay(rank) {
         }
         .data-table-wrapper {
             flex: 1;
-            max-width: 600px;
+            max-width: 1000px;
         }
         .data-warning-container {
             flex: 0 0 300px;
