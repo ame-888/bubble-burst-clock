@@ -6,16 +6,6 @@ export const benchmarks = {
     ],
     models: [
         {
-            name: 'Human Baseline',
-            scores: {
-                'lvl1': 100,
-                'lvl2': 100,
-                'lvl3': 100,
-                'lvl4': 100,
-                'lvl5': 100
-            }
-        },
-        {
             name: 'Claude 4.6 Sonnet (with extended reasoning)',
             scores: {
                 'lvl1': 12,
@@ -172,7 +162,6 @@ export const benchmarks = {
         }
     ],
     dataRetrieval: [
-        { name: 'Human Baseline', score: 100 },
         { name: 'Grok 4.20 Expert', score: 24, releaseDate: '2026-02-18' },
         { name: 'Gemini 3.1 Pro Preview', score: 20 },
         { name: 'Muse Spark (with reasoning)', score: 13 },
