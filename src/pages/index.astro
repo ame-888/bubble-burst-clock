@@ -39,10 +39,6 @@ function computeRanks(items, scoreKeys) {
 
     // 1. Sort
     let sorted = [...items].sort((a, b) => {
-        // Human Baseline always on top if it exists, though score usually handles it
-        if (a.name === 'Human Baseline') return -1;
-        if (b.name === 'Human Baseline') return 1;
-
         for (const key of keys) {
             const valA = a[key] ?? 0;
             const valB = b[key] ?? 0;
@@ -64,11 +60,6 @@ function computeRanks(items, scoreKeys) {
     let rankedItems = [];
 
     eligible.forEach((item) => {
-        if (item.name === 'Human Baseline') {
-            rankedItems.push({ ...item, rank: '-', isFail: false });
-            return;
-        }
-
         if (previousItem !== null) {
             let isWorse = false;
             for (const key of keys) {
@@ -132,7 +123,7 @@ const unifiedList = computeRanks(unifiedRawList, ['lvl1', 'lvl2', 'lvl3', 'lvl4'
 // Calculate best AI scores for each column to apply the golden aura
 const bestAiScores = { lvl1: -1, lvl2: -1, lvl3: -1, lvl4: -1, lvl5: -1 };
 unifiedList.forEach(item => {
-    if (item.name !== 'Human Baseline' && !item.isTotalFail) {
+    if (!item.isTotalFail) {
         if (item.lvl1 !== undefined && item.lvl1 > bestAiScores.lvl1) bestAiScores.lvl1 = item.lvl1;
         if (item.lvl2 !== undefined && item.lvl2 > bestAiScores.lvl2) bestAiScores.lvl2 = item.lvl2;
         if (item.lvl3 !== undefined && item.lvl3 > bestAiScores.lvl3) bestAiScores.lvl3 = item.lvl3;
@@ -293,7 +284,7 @@ function getRankDisplay(rank) {
                                     <div class="benchmark-row unified-row">
                                         {/* Model Column */}
                                         <div class={`benchmark-cell model-cell ${getModelColorClass(item.name)}`}>
-                                            <div class={`benchmark-content ${item.isTotalFail ? 'fail-item' : ''} ${item.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                            <div class={`benchmark-content ${item.isTotalFail ? 'fail-item' : ''}`}>
                                                 <div class={`rank ${item.isTotalFail ? 'fail-rank' : ''}`} set:html={getRankDisplay(item.rank)}>
                                                 </div>
                                                 <div class="model-info">
@@ -306,12 +297,12 @@ function getRankDisplay(rank) {
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl1 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.lvl1 > 0 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl1 !== undefined ? `${item.lvl1}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl2 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.lvl2 > 0 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl2 !== undefined ? `${item.lvl2}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl3 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.lvl3 > 0 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl3 !== undefined ? `${item.lvl3}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl4 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.lvl4 > 0 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl4 !== undefined ? `${item.lvl4}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl5 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.lvl5 > 0 && item.name !== 'Human Baseline' && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.name === 'Human Baseline' ? '100%' : (item.isTotalFail ? 'INVALID' : (item.lvl5 !== undefined ? `${item.lvl5}%` : ''))}</span></div>
-                                        <div class="benchmark-cell score-cell beholder-score"><span class="beholder-text">{item.name === 'Human Baseline' ? '' : '?'}</span></div>
+                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl1 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.lvl1 > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.lvl1 !== undefined ? `${item.lvl1}%` : '')}</span></div>
+                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl2 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.lvl2 > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.lvl2 !== undefined ? `${item.lvl2}%` : '')}</span></div>
+                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl3 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.lvl3 > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.lvl3 !== undefined ? `${item.lvl3}%` : '')}</span></div>
+                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl4 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.lvl4 > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.lvl4 !== undefined ? `${item.lvl4}%` : '')}</span></div>
+                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl5 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.lvl5 > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.lvl5 !== undefined ? `${item.lvl5}%` : '')}</span></div>
+                                        <div class="benchmark-cell score-cell beholder-score"><span class="beholder-text">?</span></div>
                                     </div>
                                 );
                             })}
@@ -337,7 +328,7 @@ function getRankDisplay(rank) {
                                     <div class="benchmark-row single-col-row">
                                         <div class={`benchmark-cell ${item ? getModelColorClass(item.name) : ''}`}>
                                             {item && (
-                                                <div class={`benchmark-content ${item.isFail ? 'fail-item' : ''} ${item.name === 'Human Baseline' ? 'human-baseline' : ''}`}>
+                                                <div class={`benchmark-content ${item.isFail ? 'fail-item' : ''}`}>
                                                     <div class={`rank ${item.isFail ? 'fail-rank' : ''}`} set:html={getRankDisplay(item.rank)}>
                                                     </div>
                                                     <div class="model-info">
@@ -580,8 +571,6 @@ function getRankDisplay(rank) {
         }
     }
 
-    .human-baseline { opacity: 0.8; }
-    .human-baseline .rank { color: #9CA3AF; }
     .fail-rank { color: #EF4444; font-size: 0.5rem; min-width: 40px; text-align: left; }
 
     @media (min-width: 640px) {
