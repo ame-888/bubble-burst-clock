@@ -169,30 +169,21 @@ function getRankDisplay(rank) {
 
 
 
-        <!-- Benchmark About Modal -->
-        <div id="modal-overlay" class="hidden"></div>
-        <div id="about-benchmark-modal" class="modal hidden">
-            <div class="modal-content">
-                <button class="close-modal">&times;</button>
-                <h3 id="about-modal-title">About Benchmark</h3>
-                <p id="about-modal-desc">Description here...</p>
-            </div>
-        </div>
-
         <div class="leaderboard-grid">
             <!-- Benchmarks Section -->
             <section class="leaderboard-section full-width">
-                <div class="benchmark-header-container">
-
-                    <button id="about-benchmark-btn" class="about-benchmark-btn" title="About">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                        </svg>
-                        <span>About</span>
-                    </button>
-                </div>
-
                 <div id="visual-benchmark-wrapper">
+                    <div class="benchmark-description">
+                        <p>This is Visual Bench, the first of our Ultimate Bench series.<br>
+                        It's goal is measuring the visual capabilities of an AI model, including:</p>
+                        <ul>
+                            <li>recognizing characters</li>
+                            <li>spatial understanding</li>
+                            <li>consistency across generations</li>
+                            <li>stability across different kinds of noise</li>
+                        </ul>
+                        <p>The levels use increasingly difficult scenarios to test the AI models. There are currently five levels, and a sixth will be added once it becomes relevant (as an objective marker, once the EAGLE level reaches a SOTA of 25%).</p>
+                    </div>
                     <div class="benchmark-desktop-container">
                         <div class="benchmark-container visual-table">
                             <!-- Header Row -->
@@ -313,6 +304,16 @@ function getRankDisplay(rank) {
                 </div>
 
                 <div id="data-benchmark-wrapper" class="hidden">
+                    <div class="benchmark-description">
+                        <p>This is the Data Retrieval Bench, the second of our Ultimate Bench series.<br>
+                        It's goal is measuring how well AI models can search the web for very specific and obscure information, and get the correct answer against every odd. The challenges include:</p>
+                        <ul>
+                            <li>understanding what the questions are referring to, without a clear confirmation</li>
+                            <li>searching for the correct websites, not getting distracted</li>
+                            <li>often needing visual capabilities to recognize information from images, not just from plain text</li>
+                        </ul>
+                        <p>Due to requiring a lot of time and tokens in order to fully test a model in the Data Retrieval Bench, we only have one level so far. A challenging level. A new harder level will be added once the existing one gets a score over 50%.</p>
+                    </div>
                     <div class="data-benchmark-layout">
                         <div class="benchmark-scroll-container data-table-wrapper">
                             <div class="benchmark-container single-col-container">
@@ -344,18 +345,6 @@ function getRankDisplay(rank) {
                                         </div>
                                     );
                                 })}
-
-                                <p class="disclaimer" id="data-benchmark-disclaimer">Data retrieval and extraction capabilities across models. Note: Scores heavily depend on system prompt configuration and task formatting.</p>
-                            </div>
-                        </div>
-
-                        <!-- Warning Section -->
-                        <div class="data-warning-container">
-                            <div class="warning-box">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="warning-icon">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                                <p id="data-benchmark-warning">Warning: Data Extraction Benchmark is highly experimental. Results may vary significantly based on context window usage.</p>
                             </div>
                         </div>
                     </div>
@@ -779,47 +768,36 @@ function getRankDisplay(rank) {
         text-align: center;
     }
 
-    /* Header Container */
-    .benchmark-header-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+    .benchmark-description {
+        max-width: 800px;
+        margin: 0 auto 2rem auto;
+        color: #D1D5DB;
+        line-height: 1.6;
+        font-size: 1.05rem;
+        text-align: left;
+        background: rgba(31, 41, 55, 0.4);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .benchmark-header-container h2 {
+    .benchmark-description p {
+        margin-bottom: 1rem;
+    }
+
+    .benchmark-description p:last-child {
         margin-bottom: 0;
     }
 
-    .about-benchmark-btn {
-        background: none;
-        border: none;
-        color: #6B7280;
-        cursor: pointer;
-        transition: color 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem;
+    .benchmark-description ul {
+        list-style-type: disc;
+        margin-left: 2rem;
+        margin-bottom: 1rem;
+        color: #9CA3AF;
     }
-    .about-benchmark-btn:hover {
-        color: #F59E0B;
-    }
-    .about-benchmark-btn svg {
-        width: 1.5rem;
-        height: 1.5rem;
-    }
-    .about-benchmark-btn span {
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        display: none;
-    }
-    @media (min-width: 640px) {
-        .about-benchmark-btn span {
-            display: inline;
-        }
+
+    .benchmark-description li {
+        margin-bottom: 0.25rem;
     }
 
     /* Single Column Layout */
@@ -862,109 +840,6 @@ function getRankDisplay(rank) {
         }
     }
 
-    /* Warning Box */
-    .data-warning-container {
-        width: 100%;
-        max-width: 600px;
-    }
-
-    .warning-box {
-        background: rgba(239, 68, 68, 0.1);
-        border: 2px solid rgba(239, 68, 68, 0.6);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 1rem;
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
-    }
-
-    .warning-icon {
-        width: 3rem;
-        height: 3rem;
-        color: #ef4444;
-        animation: pulseRed 2s infinite;
-    }
-
-    @keyframes pulseRed {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.1); opacity: 0.8; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-
-    #data-benchmark-warning {
-        color: #fca5a5;
-        font-weight: 700;
-        font-size: 1.1rem;
-        line-height: 1.4;
-        margin: 0;
-    }
-
-    /* Modal Styles */
-    #modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(5px);
-        z-index: 20000;
-        animation: fadeIn 0.3s;
-    }
-
-    .modal {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 20001;
-        width: 90%;
-        max-width: 600px;
-        animation: slideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    }
-
-    .modal-content {
-        background: #1F2937;
-        padding: 2.5rem;
-        border-radius: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        position: relative;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
-
-    .close-modal {
-        position: absolute;
-        top: 1rem;
-        right: 1.5rem;
-        background: none;
-        border: none;
-        color: #9CA3AF;
-        font-size: 2rem;
-        cursor: pointer;
-        line-height: 1;
-    }
-    .close-modal:hover { color: white; }
-
-    #about-modal-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #F59E0B;
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-
-    #about-modal-desc {
-        color: #D1D5DB;
-        line-height: 1.6;
-        text-align: center;
-        font-size: 1rem;
-    }
-
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideIn { from { transform: translate(-50%, -45%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
 </style>
 
 <script define:vars={{ TIME_OFFSET }}>
@@ -987,44 +862,6 @@ function getRankDisplay(rank) {
         window.addEventListener('benchmarkTabChanged', (e) => {
             updateBenchmarkView(e.detail);
         });
-
-        // --- About Modal Logic ---
-        const modalOverlay = document.getElementById('modal-overlay');
-        const aboutModal = document.getElementById('about-benchmark-modal');
-        const aboutBtn = document.getElementById('about-benchmark-btn');
-        const closeModalBtn = document.querySelector('.close-modal');
-        const aboutTitle = document.getElementById('about-modal-title');
-        const aboutDesc = document.getElementById('about-modal-desc');
-
-        function openModal() {
-             if (aboutModal && modalOverlay) {
-                aboutModal.classList.remove('hidden');
-                modalOverlay.classList.remove('hidden');
-
-                // Set content based on active tab
-                const urlParams = new URLSearchParams(window.location.search);
-                const activeTab = urlParams.get('tab') || localStorage.getItem('benchmark_tab') || 'visual';
-
-                if (activeTab === 'visual') {
-                    if(aboutTitle) aboutTitle.textContent = "Visual Benchmark";
-                    if(aboutDesc) aboutDesc.textContent = "This benchmark evaluates the visual reasoning capabilities of different models. Models are tested on a set of increasingly complex visual puzzles.";
-                } else {
-                    if(aboutTitle) aboutTitle.textContent = "Data Retrieval Benchmark";
-                    if(aboutDesc) aboutDesc.textContent = "This benchmark measures how well models can extract and retrieve specific information from large datasets and complex documents.";
-                }
-             }
-        }
-
-        function closeModal() {
-            if (aboutModal && modalOverlay) {
-                aboutModal.classList.add('hidden');
-                modalOverlay.classList.add('hidden');
-            }
-        }
-
-        if (aboutBtn) aboutBtn.addEventListener('click', openModal);
-        if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
-        if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
 
         const urlParams = new URLSearchParams(window.location.search);
         const urlMode = urlParams.get('tab');
