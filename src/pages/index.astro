@@ -129,6 +129,7 @@ const dataDataMap = new Map();
         worm: m.scores?.worm,
         koala: m.scores?.koala,
         crow: m.scores?.crow,
+        octopus: m.scores?.octopus,
         athena: '?'
     });
 });
@@ -137,16 +138,18 @@ const dataRawList = Array.from(dataDataMap.values()).map(m => {
     const wormScore = typeof m.worm === 'number' ? m.worm : 0;
     const koalaScore = typeof m.koala === 'number' ? m.koala : 0;
     const crowScore = typeof m.crow === 'number' ? m.crow : 0;
+    const octopusScore = typeof m.octopus === 'number' ? m.octopus : 0;
     return m;
 });
 
-const dataList = computeRanks(dataRawList, ['worm', 'koala', 'crow']);
+const dataList = computeRanks(dataRawList, ['worm', 'koala', 'crow', 'octopus']);
 
-const bestDataAiScores = { worm: -1, koala: -1, crow: -1 };
+const bestDataAiScores = { worm: -1, koala: -1, crow: -1, octopus: -1 };
 dataList.forEach(item => {
             if (typeof item.worm === 'number' && item.worm > bestDataAiScores.worm) bestDataAiScores.worm = item.worm;
         if (typeof item.koala === 'number' && item.koala > bestDataAiScores.koala) bestDataAiScores.koala = item.koala;
         if (typeof item.crow === 'number' && item.crow > bestDataAiScores.crow) bestDataAiScores.crow = item.crow;
+        if (typeof item.octopus === 'number' && item.octopus > bestDataAiScores.octopus) bestDataAiScores.octopus = item.octopus;
 });
 
 const rowsData = Array.from({ length: dataList.length }, (_, i) => i);
@@ -455,6 +458,34 @@ There are currently three levels in use. The fourth level will be unlocked once 
                                             </svg>
                                         </div>
                                     </div>
+                                    <div class="col-header octopus-header" style="flex: 1;">
+                                        <div class="header-title-wrapper">
+                                            <h3>OCTOPUS</h3>
+                                            <span class="tooltip-container">
+                                                <span class="tooltip-icon">ⓘ</span>
+                                                <div class="tooltip-text"><strong>OCTOPUS (Level 4):</strong> Tests Advanced Multi-Modal Data Navigation. Requires the agent to simultaneously navigate and cross-reference structured tabular data, unstructured text, and metadata deep within complex file systems.</div>
+                                            </span>
+                                        </div>
+                                        <div class="creature-icon octopus-icon">
+                                            <svg viewBox="0 0 16 16" width="24" height="24">
+                                                <rect x="5" y="3" width="6" height="5" fill="#9370DB"/>
+                                                <rect x="4" y="5" width="8" height="4" fill="#8A2BE2"/>
+                                                <rect x="6" y="5" width="1" height="1" fill="#FFF"/>
+                                                <rect x="9" y="5" width="1" height="1" fill="#FFF"/>
+                                                <rect x="6" y="5" width="1" height="1" fill="#000" transform="translate(0.5, 0.5) scale(0.5)"/>
+                                                <rect x="9" y="5" width="1" height="1" fill="#000" transform="translate(0.5, 0.5) scale(0.5)"/>
+                                                <!-- Tentacles -->
+                                                <rect x="3" y="9" width="1" height="4" fill="#9370DB"/>
+                                                <rect x="5" y="9" width="1" height="3" fill="#8A2BE2"/>
+                                                <rect x="7" y="9" width="1" height="5" fill="#9370DB"/>
+                                                <rect x="10" y="9" width="1" height="3" fill="#8A2BE2"/>
+                                                <rect x="12" y="9" width="1" height="4" fill="#9370DB"/>
+                                                <rect x="4" y="12" width="1" height="1" fill="#8A2BE2"/>
+                                                <rect x="11" y="12" width="1" height="1" fill="#8A2BE2"/>
+                                                <rect x="8" y="13" width="1" height="1" fill="#8A2BE2"/>
+                                            </svg>
+                                        </div>
+                                    </div>
                                     <div class="col-header athena-header" style="flex: 1;">
                                         <div class="header-title-wrapper">
                                             <h3>ATHENA</h3>
@@ -503,6 +534,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
                                         <div class="benchmark-cell score-cell worm-score" style="flex: 1;"><span class={` ${item.worm === 0 || item.worm === 'INVALID' ? 'zero-score-glow' : ''} ${item.worm === bestDataAiScores.worm && item.worm > 0 ? 'best-score-glow' : ''}`}>{item.worm !== undefined ? (typeof item.worm === 'string' ? item.worm : `${item.worm}%`) : ''}</span></div>
                                         <div class="benchmark-cell score-cell koala-score" style="flex: 1;"><span class={` ${item.koala === 0 || item.koala === 'INVALID' ? 'zero-score-glow' : ''} ${item.koala === bestDataAiScores.koala && item.koala > 0 ? 'best-score-glow' : ''}`}>{item.koala !== undefined ? (typeof item.koala === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.koala}</span> : `${item.koala}%`) : ''}</span></div>
                                         <div class="benchmark-cell score-cell crow-score" style="flex: 1;"><span class={` ${item.crow === 0 || item.crow === 'INVALID' ? 'zero-score-glow' : ''} ${item.crow === bestDataAiScores.crow && item.crow > 0 ? 'best-score-glow' : ''}`}>{item.crow !== undefined ? (typeof item.crow === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.crow}</span> : `${item.crow}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell octopus-score" style="flex: 1;"><span class={` ${item.octopus === 0 || item.octopus === 'INVALID' ? 'zero-score-glow' : ''} ${item.octopus === bestDataAiScores.octopus && item.octopus > 0 ? 'best-score-glow' : ''}`}>{item.octopus !== undefined ? (typeof item.octopus === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.octopus}</span> : `${item.octopus}%`) : ''}</span></div>
                                         <div class="benchmark-cell score-cell athena-score" style="flex: 1;"><span class="athena-text">?</span></div>
                                     </div>
                                 );
@@ -572,7 +604,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
     }
 
     .data-table-wrapper .unified-header-row, .data-table-wrapper .unified-row {
-        grid-template-columns: minmax(60px, 2.5fr) repeat(4, minmax(25px, 1fr));
+        grid-template-columns: minmax(60px, 2.5fr) repeat(5, minmax(25px, 1fr));
     }
 
     @media (min-width: 640px) {
@@ -886,6 +918,11 @@ There are currently three levels in use. The fourth level will be unlocked once 
     .crow-header h3 { color: #555555; }
     .crow-header .header-title-wrapper { border-color: #555555; }
     .crow-score { color: #777777; }
+
+    /* Octopus (Purple Theme) */
+    .octopus-header h3 { color: #9370DB; }
+    .octopus-header .header-title-wrapper { border-color: #9370DB; }
+    .octopus-score { color: #8A2BE2; }
 
     /* Athena (Gold Theme Animation) */
     .athena-header h3 {
@@ -1329,7 +1366,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
                 const method = e.target.value;
                 if (dataTooltip) dataTooltip.textContent = tooltips[method];
 
-                const sorted = sortAndRank(dataRawList, ['worm', 'koala', 'crow'], method);
+                const sorted = sortAndRank(dataRawList, ['worm', 'koala', 'crow', 'octopus'], method);
                 updateTableDOM('data-table-body', sorted);
             });
         }
