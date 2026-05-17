@@ -359,17 +359,17 @@ There are currently five levels in use. The sixth level will be unlocked once al
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl1 === 0 ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.lvl1 > 0 ? 'best-score-glow' : ''}`}>{item.lvl1 !== undefined ? `${item.lvl1}%` : ''}</span></div>
-                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl2 === 0 ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.lvl2 > 0 ? 'best-score-glow' : ''}`}>{item.lvl2 !== undefined ? `${item.lvl2}%` : ''}</span></div>
-                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl3 === 0 ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.lvl3 > 0 ? 'best-score-glow' : ''}`}>{item.lvl3 !== undefined ? `${item.lvl3}%` : ''}</span></div>
-                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl4 === 0 ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.lvl4 > 0 ? 'best-score-glow' : ''}`}>{item.lvl4 !== undefined ? `${item.lvl4}%` : ''}</span></div>
-                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl5 === 0 ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.lvl5 > 0 ? 'best-score-glow' : ''}`}>{item.lvl5 !== undefined ? `${item.lvl5}%` : ''}</span></div>
+                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl1 === 0 || item.lvl1 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.lvl1 > 0 ? 'best-score-glow' : ''}`}>{item.lvl1 !== undefined ? (typeof item.lvl1 === 'string' ? item.lvl1 : `${item.lvl1}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl2 === 0 || item.lvl2 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.lvl2 > 0 ? 'best-score-glow' : ''}`}>{item.lvl2 !== undefined ? (typeof item.lvl2 === 'string' ? item.lvl2 : `${item.lvl2}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl3 === 0 || item.lvl3 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.lvl3 > 0 ? 'best-score-glow' : ''}`}>{item.lvl3 !== undefined ? (typeof item.lvl3 === 'string' ? item.lvl3 : `${item.lvl3}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl4 === 0 || item.lvl4 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.lvl4 > 0 ? 'best-score-glow' : ''}`}>{item.lvl4 !== undefined ? (typeof item.lvl4 === 'string' ? item.lvl4 : `${item.lvl4}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl5 === 0 || item.lvl5 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.lvl5 > 0 ? 'best-score-glow' : ''}`}>{item.lvl5 !== undefined ? (typeof item.lvl5 === 'string' ? item.lvl5 : `${item.lvl5}%`) : ''}</span></div>
                                         <div class="benchmark-cell score-cell beholder-score"><span class="beholder-text">?</span></div>
                                     </div>
                                 );
                             })}
 
-                            <p class="disclaimer">INVALID: The model was unable to consistently answer the test, even if incorrectly.<br>UNAVAILABLE: The model was unavailable for testing, and therefore the score couldn't be measured</p>
+                            <p class="disclaimer">INVALID: The model was unable to consistently answer the test, even if incorrectly.<br>UNAVAILABLE: The model was unavailable for testing, and therefore the score couldn't be measured.</p>
                         </div>
                     </div>
                 </div>
@@ -508,15 +508,15 @@ There are currently three levels in use. The fourth level will be unlocked once 
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell worm-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.worm === 0 ? 'zero-score-glow' : ''} ${item.worm === bestDataAiScores.worm && item.worm > 0 ? 'best-score-glow' : ''}`}>{item.worm !== undefined ? (typeof item.worm === 'string' ? item.worm : `${item.worm}%`) : ''}</span></div>
-                                        <div class="benchmark-cell score-cell koala-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.koala === 0 ? 'zero-score-glow' : ''} ${item.koala === bestDataAiScores.koala && item.koala > 0 ? 'best-score-glow' : ''}`}>{item.koala !== undefined ? (typeof item.koala === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.koala}</span> : `${item.koala}%`) : ''}</span></div>
-                                        <div class="benchmark-cell score-cell crow-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.crow === 0 ? 'zero-score-glow' : ''} ${item.crow === bestDataAiScores.crow && item.crow > 0 ? 'best-score-glow' : ''}`}>{item.crow !== undefined ? (typeof item.crow === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.crow}</span> : `${item.crow}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell worm-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.worm === 0 || item.worm === 'INVALID' ? 'zero-score-glow' : ''} ${item.worm === bestDataAiScores.worm && item.worm > 0 ? 'best-score-glow' : ''}`}>{item.worm !== undefined ? (typeof item.worm === 'string' ? item.worm : `${item.worm}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell koala-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.koala === 0 || item.koala === 'INVALID' ? 'zero-score-glow' : ''} ${item.koala === bestDataAiScores.koala && item.koala > 0 ? 'best-score-glow' : ''}`}>{item.koala !== undefined ? (typeof item.koala === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.koala}</span> : `${item.koala}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell crow-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.crow === 0 || item.crow === 'INVALID' ? 'zero-score-glow' : ''} ${item.crow === bestDataAiScores.crow && item.crow > 0 ? 'best-score-glow' : ''}`}>{item.crow !== undefined ? (typeof item.crow === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.crow}</span> : `${item.crow}%`) : ''}</span></div>
                                         <div class="benchmark-cell score-cell athena-score" style="flex: 1;"><span class="athena-text">?</span></div>
                                     </div>
                                 );
                                 })}
                             </div>
-                            <p class="disclaimer">INVALID: The model was unable to consistently answer the test, even if incorrectly.<br>UNAVAILABLE: The model was unavailable for testing, and therefore the score couldn't be measured</p>
+                            <p class="disclaimer">INVALID: The model was unable to consistently answer the test, even if incorrectly.<br>UNAVAILABLE: The model was unavailable for testing, and therefore the score couldn't be measured.</p>
                         </div>
                     </div>
                 </div>
@@ -752,14 +752,14 @@ There are currently three levels in use. The fourth level will be unlocked once 
         }
     }
 
-    .fail-rank { color: #EF4444; font-size: 0.5rem; min-width: 40px; text-align: left; }
+    .fail-rank { color: #EF4444; font-size: 0.5rem; min-width: 40px; text-align: center; }
 
     @media (min-width: 640px) {
-        .fail-rank { font-size: 0.7rem; min-width: 50px; }
+        .fail-rank { font-size: 0.7rem; min-width: 50px; text-align: center; }
     }
 
     @media (min-width: 1024px) {
-        .fail-rank { font-size: 0.85rem; min-width: 70px; }
+        .fail-rank { font-size: 0.85rem; min-width: 70px; text-align: center; }
     }
 
     .model-info {
