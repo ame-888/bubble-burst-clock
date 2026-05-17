@@ -49,17 +49,12 @@ function computeRanks(items, scoreKeys) {
         return 0;
     });
 
-    // 2. Separate Zeroes
-    // A model is an "INVALID" if ALL its scores for the provided keys are 0
-    const eligible = sorted.filter(i => keys.some(key => (typeof i[key] === 'number' ? i[key] : 0) > 0));
-    const fails = sorted.filter(i => keys.every(key => (typeof i[key] === 'number' ? i[key] : 0) === 0)).sort((a,b) => a.name.localeCompare(b.name));
-
-    // 3. Assign ranks to eligible
+    // 3. Assign ranks
     let currentRank = 1;
     let previousItem = null;
     let rankedItems = [];
 
-    eligible.forEach((item) => {
+    sorted.forEach((item) => {
         if (previousItem !== null) {
             let isWorse = false;
             for (const key of keys) {
@@ -79,11 +74,6 @@ function computeRanks(items, scoreKeys) {
 
         rankedItems.push({ ...item, rank: currentRank, isFail: false });
         previousItem = item;
-    });
-
-    // 4. Append Fails
-    fails.forEach(item => {
-        rankedItems.push({ ...item, rank: 'INVALID', isFail: true });
     });
 
     return rankedItems;
@@ -187,7 +177,7 @@ function getPixelMedal(rank) {
 
 function getRankDisplay(rank) {
     if (rank === '-') return '-';
-    if (rank === 'INVALID') return 'INVALID';
+    if (rank === 'INVALID') return `<span class="zero-score-glow">INVALID</span>`;
     if (rank === 1) return getPixelMedal(1);
     if (rank === 2) return getPixelMedal(2);
     if (rank === 3) return getPixelMedal(3);
@@ -369,11 +359,11 @@ There are currently five levels in use. The sixth level will be unlocked once al
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl1 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.lvl1 > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.lvl1 !== undefined ? `${item.lvl1}%` : '')}</span></div>
-                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl2 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.lvl2 > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.lvl2 !== undefined ? `${item.lvl2}%` : '')}</span></div>
-                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl3 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.lvl3 > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.lvl3 !== undefined ? `${item.lvl3}%` : '')}</span></div>
-                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl4 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.lvl4 > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.lvl4 !== undefined ? `${item.lvl4}%` : '')}</span></div>
-                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl5 === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.lvl5 > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.lvl5 !== undefined ? `${item.lvl5}%` : '')}</span></div>
+                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl1 === 0 ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.lvl1 > 0 ? 'best-score-glow' : ''}`}>{item.lvl1 !== undefined ? `${item.lvl1}%` : ''}</span></div>
+                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl2 === 0 ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.lvl2 > 0 ? 'best-score-glow' : ''}`}>{item.lvl2 !== undefined ? `${item.lvl2}%` : ''}</span></div>
+                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl3 === 0 ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.lvl3 > 0 ? 'best-score-glow' : ''}`}>{item.lvl3 !== undefined ? `${item.lvl3}%` : ''}</span></div>
+                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl4 === 0 ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.lvl4 > 0 ? 'best-score-glow' : ''}`}>{item.lvl4 !== undefined ? `${item.lvl4}%` : ''}</span></div>
+                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl5 === 0 ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.lvl5 > 0 ? 'best-score-glow' : ''}`}>{item.lvl5 !== undefined ? `${item.lvl5}%` : ''}</span></div>
                                         <div class="benchmark-cell score-cell beholder-score"><span class="beholder-text">?</span></div>
                                     </div>
                                 );
@@ -518,9 +508,9 @@ There are currently three levels in use. The fourth level will be unlocked once 
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell worm-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.worm === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.worm === bestDataAiScores.worm && item.worm > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.worm !== undefined ? (typeof item.worm === 'string' ? item.worm : `${item.worm}%`) : '')}</span></div>
-                                        <div class="benchmark-cell score-cell koala-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.koala === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.koala === bestDataAiScores.koala && item.koala > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.koala !== undefined ? (typeof item.koala === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.koala}</span> : `${item.koala}%`) : '')}</span></div>
-                                        <div class="benchmark-cell score-cell crow-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.crow === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.crow === bestDataAiScores.crow && item.crow > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.crow !== undefined ? (typeof item.crow === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.crow}</span> : `${item.crow}%`) : '')}</span></div>
+                                        <div class="benchmark-cell score-cell worm-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.worm === 0 ? 'zero-score-glow' : ''} ${item.worm === bestDataAiScores.worm && item.worm > 0 ? 'best-score-glow' : ''}`}>{item.worm !== undefined ? (typeof item.worm === 'string' ? item.worm : `${item.worm}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell koala-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.koala === 0 ? 'zero-score-glow' : ''} ${item.koala === bestDataAiScores.koala && item.koala > 0 ? 'best-score-glow' : ''}`}>{item.koala !== undefined ? (typeof item.koala === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.koala}</span> : `${item.koala}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell crow-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.crow === 0 ? 'zero-score-glow' : ''} ${item.crow === bestDataAiScores.crow && item.crow > 0 ? 'best-score-glow' : ''}`}>{item.crow !== undefined ? (typeof item.crow === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.crow}</span> : `${item.crow}%`) : ''}</span></div>
                                         <div class="benchmark-cell score-cell athena-score" style="flex: 1;"><span class="athena-text">?</span></div>
                                     </div>
                                 );
@@ -813,7 +803,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
     }
 
     .best-score-glow {
-        text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4) !important;
+        border: 2px solid #FFD700 !important; border-radius: 12px; padding: 2px 6px; display: inline-block;
     }
     .fail-item .model-name { color: white; }
 
@@ -1281,7 +1271,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
 
         function getRankDisplayHtml(rank) {
             if (rank === '-') return '-';
-            if (rank === 'INVALID') return 'INVALID';
+            if (rank === 'INVALID') return `<span class="zero-score-glow">INVALID</span>`;
             if (rank === 1) return getPixelMedalHtml(1);
             if (rank === 2) return getPixelMedalHtml(2);
             if (rank === 3) return getPixelMedalHtml(3);
@@ -1414,16 +1404,13 @@ There are currently three levels in use. The fourth level will be unlocked once 
             const unknownResilience = sorted.filter(i => i._sortValue === 'UNKNOWN');
             const nonUnknown = sorted.filter(i => i._sortValue !== 'UNKNOWN');
 
-            const eligible = nonUnknown.filter(i => !i.isTotalFail);
-            const fails = nonUnknown.filter(i => i.isTotalFail).sort((a,b) => a.name.localeCompare(b.name));
-
             const bottomFails = unknownResilience.sort((a,b) => a.name.localeCompare(b.name));
 
             let currentRank = 1;
             let previousItem = null;
             let rankedItems = [];
 
-            eligible.forEach((item) => {
+            nonUnknown.forEach((item) => {
                 if (previousItem !== null) {
                     let isWorse = false;
                     if (method === 'baseline') {
@@ -1453,11 +1440,6 @@ There are currently three levels in use. The fourth level will be unlocked once 
                 item.rank = currentRank;
                 rankedItems.push(item);
                 previousItem = item;
-            });
-
-            fails.forEach(item => {
-                item.rank = 'INVALID';
-                rankedItems.push(item);
             });
 
             bottomFails.forEach(item => {
