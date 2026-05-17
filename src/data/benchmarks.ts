@@ -166,6 +166,7 @@ export const benchmarks = {
         { name: 'Grok 4.3 Fast', scores: { worm: 27, koala: 21 } },
         { name: 'Gemini 3.1 Pro Preview', scores: { worm: 20, koala: 11 } },
         { name: 'Muse Spark (with reasoning)', scores: { worm: 13, koala: "INVALID", crow: "INVALID" } },
-        { name: 'Claude 4.6 Sonnet (with extended thinking)', scores: { worm: 9, koala: 10, crow: 3 }, releaseDate: '2026-02-21' }
+        { name: 'Claude 4.6 Sonnet (with extended thinking)', scores: { worm: 9, koala: 10, crow: 3 }, releaseDate: '2026-02-21' },
+        { name: 'GPT-5.5 Instant', scores: { worm: 34 } }
     ]
 };
