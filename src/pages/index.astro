@@ -1270,11 +1270,24 @@ There are currently three levels in use. The fourth level will be unlocked once 
         function sortAndRank(rawList, keys, method) {
             let list = [...rawList];
 
-            let globalHardestKey = null;
+            let globalHardestKey = keys[0]; // Default to the first level
             for (let i = keys.length - 1; i >= 0; i--) {
                 const key = keys[i];
-                const hasData = list.some(item => typeof item[key] === 'number' || item[key] === 'INVALID');
-                if (hasData) {
+                let maxScore = -Infinity;
+                let hasValidData = false;
+
+                for (const item of list) {
+                    const val = item[key];
+                    if (val !== 'UNAVAILABLE' && val !== undefined) {
+                        hasValidData = true;
+                        const numVal = val === 'INVALID' ? 0 : (typeof val === 'number' ? val : 0);
+                        if (numVal > maxScore) {
+                            maxScore = numVal;
+                        }
+                    }
+                }
+
+                if (hasValidData && maxScore > 0) {
                     globalHardestKey = key;
                     break;
                 }
