@@ -216,8 +216,21 @@ function getRankDisplay(rank) {
                         <p>The levels use increasingly difficult scenarios to test the AI models.<br>
 There are currently five levels in use. The sixth level will be unlocked once all lower levels score at least 75%</p>
                     </div>
+                    <div class="ranking-controls">
+                        <label for="visual-ranking-method">Ranking Method:</label>
+                        <select id="visual-ranking-method" class="ranking-select">
+                            <option value="baseline">Baseline Priority</option>
+                            <option value="average">Flat Average</option>
+                            <option value="crucible">Crucible Weight</option>
+                            <option value="resilience">Resilience Retention</option>
+                        </select>
+                        <span class="tooltip-container">
+                            <span class="tooltip-icon" id="visual-tooltip-icon">ℹ️</span>
+                            <div class="tooltip-text" id="visual-tooltip-text">Sorts descending by Level 1. If tied, looks at Level 2, then Level 3, and so on. Highlights models with the highest foundational capability.</div>
+                        </span>
+                    </div>
                     <div class="benchmark-desktop-container">
-                        <div class="benchmark-container visual-table">
+                        <div class="benchmark-container visual-table" id="visual-table-body">
                             <!-- Header Row -->
                             <div class="header-row unified-header-row">
                                 <div class="col-header model-col-header"><h3>MODEL</h3><div class="creature-icon"></div></div>
@@ -304,7 +317,7 @@ There are currently five levels in use. The sixth level will be unlocked once al
                                 const item = unifiedList[i];
 
                                 return (
-                                    <div class="benchmark-row unified-row">
+                                    <div class="benchmark-row unified-row" data-model-name={item.name}>
                                         {/* Model Column */}
                                         <div class={`benchmark-cell model-cell ${getModelColorClass(item.name)}`}>
                                             <div class={`benchmark-content ${item.isTotalFail ? 'fail-item' : ''}`}>
@@ -347,9 +360,22 @@ There are currently five levels in use. The sixth level will be unlocked once al
                         <p>The levels are presented in increasingly more difficult formats in order to test the limits of the AI models.<br>
 There are currently three levels in use. The fourth level will be unlocked once all lower levels score at least 75%</p>
                     </div>
+                    <div class="ranking-controls">
+                        <label for="data-ranking-method">Ranking Method:</label>
+                        <select id="data-ranking-method" class="ranking-select">
+                            <option value="baseline">Baseline Priority</option>
+                            <option value="average">Flat Average</option>
+                            <option value="crucible">Crucible Weight</option>
+                            <option value="resilience">Resilience Retention</option>
+                        </select>
+                        <span class="tooltip-container">
+                            <span class="tooltip-icon" id="data-tooltip-icon">ℹ️</span>
+                            <div class="tooltip-text" id="data-tooltip-text">Sorts descending by Level 1. If tied, looks at Level 2, then Level 3, and so on. Highlights models with the highest foundational capability.</div>
+                        </span>
+                    </div>
                     <div class="data-benchmark-layout">
                         <div class="benchmark-scroll-container data-table-wrapper">
-                            <div class="benchmark-container visual-table">
+                            <div class="benchmark-container visual-table" id="data-table-body">
                                 <!-- Header Row -->
                                 <div class="header-row unified-header-row">
                                     <div class="col-header model-col-header" style="flex: 2;"><h3>MODEL</h3><div class="creature-icon"></div></div>
@@ -415,7 +441,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
                                 {rowsData.map(i => {
                                 const item = dataList[i];
                                 return (
-                                    <div class="benchmark-row unified-row">
+                                    <div class="benchmark-row unified-row" data-model-name={item.name}>
                                         <div class={`benchmark-cell model-cell ${item ? getModelColorClass(item.name) : ''}`} style="flex: 2;">
                                             {item && (
                                                 <div class={`benchmark-content ${item.isTotalFail ? 'fail-item' : ''}`}>
@@ -934,6 +960,85 @@ There are currently three levels in use. The fourth level will be unlocked once 
         margin-bottom: 0.25rem;
     }
 
+    /* Ranking Controls Styles */
+    .ranking-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        color: #D1D5DB;
+        font-size: 0.95rem;
+    }
+
+    .ranking-select {
+        background: rgba(31, 41, 55, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.95rem;
+        cursor: pointer;
+        outline: none;
+    }
+
+    .ranking-select:hover, .ranking-select:focus {
+        border-color: #F59E0B;
+    }
+
+    .tooltip-container {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        cursor: help;
+    }
+
+    .tooltip-icon {
+        font-size: 1.1rem;
+        opacity: 0.8;
+    }
+
+    .tooltip-icon:hover {
+        opacity: 1;
+    }
+
+    .tooltip-text {
+        visibility: hidden;
+        width: 300px;
+        background-color: #1F2937;
+        color: #F3F4F6;
+        text-align: center;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        position: absolute;
+        z-index: 10;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -150px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #1F2937 transparent transparent transparent;
+    }
+
+    .tooltip-container:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+
     /* Data Benchmark Layout */
     .data-benchmark-layout {
         display: flex;
@@ -960,7 +1065,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
 
 </style>
 
-<script define:vars={{ TIME_OFFSET }}>
+<script define:vars={{ TIME_OFFSET, unifiedRawList, dataRawList }}>
     function init() {
         const visualWrapper = document.getElementById('visual-benchmark-wrapper');
         const dataWrapper = document.getElementById('data-benchmark-wrapper');
@@ -1018,6 +1123,192 @@ There are currently three levels in use. The fourth level will be unlocked once 
                 if (badge) badge.remove();
             }
         });
+
+        // Sorting and DOM update logic
+        const getVal = (val) => (typeof val === 'number' ? val : 0);
+
+        function calculateScores(item, keys, method) {
+            const scores = keys.map(k => getVal(item[k]));
+            if (method === 'baseline') {
+                return scores; // Handled specially in the sorter
+            } else if (method === 'average') {
+                const sum = scores.reduce((a, b) => a + b, 0);
+                return sum / keys.length;
+            } else if (method === 'crucible') {
+                return scores.reduce((sum, score, i) => sum + (score * (i + 1)), 0);
+            } else if (method === 'resilience') {
+                const lvl1Score = scores[0];
+                if (lvl1Score === 0) return 0;
+                let hardestScore = 0;
+                // Find the hardest level the model attempted (valid numeric score)
+                for (let i = keys.length - 1; i >= 0; i--) {
+                   const key = keys[i];
+                   if (typeof item[key] === 'number') {
+                       hardestScore = item[key];
+                       break;
+                   }
+                }
+                return (hardestScore / lvl1Score) * 100;
+            }
+            return 0;
+        }
+
+        const tooltips = {
+            'baseline': 'Sorts descending by Level 1. If tied, looks at Level 2, then Level 3, and so on. Highlights models with the highest foundational capability.',
+            'average': 'Sums the scores of all available levels and divides by the total number of levels. Treats INVALID/UNAVAILABLE as 0%. Highlights the best "all-rounder" models.',
+            'crucible': 'Applies an escalating multiplier to the levels (Lvl1 x1, Lvl2 x2, etc.) before summing. Heavily penalizes models that only do well on the easy baseline.',
+            'resilience': 'Calculates the retention percentage between the hardest level attempted and Level 1. Highlights models that don\'t suffer from "Contextual Collapse".'
+        };
+
+        function getPixelMedalHtml(rank) {
+            let color1, color2, color3;
+            if (rank === 1) { color1 = '#FFD700'; color2 = '#DAA520'; color3 = '#B8860B'; } // Gold
+            else if (rank === 2) { color1 = '#E0E0E0'; color2 = '#C0C0C0'; color3 = '#A9A9A9'; } // Silver
+            else if (rank === 3) { color1 = '#CD7F32'; color2 = '#A0522D'; color3 = '#8B4513'; } // Bronze
+
+            return `<svg width="24" height="24" viewBox="0 0 16 16" style="display:inline-block; vertical-align:middle; filter:drop-shadow(0 2px 2px rgba(0,0,0,0.5));">
+                <path d="M4 2 h8 v2 h-8 z" fill="${color3}"/>
+                <path d="M3 4 h10 v8 h-10 z" fill="${color2}"/>
+                <path d="M4 5 h8 v6 h-8 z" fill="${color1}"/>
+                <path d="M5 6 h6 v4 h-6 z" fill="#FFFFFF" fill-opacity="0.3"/>
+                <path d="M4 12 h8 v2 h-8 z" fill="${color3}"/>
+                <text x="8" y="9" font-family="monospace" font-size="6" font-weight="bold" fill="${color3}" text-anchor="middle" dominant-baseline="central">${rank}</text>
+            </svg>`;
+        }
+
+        function getRankDisplayHtml(rank) {
+            if (rank === '-') return '-';
+            if (rank === 'INVALID') return 'INVALID';
+            if (rank === 1) return getPixelMedalHtml(1);
+            if (rank === 2) return getPixelMedalHtml(2);
+            if (rank === 3) return getPixelMedalHtml(3);
+            return `#${rank}`;
+        }
+
+        function updateTableDOM(tableId, sortedItems) {
+            const tableBody = document.getElementById(tableId);
+            if (!tableBody) return;
+
+            // We need to keep the header row first
+            const headerRow = tableBody.querySelector('.header-row');
+
+            // Collect all rows into a map for quick lookup
+            const rows = Array.from(tableBody.querySelectorAll('.benchmark-row.unified-row'));
+            const rowMap = new Map();
+            rows.forEach(r => {
+                const name = r.getAttribute('data-model-name');
+                if (name) rowMap.set(name, r);
+            });
+
+            // Re-append header just to be safe it's at the top
+            tableBody.innerHTML = '';
+            if (headerRow) tableBody.appendChild(headerRow);
+
+            sortedItems.forEach(item => {
+                const row = rowMap.get(item.name);
+                if (row) {
+                    // Update rank UI
+                    const rankEl = row.querySelector('.rank');
+                    if (rankEl) {
+                        rankEl.innerHTML = getRankDisplayHtml(item.rank);
+                    }
+                    tableBody.appendChild(row);
+                }
+            });
+        }
+
+        // Setup Event Listeners
+        const visualDropdown = document.getElementById('visual-ranking-method');
+        const visualTooltip = document.getElementById('visual-tooltip-text');
+
+        if (visualDropdown) {
+            visualDropdown.addEventListener('change', (e) => {
+                const method = e.target.value;
+                if (visualTooltip) visualTooltip.textContent = tooltips[method];
+
+                const sorted = sortAndRank(unifiedRawList, ['lvl1', 'lvl2', 'lvl3', 'lvl4', 'lvl5'], method);
+                updateTableDOM('visual-table-body', sorted);
+            });
+        }
+
+        const dataDropdown = document.getElementById('data-ranking-method');
+        const dataTooltip = document.getElementById('data-tooltip-text');
+
+        if (dataDropdown) {
+            dataDropdown.addEventListener('change', (e) => {
+                const method = e.target.value;
+                if (dataTooltip) dataTooltip.textContent = tooltips[method];
+
+                const sorted = sortAndRank(dataRawList, ['worm', 'koala', 'crow'], method);
+                updateTableDOM('data-table-body', sorted);
+            });
+        }
+
+        function sortAndRank(rawList, keys, method) {
+            let list = [...rawList];
+
+            list.forEach(item => {
+                item.isTotalFail = keys.every(key => getVal(item[key]) === 0);
+                item._sortValue = calculateScores(item, keys, method);
+            });
+
+            let sorted = list.sort((a, b) => {
+                if (method === 'baseline') {
+                    for (const key of keys) {
+                        const valA = getVal(a[key]);
+                        const valB = getVal(b[key]);
+                        if (valB !== valA) return valB - valA;
+                    }
+                    return 0;
+                } else {
+                    return b._sortValue - a._sortValue;
+                }
+            });
+
+            const eligible = sorted.filter(i => !i.isTotalFail);
+            const fails = sorted.filter(i => i.isTotalFail).sort((a,b) => a.name.localeCompare(b.name));
+
+            let currentRank = 1;
+            let previousItem = null;
+            let rankedItems = [];
+
+            eligible.forEach((item) => {
+                if (previousItem !== null) {
+                    let isWorse = false;
+                    if (method === 'baseline') {
+                        for (const key of keys) {
+                            const itemVal = getVal(item[key]);
+                            const prevVal = getVal(previousItem[key]);
+                            if (itemVal < prevVal) {
+                                isWorse = true;
+                                break;
+                            } else if (itemVal > prevVal) {
+                                break;
+                            }
+                        }
+                    } else {
+                        // For float precision issues in JS, round slightly or use a small epsilon if needed, but direct comparison is fine for these ints/simple floats
+                        if (item._sortValue < previousItem._sortValue) {
+                            isWorse = true;
+                        }
+                    }
+
+                    if (isWorse) {
+                        currentRank++;
+                    }
+                }
+                item.rank = currentRank;
+                rankedItems.push(item);
+                previousItem = item;
+            });
+
+            fails.forEach(item => {
+                item.rank = 'INVALID';
+                rankedItems.push(item);
+            });
+
+            return rankedItems;
+        }
 
         adjustFontSizes();
         window.addEventListener('resize', adjustFontSizes);
