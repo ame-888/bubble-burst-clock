@@ -162,10 +162,10 @@ export const benchmarks = {
         }
     ],
     dataRetrieval: [
-        { name: 'Grok 4.20 Expert', scores: { koala: 24, crow: "UNAVAILABLE" }, releaseDate: '2026-02-18' },
-        { name: 'Grok 4.3 Fast', scores: { koala: 27, crow: 21 } },
-        { name: 'Gemini 3.1 Pro Preview', scores: { koala: 20, crow: 11 } },
-        { name: 'Muse Spark (with reasoning)', scores: { koala: 13, crow: "INVALID" } },
-        { name: 'Claude 4.6 Sonnet (with extended thinking)', scores: { koala: 9, crow: 10 }, releaseDate: '2026-02-21' }
+        { name: 'Grok 4.20 Expert', scores: { worm: 24, koala: "UNAVAILABLE", crow: "UNAVAILABLE" }, releaseDate: '2026-02-18' },
+        { name: 'Grok 4.3 Fast', scores: { worm: 27, koala: 21 } },
+        { name: 'Gemini 3.1 Pro Preview', scores: { worm: 20, koala: 11 } },
+        { name: 'Muse Spark (with reasoning)', scores: { worm: 13, koala: "INVALID", crow: "INVALID" } },
+        { name: 'Claude 4.6 Sonnet (with extended thinking)', scores: { worm: 9, koala: 10 }, releaseDate: '2026-02-21' }
     ]
 };
