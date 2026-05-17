@@ -1,31 +1,21 @@
 import re
 
-with open('src/data/benchmarks.ts', 'r') as f:
+with open("src/data/benchmarks.ts", "r") as f:
     content = f.read()
 
-# Update Gemini 3.0 Flash Preview (with code execution)
+# Replace Muse Spark (with reasoning) scores in Visual Bench
 content = re.sub(
-    r"""name: 'Gemini 3\.0 Flash Preview \(with code execution\)',\s*scores: \{\s*'lvl1': 70\.7,\s*'lvl2': 70\.7,\s*'lvl3': 70\.7\s*\},""",
-    r"""name: 'Gemini 3.0 Flash Preview (with code execution)',
-            scores: {
-                'lvl1': 85,
-                'lvl2': 61,
-                'lvl3': 66
-            },""",
+    r"(name:\s*'Muse Spark \(with reasoning\)',\s*scores:\s*\{\s*)('lvl1':\s*)0,\s*('lvl2':\s*)0,\s*('lvl3':\s*)0,\s*('lvl4':\s*)0,\s*('lvl5':\s*)0(\s*\})",
+    r"\1\2'INVALID',\n                \3'INVALID',\n                \4'INVALID',\n                \5'INVALID',\n                \6'INVALID'\7",
     content
 )
 
-# Update Gemini 3.1 Pro Preview (with code execution)
+# Replace Muse Spark (with reasoning) scores in Data Retrieval Bench
 content = re.sub(
-    r"""name: 'Gemini 3\.1 Pro Preview \(with code execution\)',\s*scores: \{\s*'lvl1': 71,\s*'lvl2': 71,\s*'lvl3': 71\s*\},""",
-    r"""name: 'Gemini 3.1 Pro Preview (with code execution)',
-            scores: {
-                'lvl1': 84,
-                'lvl2': 73,
-                'lvl3': 56
-            },""",
+    r"(\{ name:\s*'Muse Spark \(with reasoning\)',\s*scores:\s*\{\s*worm:\s*13,\s*koala:\s*)0(,\s*crow:\s*)0(\s*\}\s*\})",
+    r"\1'INVALID'\2'INVALID'\3",
     content
 )
 
-with open('src/data/benchmarks.ts', 'w') as f:
+with open("src/data/benchmarks.ts", "w") as f:
     f.write(content)

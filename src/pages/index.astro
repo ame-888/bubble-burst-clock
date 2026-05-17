@@ -102,9 +102,6 @@ const unifiedRawList = Array.from(unifiedDataMap.values()).map(m => {
     let total = m.lvl1 + m.lvl2 + m.lvl3 + m.lvl4 + m.lvl5;
     // Average removed in favor of level-by-level fallback ranking
 
-    // Determine overall fail (all scores 0)
-    m.isTotalFail = (m.lvl1 ?? 0) === 0 && (m.lvl2 ?? 0) === 0 && (m.lvl3 ?? 0) === 0 && (m.lvl4 ?? 0) === 0 && (m.lvl5 ?? 0) === 0;
-
     return m;
 });
 
@@ -113,13 +110,11 @@ const unifiedList = computeRanks(unifiedRawList, ['lvl1', 'lvl2', 'lvl3', 'lvl4'
 // Calculate best AI scores for each column to apply the golden aura
 const bestAiScores = { lvl1: -1, lvl2: -1, lvl3: -1, lvl4: -1, lvl5: -1 };
 unifiedList.forEach(item => {
-    if (!item.isTotalFail) {
-        if (item.lvl1 !== undefined && item.lvl1 > bestAiScores.lvl1) bestAiScores.lvl1 = item.lvl1;
+            if (item.lvl1 !== undefined && item.lvl1 > bestAiScores.lvl1) bestAiScores.lvl1 = item.lvl1;
         if (item.lvl2 !== undefined && item.lvl2 > bestAiScores.lvl2) bestAiScores.lvl2 = item.lvl2;
         if (item.lvl3 !== undefined && item.lvl3 > bestAiScores.lvl3) bestAiScores.lvl3 = item.lvl3;
         if (item.lvl4 !== undefined && item.lvl4 > bestAiScores.lvl4) bestAiScores.lvl4 = item.lvl4;
         if (item.lvl5 !== undefined && item.lvl5 > bestAiScores.lvl5) bestAiScores.lvl5 = item.lvl5;
-    }
 });
 
 const rows = Array.from({ length: unifiedList.length }, (_, i) => i);
@@ -142,7 +137,6 @@ const dataRawList = Array.from(dataDataMap.values()).map(m => {
     const wormScore = typeof m.worm === 'number' ? m.worm : 0;
     const koalaScore = typeof m.koala === 'number' ? m.koala : 0;
     const crowScore = typeof m.crow === 'number' ? m.crow : 0;
-    m.isTotalFail = wormScore === 0 && koalaScore === 0 && crowScore === 0;
     return m;
 });
 
@@ -150,11 +144,9 @@ const dataList = computeRanks(dataRawList, ['worm', 'koala', 'crow']);
 
 const bestDataAiScores = { worm: -1, koala: -1, crow: -1 };
 dataList.forEach(item => {
-    if (!item.isTotalFail) {
-        if (typeof item.worm === 'number' && item.worm > bestDataAiScores.worm) bestDataAiScores.worm = item.worm;
+            if (typeof item.worm === 'number' && item.worm > bestDataAiScores.worm) bestDataAiScores.worm = item.worm;
         if (typeof item.koala === 'number' && item.koala > bestDataAiScores.koala) bestDataAiScores.koala = item.koala;
         if (typeof item.crow === 'number' && item.crow > bestDataAiScores.crow) bestDataAiScores.crow = item.crow;
-    }
 });
 
 const rowsData = Array.from({ length: dataList.length }, (_, i) => i);
@@ -346,8 +338,8 @@ There are currently five levels in use. The sixth level will be unlocked once al
                                     <div class="benchmark-row unified-row" data-model-name={item.name}>
                                         {/* Model Column */}
                                         <div class={`benchmark-cell model-cell ${getModelColorClass(item.name)}`}>
-                                            <div class={`benchmark-content ${item.isTotalFail ? 'fail-item' : ''}`}>
-                                                <div class={`rank ${item.isTotalFail ? 'fail-rank' : ''}`} set:html={getRankDisplay(item.rank)}>
+                                            <div class={`benchmark-content `}>
+                                                <div class={`rank `} set:html={getRankDisplay(item.rank)}>
                                                 </div>
                                                 <div class="model-info">
                                                     <div class="model-name" data-release-date={item.releaseDate}>
@@ -359,11 +351,11 @@ There are currently five levels in use. The sixth level will be unlocked once al
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell mole-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl1 === 0 || item.lvl1 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.lvl1 > 0 ? 'best-score-glow' : ''}`}>{item.lvl1 !== undefined ? (typeof item.lvl1 === 'string' ? item.lvl1 : `${item.lvl1}%`) : ''}</span></div>
-                                        <div class="benchmark-cell score-cell rhino-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl2 === 0 || item.lvl2 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.lvl2 > 0 ? 'best-score-glow' : ''}`}>{item.lvl2 !== undefined ? (typeof item.lvl2 === 'string' ? item.lvl2 : `${item.lvl2}%`) : ''}</span></div>
-                                        <div class="benchmark-cell score-cell chimp-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl3 === 0 || item.lvl3 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.lvl3 > 0 ? 'best-score-glow' : ''}`}>{item.lvl3 !== undefined ? (typeof item.lvl3 === 'string' ? item.lvl3 : `${item.lvl3}%`) : ''}</span></div>
-                                        <div class="benchmark-cell score-cell owl-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl4 === 0 || item.lvl4 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.lvl4 > 0 ? 'best-score-glow' : ''}`}>{item.lvl4 !== undefined ? (typeof item.lvl4 === 'string' ? item.lvl4 : `${item.lvl4}%`) : ''}</span></div>
-                                        <div class="benchmark-cell score-cell eagle-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.lvl5 === 0 || item.lvl5 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.lvl5 > 0 ? 'best-score-glow' : ''}`}>{item.lvl5 !== undefined ? (typeof item.lvl5 === 'string' ? item.lvl5 : `${item.lvl5}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell mole-score"><span class={` ${item.lvl1 === 0 || item.lvl1 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl1 === bestAiScores.lvl1 && item.lvl1 > 0 ? 'best-score-glow' : ''}`}>{item.lvl1 !== undefined ? (typeof item.lvl1 === 'string' ? item.lvl1 : `${item.lvl1}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell rhino-score"><span class={` ${item.lvl2 === 0 || item.lvl2 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl2 === bestAiScores.lvl2 && item.lvl2 > 0 ? 'best-score-glow' : ''}`}>{item.lvl2 !== undefined ? (typeof item.lvl2 === 'string' ? item.lvl2 : `${item.lvl2}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell chimp-score"><span class={` ${item.lvl3 === 0 || item.lvl3 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl3 === bestAiScores.lvl3 && item.lvl3 > 0 ? 'best-score-glow' : ''}`}>{item.lvl3 !== undefined ? (typeof item.lvl3 === 'string' ? item.lvl3 : `${item.lvl3}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell owl-score"><span class={` ${item.lvl4 === 0 || item.lvl4 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl4 === bestAiScores.lvl4 && item.lvl4 > 0 ? 'best-score-glow' : ''}`}>{item.lvl4 !== undefined ? (typeof item.lvl4 === 'string' ? item.lvl4 : `${item.lvl4}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell eagle-score"><span class={` ${item.lvl5 === 0 || item.lvl5 === 'INVALID' ? 'zero-score-glow' : ''} ${item.lvl5 === bestAiScores.lvl5 && item.lvl5 > 0 ? 'best-score-glow' : ''}`}>{item.lvl5 !== undefined ? (typeof item.lvl5 === 'string' ? item.lvl5 : `${item.lvl5}%`) : ''}</span></div>
                                         <div class="benchmark-cell score-cell beholder-score"><span class="beholder-text">?</span></div>
                                     </div>
                                 );
@@ -494,8 +486,8 @@ There are currently three levels in use. The fourth level will be unlocked once 
                                     <div class="benchmark-row unified-row" data-model-name={item.name}>
                                         <div class={`benchmark-cell model-cell ${item ? getModelColorClass(item.name) : ''}`} style="flex: 2;">
                                             {item && (
-                                                <div class={`benchmark-content ${item.isTotalFail ? 'fail-item' : ''}`}>
-                                                    <div class={`rank ${item.isTotalFail ? 'fail-rank' : ''}`} set:html={getRankDisplay(item.rank)}>
+                                                <div class={`benchmark-content `}>
+                                                    <div class={`rank `} set:html={getRankDisplay(item.rank)}>
                                                     </div>
                                                     <div class="model-info">
                                                         <div class="model-name" data-release-date={item.releaseDate}>
@@ -508,9 +500,9 @@ There are currently three levels in use. The fourth level will be unlocked once 
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell worm-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.worm === 0 || item.worm === 'INVALID' ? 'zero-score-glow' : ''} ${item.worm === bestDataAiScores.worm && item.worm > 0 ? 'best-score-glow' : ''}`}>{item.worm !== undefined ? (typeof item.worm === 'string' ? item.worm : `${item.worm}%`) : ''}</span></div>
-                                        <div class="benchmark-cell score-cell koala-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.koala === 0 || item.koala === 'INVALID' ? 'zero-score-glow' : ''} ${item.koala === bestDataAiScores.koala && item.koala > 0 ? 'best-score-glow' : ''}`}>{item.koala !== undefined ? (typeof item.koala === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.koala}</span> : `${item.koala}%`) : ''}</span></div>
-                                        <div class="benchmark-cell score-cell crow-score" style="flex: 1;"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.crow === 0 || item.crow === 'INVALID' ? 'zero-score-glow' : ''} ${item.crow === bestDataAiScores.crow && item.crow > 0 ? 'best-score-glow' : ''}`}>{item.crow !== undefined ? (typeof item.crow === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.crow}</span> : `${item.crow}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell worm-score" style="flex: 1;"><span class={` ${item.worm === 0 || item.worm === 'INVALID' ? 'zero-score-glow' : ''} ${item.worm === bestDataAiScores.worm && item.worm > 0 ? 'best-score-glow' : ''}`}>{item.worm !== undefined ? (typeof item.worm === 'string' ? item.worm : `${item.worm}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell koala-score" style="flex: 1;"><span class={` ${item.koala === 0 || item.koala === 'INVALID' ? 'zero-score-glow' : ''} ${item.koala === bestDataAiScores.koala && item.koala > 0 ? 'best-score-glow' : ''}`}>{item.koala !== undefined ? (typeof item.koala === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.koala}</span> : `${item.koala}%`) : ''}</span></div>
+                                        <div class="benchmark-cell score-cell crow-score" style="flex: 1;"><span class={` ${item.crow === 0 || item.crow === 'INVALID' ? 'zero-score-glow' : ''} ${item.crow === bestDataAiScores.crow && item.crow > 0 ? 'best-score-glow' : ''}`}>{item.crow !== undefined ? (typeof item.crow === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.crow}</span> : `${item.crow}%`) : ''}</span></div>
                                         <div class="benchmark-cell score-cell athena-score" style="flex: 1;"><span class="athena-text">?</span></div>
                                     </div>
                                 );
@@ -752,14 +744,14 @@ There are currently three levels in use. The fourth level will be unlocked once 
         }
     }
 
-    .fail-rank { color: #EF4444; font-size: 0.5rem; min-width: 40px; text-align: center; }
+
 
     @media (min-width: 640px) {
-        .fail-rank { font-size: 0.7rem; min-width: 50px; text-align: center; }
+
     }
 
     @media (min-width: 1024px) {
-        .fail-rank { font-size: 0.85rem; min-width: 70px; text-align: center; }
+
     }
 
     .model-info {
@@ -795,7 +787,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
         margin-left: auto;
     }
 
-    .fail-score { color: #6B7280 !important; font-size: 0.85rem !important; text-shadow: none !important; }
+
 
     .zero-score-glow {
         text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.6) !important;
@@ -805,7 +797,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
     .best-score-glow {
         border: 2px solid #FFD700 !important; border-radius: 12px; padding: 2px 6px; display: inline-block;
     }
-    .fail-item .model-name { color: white; }
+
 
     /* --- MODEL BRANDING STYLES --- */
     .model-bg-gemini { background-color: #ADD8E6; }
@@ -1377,8 +1369,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
                     return { val: 0, isAttempted: false };
                 });
                 item.isUnknownResilience = false; // Reset state flag on every re-render
-                item.isTotalFail = rawVals.every(r => r.val === 0);
-                item._sortValue = calculateScores(item, keys, method, globalHardestKey);
+                                item._sortValue = calculateScores(item, keys, method, globalHardestKey);
             });
 
             let sorted = list.sort((a, b) => {
