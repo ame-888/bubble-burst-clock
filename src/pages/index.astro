@@ -141,7 +141,6 @@ const dataDataMap = new Map();
     dataDataMap.set(m.name, {
         name: m.name,
         releaseDate: m.releaseDate,
-        worm: m.scores?.worm,
         koala: m.scores?.koala,
         crow: m.scores?.crow,
         athena: '?'
@@ -149,19 +148,17 @@ const dataDataMap = new Map();
 });
 
 const dataRawList = Array.from(dataDataMap.values()).map(m => {
-    const wormScore = typeof m.worm === 'number' ? m.worm : 0;
     const koalaScore = typeof m.koala === 'number' ? m.koala : 0;
     const crowScore = typeof m.crow === 'number' ? m.crow : 0;
-    m.isTotalFail = wormScore === 0 && koalaScore === 0 && crowScore === 0;
+    m.isTotalFail = koalaScore === 0 && crowScore === 0;
     return m;
 });
 
-const dataList = computeRanks(dataRawList, ['worm', 'koala', 'crow']);
+const dataList = computeRanks(dataRawList, ['koala', 'crow']);
 
-const bestDataAiScores = { worm: -1, koala: -1, crow: -1 };
+const bestDataAiScores = { koala: -1, crow: -1 };
 dataList.forEach(item => {
     if (!item.isTotalFail) {
-        if (typeof item.worm === 'number' && item.worm > bestDataAiScores.worm) bestDataAiScores.worm = item.worm;
         if (typeof item.koala === 'number' && item.koala > bestDataAiScores.koala) bestDataAiScores.koala = item.koala;
         if (typeof item.crow === 'number' && item.crow > bestDataAiScores.crow) bestDataAiScores.crow = item.crow;
     }
@@ -351,18 +348,6 @@ function getRankDisplay(rank) {
                                 <!-- Header Row -->
                                 <div class="header-row unified-header-row">
                                     <div class="col-header model-col-header"><h3>MODEL</h3><div class="creature-icon"></div></div>
-                                    <div class="col-header worm-header">
-                                        <h3>WORM</h3>
-                                        <div class="creature-icon worm-icon">
-                                            <svg viewBox="0 0 16 16" width="24" height="24">
-                                                <rect x="4" y="8" width="8" height="4" fill="#FFB6C1"/>
-                                                <rect x="5" y="7" width="6" height="6" fill="#FF69B4"/>
-                                                <rect x="3" y="9" width="10" height="2" fill="#FFB6C1"/>
-                                                <rect x="4" y="9" width="1" height="1" fill="#000"/>
-                                                <rect x="11" y="9" width="1" height="1" fill="#000"/>
-                                            </svg>
-                                        </div>
-                                    </div>
                                     <div class="col-header koala-header">
                                         <h3>KOALA</h3>
                                         <div class="creature-icon koala-icon">
@@ -430,7 +415,6 @@ function getRankDisplay(rank) {
                                         </div>
 
                                         {/* Challenge Columns */}
-                                        <div class="benchmark-cell score-cell worm-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.worm === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.worm === bestDataAiScores.worm && item.worm > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.worm !== undefined ? (typeof item.worm === 'string' ? item.worm : `${item.worm}%`) : '')}</span></div>
                                         <div class="benchmark-cell score-cell koala-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.koala === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.koala === bestDataAiScores.koala && item.koala > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.koala !== undefined ? (typeof item.koala === 'string' ? item.koala : `${item.koala}%`) : '')}</span></div>
                                         <div class="benchmark-cell score-cell crow-score"><span class={`${item.isTotalFail ? 'fail-score' : ''} ${item.crow === 0 && !item.isTotalFail ? 'zero-score-glow' : ''} ${item.crow === bestDataAiScores.crow && item.crow > 0 && !item.isTotalFail ? 'best-score-glow' : ''}`}>{item.isTotalFail ? 'INVALID' : (item.crow !== undefined ? (typeof item.crow === 'string' ? <span style="color: #9CA3AF; font-size: 0.75rem;">{item.crow}</span> : `${item.crow}%`) : '')}</span></div>
                                         <div class="benchmark-cell score-cell athena-score"><span class="athena-text">?</span></div>
@@ -501,7 +485,7 @@ function getRankDisplay(rank) {
     }
 
     .data-table-wrapper .unified-header-row, .data-table-wrapper .unified-row {
-        grid-template-columns: minmax(60px, 2.5fr) repeat(4, minmax(25px, 1fr));
+        grid-template-columns: minmax(60px, 2.5fr) repeat(3, minmax(25px, 1fr));
     }
 
     @media (min-width: 640px) {
@@ -777,10 +761,6 @@ function getRankDisplay(rank) {
 
     /* --- DATA CHALLENGE STYLES --- */
 
-    /* Worm (Pink/Brown) */
-    .worm-header h3 { color: #FFB6C1; border-color: #FFB6C1; }
-    .worm-score { color: #FF69B4; }
-
     /* Koala (Grey/Eucalyptus) */
     .koala-header h3 { color: #A9A9A9; border-color: #A9A9A9; }
     .koala-score { color: #8FBC8F; }
@@ -789,13 +769,26 @@ function getRankDisplay(rank) {
     .crow-header h3 { color: #555555; border-color: #555555; }
     .crow-score { color: #777777; }
 
-    /* Athena (Gold/Blue) */
+    /* Athena (Gold Theme Animation) */
     .athena-header h3 {
-        color: #DAA520;
-        border-color: #DAA520;
+        color: #FFD700;
+        border-color: #FFD700;
+        text-shadow: 0 0 5px #FFD700, 0 0 10px #DAA520, 0 0 20px #B8860B;
+        animation: athenaPulse 2s infinite alternate;
     }
+
+    @keyframes athenaPulse {
+        from { text-shadow: 0 0 5px #FFD700, 0 0 10px #DAA520, 0 0 20px #B8860B; }
+        to { text-shadow: 0 0 10px #FFD700, 0 0 20px #DAA520, 0 0 30px #B8860B, 0 0 40px #8B6508; }
+    }
+
     .athena-score { color: #FFD700; }
-    .athena-text { color: #4682B4; font-weight: 900; font-size: 1.2rem; }
+    .athena-text {
+        color: #FFD700;
+        text-shadow: 0 0 8px #DAA520;
+        font-weight: 900;
+        font-size: 1.2rem;
+    }
 
     /* New Badge */
     .new-badge {
