@@ -167,6 +167,7 @@ export const benchmarks = {
         { name: 'Gemini 3.1 Pro Preview', scores: { worm: 20, koala: 11, crow: 11, octopus: 'INVALID' } },
         { name: 'Muse Spark (with reasoning)', scores: { worm: 13, koala: 'INVALID', crow: 'INVALID', octopus: 'INVALID' } },
         { name: 'Claude 4.6 Sonnet (with extended thinking)', scores: { worm: 9, koala: 10, crow: 3, octopus: 3 }, releaseDate: '2026-02-21' },
-        { name: 'GPT-5.5 Instant', scores: { worm: 34, koala: 3, crow: 0, octopus: 3 } }
+        { name: 'GPT-5.5 Instant', scores: { worm: 34, koala: 3, crow: 0, octopus: 3 } },
+        { name: 'Gemini 3.1 Flashlite GA', scores: { worm: 16, koala: 14, crow: 8, octopus: 8 } }
     ]
 };
