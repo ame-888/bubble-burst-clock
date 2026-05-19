@@ -146,88 +146,6 @@ const dataRawList = Array.from(dataDataMap.values()).map(m => {
 const dataList = computeRanks(dataRawList, ['worm', 'koala', 'crow', 'octopus']);
 
 const bestDataAiScores = { worm: -1, koala: -1, crow: -1, octopus: -1 };
-
-// --- Ultimate Bench Logic ---
-const ultimateTargetModels = [
-    'GPT-5.5 Instant',
-    'Grok 4.3 Fast',
-    'Gemini 3.1 Pro Preview',
-    'Muse Spark (with reasoning)',
-    'Claude 4.6 Sonnet (with extended reasoning)',
-    'Gemini 3.1 Flashlite GA'
-];
-
-const ultimateRawList = [];
-
-ultimateTargetModels.forEach(modelName => {
-    let visualData = unifiedRawList.find(m => m.name === modelName);
-    let dataData;
-    if (modelName === 'Claude 4.6 Sonnet (with extended reasoning)') {
-        dataData = dataRawList.find(m => m.name === 'Claude 4.6 Sonnet (with extended thinking)');
-    } else {
-        dataData = dataRawList.find(m => m.name === modelName);
-    }
-
-    if (visualData && dataData) {
-        let isUnavailable = false;
-
-        const getScore = (val) => {
-            if (val === 'UNAVAILABLE') isUnavailable = true;
-            if (val === 'INVALID') return 0;
-            if (typeof val === 'number') return val;
-            if (typeof val === 'string') return 0;
-            return 0;
-        };
-
-        const v1 = getScore(visualData.lvl1);
-        const v2 = getScore(visualData.lvl2);
-        const v3 = getScore(visualData.lvl3);
-        const v4 = getScore(visualData.lvl4);
-
-        const d1 = getScore(dataData.worm);
-        const d2 = getScore(dataData.koala);
-        const d3 = getScore(dataData.crow);
-        const d4 = getScore(dataData.octopus);
-
-        if (!isUnavailable) {
-            const ulvl1 = (v1 + d1) / 2;
-            const ulvl2 = (v2 + d2) / 2;
-            const ulvl3 = (v3 + d3) / 2;
-            const ulvl4 = (v4 + d4) / 2;
-            const globalScore = ulvl1 + ulvl2 * 2 + ulvl3 * 3 + ulvl4 * 4;
-
-            ultimateRawList.push({
-                name: modelName,
-                releaseDate: visualData.releaseDate || dataData.releaseDate,
-                lvl1: ulvl1,
-                lvl2: ulvl2,
-                lvl3: ulvl3,
-                lvl4: ulvl4,
-                globalScore: globalScore
-            });
-        }
-    }
-});
-
-let ultimateList = [...ultimateRawList].sort((a, b) => b.globalScore - a.globalScore);
-
-// Assign ranks
-let ultimateCurrentRank = 1;
-let ultimatePreviousItem = null;
-let ultimateRankedItems = [];
-
-ultimateList.forEach((item) => {
-    if (ultimatePreviousItem !== null) {
-        if (item.globalScore < ultimatePreviousItem.globalScore) {
-            ultimateCurrentRank++;
-        }
-    }
-    ultimateRankedItems.push({ ...item, rank: ultimateCurrentRank });
-    ultimatePreviousItem = item;
-});
-
-ultimateList = ultimateRankedItems;
-
 dataList.forEach(item => {
             if (typeof item.worm === 'number' && item.worm > bestDataAiScores.worm) bestDataAiScores.worm = item.worm;
         if (typeof item.koala === 'number' && item.koala > bestDataAiScores.koala) bestDataAiScores.koala = item.koala;
@@ -271,89 +189,8 @@ function getRankDisplay(rank) {
         <div class="leaderboard-grid">
             <!-- Benchmarks Section -->
             <section class="leaderboard-section full-width">
-
-                <!-- ULTIMATE BENCH WRAPPER -->
-                <div id="ultimate-benchmark-wrapper">
+                <div id="visual-benchmark-wrapper">
                     <div class="benchmark-description">
-                        <p>This is the Ultimate Bench, the main attraction of our benchmark series.<br>
-                        It aggregates the results of both the Visual Bench and Data Retrieval Bench to present an ultimate capability score across different domains.</p>
-                        <p>The models are ranked strictly by their Global Score, a weighted sum of their average performance across levels.</p>
-                    </div>
-                    <div class="benchmark-desktop-container">
-                        <div class="benchmark-container ultimate-table" id="ultimate-table-body">
-                            <!-- Header Row -->
-                            <div class="header-row unified-header-row">
-                                <div class="col-header model-col-header"><h3>MODEL</h3><div class="creature-icon"></div></div>
-                                <div class="col-header global-header" style="justify-content:center;">
-                                    <div class="header-title-wrapper">
-                                        <h3 style="color:#FFD700; text-shadow:0 0 5px rgba(255,215,0,0.5);">GLOBAL SCORE</h3>
-                                    </div>
-                                    <div class="creature-icon"></div>
-                                </div>
-                                <div class="col-header" style="justify-content:center;">
-                                    <div class="header-title-wrapper">
-                                        <h3 style="color:#FFF;">LEVEL 1</h3>
-                                    </div>
-                                    <div class="creature-icon"></div>
-                                </div>
-                                <div class="col-header" style="justify-content:center;">
-                                    <div class="header-title-wrapper">
-                                        <h3 style="color:#FFF;">LEVEL 2</h3>
-                                    </div>
-                                    <div class="creature-icon"></div>
-                                </div>
-                                <div class="col-header" style="justify-content:center;">
-                                    <div class="header-title-wrapper">
-                                        <h3 style="color:#FFF;">LEVEL 3</h3>
-                                    </div>
-                                    <div class="creature-icon"></div>
-                                </div>
-                                <div class="col-header" style="justify-content:center;">
-                                    <div class="header-title-wrapper">
-                                        <h3 style="color:#FFF;">LEVEL 4</h3>
-                                    </div>
-                                    <div class="creature-icon"></div>
-                                </div>
-                            </div>
-
-                            <!-- Data Rows -->
-                            {ultimateList.map((item, index) => {
-                                const isNewModel = isNew(item.releaseDate);
-                                return (
-                                    <div class="benchmark-row unified-row" data-model-name={item.name}>
-                                        <div class={`benchmark-cell model-cell ${getModelColorClass(item.name)}`}>
-                                            <div class="rank" set:html={getRankDisplay(item.rank)}></div>
-                                            <div class="model-info">
-                                                <span class="model-name">
-                                                    {item.name}
-                                                    {isNewModel && <span class="new-badge">NEW</span>}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="benchmark-cell ultimate-global-cell" style="display:flex; justify-content:center;">
-                                            <span class="model-score global-score">{item.globalScore.toFixed(1)}</span>
-                                        </div>
-                                        <div class="benchmark-cell" style="justify-content:center;">
-                                            <span class="model-score">{item.lvl1 === 0 ? <span class="zero-score-glow">0%</span> : item.lvl1.toFixed(1) + '%'}</span>
-                                        </div>
-                                        <div class="benchmark-cell" style="justify-content:center;">
-                                            <span class="model-score">{item.lvl2 === 0 ? <span class="zero-score-glow">0%</span> : item.lvl2.toFixed(1) + '%'}</span>
-                                        </div>
-                                        <div class="benchmark-cell" style="justify-content:center;">
-                                            <span class="model-score">{item.lvl3 === 0 ? <span class="zero-score-glow">0%</span> : item.lvl3.toFixed(1) + '%'}</span>
-                                        </div>
-                                        <div class="benchmark-cell" style="justify-content:center;">
-                                            <span class="model-score">{item.lvl4 === 0 ? <span class="zero-score-glow">0%</span> : item.lvl4.toFixed(1) + '%'}</span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-
-                <div id="visual-benchmark-wrapper" class="hidden">
-
                         <p>This is the Visual Bench, the first of our Ultimate Bench series.<br>
                         Its goal is measuring the visual capabilities of an AI model, including:</p>
                         <ul>
@@ -787,16 +624,6 @@ There are currently three levels in use. The fourth level will be unlocked once 
         display: grid;
         grid-template-columns: minmax(60px, 2.5fr) repeat(6, minmax(25px, 1fr));
         gap: 0.1rem;
-    }
-
-    .ultimate-table .unified-header-row, .ultimate-table .unified-row {
-        grid-template-columns: minmax(60px, 2.5fr) minmax(40px, 1.5fr) repeat(4, minmax(25px, 1fr));
-    }
-
-    .global-score {
-        color: #FFD700 !important;
-        font-weight: 900 !important;
-        text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
     }
 
     .data-table-wrapper .unified-header-row, .data-table-wrapper .unified-row {
@@ -1406,20 +1233,15 @@ There are currently three levels in use. The fourth level will be unlocked once 
 
 <script define:vars={{ TIME_OFFSET, unifiedRawList, dataRawList }}>
     function init() {
-        const ultimateWrapper = document.getElementById('ultimate-benchmark-wrapper');
         const visualWrapper = document.getElementById('visual-benchmark-wrapper');
         const dataWrapper = document.getElementById('data-benchmark-wrapper');
 
         function updateBenchmarkView(mode) {
-            if (ultimateWrapper) ultimateWrapper.classList.add('hidden');
-            if (visualWrapper) visualWrapper.classList.add('hidden');
-            if (dataWrapper) dataWrapper.classList.add('hidden');
-
-            if (mode === 'ultimate') {
-                if (ultimateWrapper) ultimateWrapper.classList.remove('hidden');
-            } else if (mode === 'visual') {
+            if (mode === 'visual') {
                 if (visualWrapper) visualWrapper.classList.remove('hidden');
+                if (dataWrapper) dataWrapper.classList.add('hidden');
             } else {
+                if (visualWrapper) visualWrapper.classList.add('hidden');
                 if (dataWrapper) dataWrapper.classList.remove('hidden');
             }
             localStorage.setItem('benchmark_tab', mode);
@@ -1432,7 +1254,7 @@ There are currently three levels in use. The fourth level will be unlocked once 
 
         const urlParams = new URLSearchParams(window.location.search);
         const urlMode = urlParams.get('tab');
-        const savedMode = urlMode || localStorage.getItem('benchmark_tab') || 'ultimate';
+        const savedMode = urlMode || localStorage.getItem('benchmark_tab') || 'visual';
         updateBenchmarkView(savedMode);
 
         // --- Dynamic "NEW" Badge Logic ---

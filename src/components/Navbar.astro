@@ -9,8 +9,7 @@
             <span class="bar"></span>
         </button>
 
-            <div class="navbar-menu" id="navbar-menu">
-            <a href="/?tab=ultimate" id="nav-ultimate-bench" class="nav-link">ULTIMATE BENCH</a>
+        <div class="navbar-menu" id="navbar-menu">
             <a href="/?tab=visual" id="nav-visual-bench" class="nav-link">VISUAL BENCH</a>
             <a href="/?tab=data" id="nav-data-retrieval-bench" class="nav-link">DATA RETRIEVAL BENCH</a>
             <a href="/about" class="nav-link">About</a>
@@ -211,15 +210,14 @@
         const currentPath = window.location.pathname;
         const currentSearch = window.location.search;
         const urlParams = new URLSearchParams(currentSearch);
-        const activeTab = urlParams.get('tab') || localStorage.getItem('benchmark_tab') || 'ultimate';
+        const activeTab = urlParams.get('tab') || localStorage.getItem('benchmark_tab') || 'visual';
 
         document.querySelectorAll('.nav-link').forEach(link => {
             const href = link.getAttribute('href');
 
             // Handle active state for benchmark tabs on homepage
             if (currentPath === '/' && href.startsWith('/?tab=')) {
-                if ((href.includes('tab=ultimate') && activeTab === 'ultimate') ||
-                    (href.includes('tab=visual') && activeTab === 'visual') ||
+                if ((href.includes('tab=visual') && activeTab === 'visual') ||
                     (href.includes('tab=data') && activeTab === 'data')) {
                     link.classList.add('active-bench');
                 } else {
@@ -237,7 +235,7 @@
                 link.addEventListener('click', (e) => {
                     if (window.location.pathname === '/') {
                         e.preventDefault();
-                        const newTab = href.includes('tab=ultimate') ? 'ultimate' : (href.includes('tab=data') ? 'data' : 'visual');
+                        const newTab = href.includes('tab=data') ? 'data' : 'visual';
 
                         // Update URL without reload
                         window.history.pushState({}, '', href);
